@@ -1,5 +1,8 @@
-package saturation;
+package de.tu_dresden.lat.abox_repairs.saturation;
 
+/**
+ * @author Patrick Koopmann
+ */
 public class SaturationException extends Exception {
     
     /**

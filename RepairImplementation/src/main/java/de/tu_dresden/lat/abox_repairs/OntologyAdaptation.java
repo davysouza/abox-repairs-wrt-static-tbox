@@ -1,3 +1,4 @@
+package de.tu_dresden.lat.abox_repairs;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -8,15 +9,16 @@ import org.semanticweb.owlapi.model.OWLOntology;
 
 public class OntologyAdaptation {
 	
-	OWLOntology ontology;
-	Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
-	Map<OWLNamedIndividual, Integer> individualCounter;
+	private final OWLOntology ontology;
+	private final Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	private final Map<OWLNamedIndividual, Integer> individualCounter;
 	
 	
 	public OntologyAdaptation(OWLOntology inputOntology, Map<OWLNamedIndividual, Set<OWLClassExpression>> inputSeedFunction) {
 		
-		ontology = inputOntology;
-		individualCounter = new HashMap<OWLNamedIndividual, Integer>();
+		this.ontology = inputOntology;
+		this.seedFunction=inputSeedFunction;
+		this.individualCounter = new HashMap<>();
 		Set<OWLNamedIndividual> setOfIndividuals = ontology.getIndividualsInSignature();
 		for(OWLNamedIndividual individual: setOfIndividuals) {
 			individualCounter.put(individual, 0);

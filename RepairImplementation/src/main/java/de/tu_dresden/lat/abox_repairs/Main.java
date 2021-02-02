@@ -1,3 +1,4 @@
+package de.tu_dresden.lat.abox_repairs;
 
 import java.io.*;
 import java.util.Iterator;
@@ -18,10 +19,15 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 public class Main {
 	
-	static OWLOntologyManager manager;
-	static OWLOntology ontology;
-	static Set<OWLClassExpression> policySet;
-	static Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	/**
+	 * Check: usually, static fields (variables) should be avoided where possible.
+	 * In this case: check whether they are really needed to be outside the main method,
+	 * and otherwise, add them. 
+	 */
+	private static OWLOntologyManager manager;
+	private static OWLOntology ontology;
+	private static Set<OWLClassExpression> policySet;
+	private static Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException {
 		

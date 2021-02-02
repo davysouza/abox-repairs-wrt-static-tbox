@@ -1,4 +1,4 @@
-package saturation;
+package de.tu_dresden.lat.abox_repairs.saturation;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +23,11 @@ import org.semanticweb.rulewerk.core.reasoner.KnowledgeBase;
 import org.semanticweb.rulewerk.owlapi.OwlToRulesConverter;
 import org.semanticweb.rulewerk.reasoner.vlog.VLogReasoner;
 
+/**
+ * Computes the chase for a given ontology, adding all derived ABox assertions to the given ontology.
+ * 
+ * @author Patrick Koopmann
+ */
 public class ChaseGenerator implements ABoxSaturator {
 
 	public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {

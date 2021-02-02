@@ -1,7 +1,10 @@
-package saturation;
+package de.tu_dresden.lat.abox_repairs.saturation;
 
 import org.semanticweb.owlapi.model.OWLOntology;
 
+/**
+ * @author Patrick Koopmann
+ */
 public class CanonicalModelGenerator implements ABoxSaturator {
 
 	public void saturate(OWLOntology ontology) {
