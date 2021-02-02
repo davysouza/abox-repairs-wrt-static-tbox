@@ -45,6 +45,21 @@ public class RepairTypeHandler {
     }
 
     /**
+     * Check whether the precondition for the premise saturation rule is satisfied from the 
+     * perspective of the repair type. Specifically, check whether there exists a class
+     * expression D in the repair type s.t. the ontology entails exp SubClassOf D.  
+     * 
+     */
+    public boolean premiseSaturationApplies(RepairType type, OWLClassExpression exp) {
+        for(OWLClassExpression toRepair:type.getClassExpressions()){
+            if(reasonerWithTBox.subsumees(toRepair).contains(exp))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Return all types that are obtained from the given repair type by applying 
      * premise saturation with respect to the given class expression.
      * 
