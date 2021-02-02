@@ -124,6 +124,10 @@ public class PolicyRepair {
 //		System.out.println(repairRequest);
 	}
 	
+	public Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
+		return Collections.unmodifiableMap(repairRequest);
+	}
+
 	public Map<OWLNamedIndividual, Set<OWLClassExpression>> constructSeedFunction() {
 		Random rand = new Random();
 

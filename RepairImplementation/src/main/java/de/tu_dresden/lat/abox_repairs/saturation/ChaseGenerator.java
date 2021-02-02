@@ -30,21 +30,6 @@ import org.semanticweb.rulewerk.reasoner.vlog.VLogReasoner;
  */
 public class ChaseGenerator implements ABoxSaturator {
 
-	public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
-		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-		OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File("ore_ont_3259.owl"));
-		/*OWLOntology ontology = manager.loadOntologyFromOntologyDocument(
-			new File("/home/patrick/Documents/Ontologies/pool_sample/files/ore_ont_12150.owl"));
-		*/
-		int axiomsBefore = ontology.getAxiomCount();
-
-		ChaseGenerator generator = new ChaseGenerator();
-		generator.saturate(ontology);
-
-
-		System.out.println("Axioms before: "+axiomsBefore);
-		System.out.println("Axioms after: "+ontology.getAxiomCount());
-	}
 
 	private OWLDataFactory factory;
 
@@ -55,8 +40,8 @@ public class ChaseGenerator implements ABoxSaturator {
 		final OwlToRulesConverter owlToRulesConverter = new OwlToRulesConverter();
 		owlToRulesConverter.addOntology(ontology);
 
-
-		System.out.println("TBox axioms as rules:");
+		
+		/*System.out.println("TBox axioms as rules:");
 		final Set<Rule> rules = owlToRulesConverter.getRules();
 		for (final Rule rule : rules) {
 			System.out.println(" - rule: " + rule);
@@ -68,14 +53,14 @@ public class ChaseGenerator implements ABoxSaturator {
 			System.out.println(" - fact: " + fact);
 		}
 		System.out.println();
-		
+		*/
 		final KnowledgeBase kb = new KnowledgeBase();
 		kb.addStatements(new ArrayList<>(owlToRulesConverter.getRules()));
 		kb.addStatements(owlToRulesConverter.getFacts());
 
 		try (VLogReasoner reasoner = new VLogReasoner(kb)) {
 
-			reasoner.setAlgorithm(Algorithm.SKOLEM_CHASE);
+			reasoner.setAlgorithm(Algorithm.RESTRICTED_CHASE);
 
 			System.out.println("Reasoning default algorithm: " + reasoner.getAlgorithm());
 			try {
@@ -89,7 +74,7 @@ public class ChaseGenerator implements ABoxSaturator {
 			//	System.out.println("Abox: "+fact2Axiom(fact));
 				OWLAxiom axiom = fact2Axiom(fact);
 				if(!ontology.containsAxiom(axiom)){
-					System.out.println("Newly derived: "+axiom);
+					//System.out.println("Newly derived: "+axiom);
 					ontology.add(axiom);
 				}
 			});

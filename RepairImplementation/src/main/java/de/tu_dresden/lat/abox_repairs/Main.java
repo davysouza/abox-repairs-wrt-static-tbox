@@ -40,7 +40,7 @@ public class Main {
 		
 		PolicyRepair policy = new PolicyRepair(ontology, manager, policyFile);
 		
-		if(policy.repairRequest.isEmpty()) {
+		if(policy.getRepairRequest().isEmpty()) {
 			System.out.println("The ontology is compliant!");
 		}
 		else {
