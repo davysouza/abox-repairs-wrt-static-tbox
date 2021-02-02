@@ -31,6 +31,8 @@ public class SaturateOntology {
 		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 		OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File(filename));
 
+        int axiomsBefore = ontology.getAxiomCount();
+        
         ReasonerFacade reasoner = new ReasonerFacade(ontology);
 
 		CycleChecker cycleChecker = new CycleChecker(reasoner);
@@ -51,7 +53,6 @@ public class SaturateOntology {
                 System.exit(1);
         }
 
-		int axiomsBefore = ontology.getAxiomCount();
 
         generator.saturate(ontology);
 
