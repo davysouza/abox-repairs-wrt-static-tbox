@@ -121,6 +121,33 @@ public class ReasonerFacade {
         return result; 
     }
 
+    public Set<OWLClassExpression> directSubsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        verifyKnows(exp);
+
+        return reasoner.subClasses(expression2Name.get(exp), true)
+            .filter(c -> !c.isOWLThing())
+            .map(name -> expression2Name.inverse().get(name)).collect(Collectors.toSet());
+    }
+
+    public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        verifyKnows(exp);
+
+        return reasoner.subClasses(expression2Name.get(exp), false)
+            .filter(c -> !c.isOWLThing())
+            .map(name -> expression2Name.inverse().get(name))
+            .collect(Collectors.toSet());
+    }
+
+
+    public Set<OWLClassExpression> equivalentOrSubsumed(OWLClassExpression exp) throws IllegalAccessError {
+        verifyKnows(exp);
+
+        Set<OWLClassExpression> result = subsumees(exp);
+        result.addAll(equivalentClasses(exp));
+        return result; 
+    }
+
+
     private void verifyKnows(OWLClassExpression exp) throws IllegalArgumentException {
         if(!expression2Name.containsKey(exp))
             throw new IllegalArgumentException("ClassExpression unknown: "+exp);
@@ -137,4 +164,8 @@ public class ReasonerFacade {
         else
             return freshName(expressions);
     }
+
+	public Collection<?> equivalentOrSubsumedBy(OWLClassExpression exp) {
+		return null;
+	}
 }
