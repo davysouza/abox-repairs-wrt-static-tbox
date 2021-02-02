@@ -27,10 +27,10 @@ public class ChaseGenerator implements ABoxSaturator {
 
 	public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
 		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-		//OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File("ore_ont_5760.owl"));
-		OWLOntology ontology = manager.loadOntologyFromOntologyDocument(
+		OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File("ore_ont_3259.owl"));
+		/*OWLOntology ontology = manager.loadOntologyFromOntologyDocument(
 			new File("/home/patrick/Documents/Ontologies/pool_sample/files/ore_ont_12150.owl"));
-
+		*/
 		int axiomsBefore = ontology.getAxiomCount();
 
 		ChaseGenerator generator = new ChaseGenerator();
@@ -50,7 +50,8 @@ public class ChaseGenerator implements ABoxSaturator {
 		final OwlToRulesConverter owlToRulesConverter = new OwlToRulesConverter();
 		owlToRulesConverter.addOntology(ontology);
 
-		/*System.out.println("GCIs as rules:");
+
+		System.out.println("TBox axioms as rules:");
 		final Set<Rule> rules = owlToRulesConverter.getRules();
 		for (final Rule rule : rules) {
 			System.out.println(" - rule: " + rule);
@@ -62,7 +63,7 @@ public class ChaseGenerator implements ABoxSaturator {
 			System.out.println(" - fact: " + fact);
 		}
 		System.out.println();
-		*/
+		
 		final KnowledgeBase kb = new KnowledgeBase();
 		kb.addStatements(new ArrayList<>(owlToRulesConverter.getRules()));
 		kb.addStatements(owlToRulesConverter.getFacts());
@@ -81,7 +82,11 @@ public class ChaseGenerator implements ABoxSaturator {
 			reasoner.getInferences().forEach(fact -> {
 			//	System.out.println("Fact: "+fact);
 			//	System.out.println("Abox: "+fact2Axiom(fact));
-				ontology.add(fact2Axiom(fact));
+				OWLAxiom axiom = fact2Axiom(fact);
+				if(!ontology.containsAxiom(axiom)){
+					System.out.println("Newly derived: "+axiom);
+					ontology.add(axiom);
+				}
 			});
 		}
 	}
