@@ -45,7 +45,7 @@ public class Main {
 		}
 		else {
 			System.out.println("The ontology is not compliant!");
-			seedFunction = policy.seedFunctionConstruction();
+			seedFunction = policy.constructSeedFunction();
 			
 			Set<OWLNamedIndividual> setIndividuals = seedFunction.keySet();
 			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
