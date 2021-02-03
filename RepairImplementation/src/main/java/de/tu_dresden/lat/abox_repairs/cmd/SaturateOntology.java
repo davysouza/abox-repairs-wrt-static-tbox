@@ -7,12 +7,14 @@ import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
+import de.tu_dresden.lat.abox_repairs.ontology_tools.CycleChecker;
+import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.saturation.ABoxSaturator;
 import de.tu_dresden.lat.abox_repairs.saturation.CanonicalModelGenerator;
 import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
-import de.tu_dresden.lat.abox_repairs.saturation.CycleChecker;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 
 /**
@@ -28,19 +30,29 @@ public class SaturateOntology {
         System.out.println("(Methods available: CHASE and CANONICAL)");
 
 
+        System.out.println("Loading ontology...");
 		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-		OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File(filename));
+        OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File(filename));
+        
+        System.out.println("TBox: "+ontology.getTBoxAxioms(Imports.INCLUDED).size()
+            +" ABox: "+ontology.getABoxAxioms(Imports.INCLUDED).size());
+
+        System.out.println("Restricting to pure EL...");
+        ELRestrictor.restrictToEL(ontology);
 
         int axiomsBefore = ontology.getAxiomCount();
         
+        System.out.println("Classifying...");
         ReasonerFacade reasoner = new ReasonerFacade(ontology);
 
+        System.out.println("Checking for cycles...");
 		CycleChecker cycleChecker = new CycleChecker(reasoner);
 		if(method.equals("CHASE") && cycleChecker.cyclic()){
 			System.out.println("Found cycle - skipping.");
 			System.exit(0);
 		}
 
+        System.out.println("Saturating...");
         ABoxSaturator generator = null; 
         switch(method) {
             case "CHASE": 
