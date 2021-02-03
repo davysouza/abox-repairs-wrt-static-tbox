@@ -24,46 +24,47 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
  *
  */
 
-public class OntologyAdaptation {
+public class CopiedIndividualsHandler {
 	
-	private final OWLOntology ontology;
-	private final OWLOntologyManager manager;
-	private final Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
-	private final Map<OWLNamedIndividual, Integer> individualCounter;
-	private final IRI iri;
-	private final OWLDataFactory factory;
+	private OWLOntology ontology;
+	private OWLDataFactory factory;
 	
-	public OntologyAdaptation(OWLOntologyManager inputManager, 
-			OWLOntology inputOntology, Map<OWLNamedIndividual, Set<OWLClassExpression>> inputSeedFunction) {
-		
+//	public CopiedIndividualsHandler(OWLOntologyManager inputManager, 
+//			OWLOntology inputOntology, Map<OWLNamedIndividual, Set<OWLClassExpression>> inputSeedFunction) {
+//		
+//		this.ontology = inputOntology;
+//		this.seedFunction=inputSeedFunction;
+//		this.individualCounter = new HashMap<>();
+//		this.manager = inputManager;
+//		
+//		Optional<IRI> option = ontology.getOntologyID().getOntologyIRI();
+//		this.iri = option.get();
+//		this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+//		Set<OWLNamedIndividual> setOfIndividuals = ontology.getIndividualsInSignature();
+//		for(OWLNamedIndividual individual: setOfIndividuals) {
+//			individualCounter.put(individual, 1);
+//			OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(iri + "#" + individual.getIRI().getFragment() + 
+//					individualCounter.get(individual));
+//			copyObject(individual,freshIndividual);
+//		}
+//		
+//		Set<OWLNamedIndividual> setOfIndividuals2 = ontology.getIndividualsInSignature();
+//		for(OWLNamedIndividual individual: setOfIndividuals2) {
+//			System.out.println("Individual " + individual);
+//			Set<OWLClassAssertionAxiom> ocaa = ontology.getClassAssertionAxioms(individual);
+//			System.out.println(ocaa);
+//			Set<OWLObjectPropertyAssertionAxiom> oopaa = ontology.getObjectPropertyAssertionAxioms(individual);
+//			System.out.println(oopaa);
+//		}
+//		
+//	}
+	
+	public CopiedIndividualsHandler(OWLOntology inputOntology, OWLDataFactory inputFactory) {
 		this.ontology = inputOntology;
-		this.seedFunction=inputSeedFunction;
-		this.individualCounter = new HashMap<>();
-		this.manager = inputManager;
-		
-		Optional<IRI> option = ontology.getOntologyID().getOntologyIRI();
-		this.iri = option.get();
-		this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-		Set<OWLNamedIndividual> setOfIndividuals = ontology.getIndividualsInSignature();
-		for(OWLNamedIndividual individual: setOfIndividuals) {
-			individualCounter.put(individual, 1);
-			OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(iri + "#" + individual.getIRI().getFragment() + 
-					individualCounter.get(individual));
-			copyObject(individual,freshIndividual);
-		}
-		
-		Set<OWLNamedIndividual> setOfIndividuals2 = ontology.getIndividualsInSignature();
-		for(OWLNamedIndividual individual: setOfIndividuals2) {
-			System.out.println("Individual " + individual);
-			Set<OWLClassAssertionAxiom> ocaa = ontology.getClassAssertionAxioms(individual);
-			System.out.println(ocaa);
-			Set<OWLObjectPropertyAssertionAxiom> oopaa = ontology.getObjectPropertyAssertionAxioms(individual);
-			System.out.println(oopaa);
-		}
-		
+		this.factory = inputFactory;
 	}
 	
-	public void copyObject(OWLNamedIndividual ind1, OWLNamedIndividual ind2) {
+	public void copyIndividual(OWLNamedIndividual ind1, OWLNamedIndividual ind2) {
 		
 		// Copy Class Assertions containing ind1
 		Set<OWLClassAssertionAxiom> classAssertion = ontology.getClassAssertionAxioms(ind1);
@@ -108,11 +109,6 @@ public class OntologyAdaptation {
 			}
 			
 		}
-		
-		
-		
-		
-		
 	}
 	
 	public OWLOntology getOntology() {
