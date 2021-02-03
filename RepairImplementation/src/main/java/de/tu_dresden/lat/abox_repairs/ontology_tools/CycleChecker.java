@@ -1,4 +1,4 @@
-package de.tu_dresden.lat.abox_repairs.saturation;
+package de.tu_dresden.lat.abox_repairs.ontology_tools;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
