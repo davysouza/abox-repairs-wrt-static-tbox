@@ -1,4 +1,3 @@
-package de.tu_dresden.lat.abox_repairs;
 
 import java.io.*;
 import java.util.Iterator;
@@ -19,15 +18,10 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 public class Main {
 	
-	/**
-	 * Check: usually, static fields (variables) should be avoided where possible.
-	 * In this case: check whether they are really needed to be outside the main method,
-	 * and otherwise, add them. 
-	 */
-	private static OWLOntologyManager manager;
-	private static OWLOntology ontology;
-	private static Set<OWLClassExpression> policySet;
-	private static Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	static OWLOntologyManager manager;
+	static OWLOntology ontology;
+	static Set<OWLClassExpression> policySet;
+	static Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException {
 		
@@ -40,13 +34,12 @@ public class Main {
 		
 		PolicyRepair policy = new PolicyRepair(ontology, manager, policyFile);
 		
-		if(policy.getRepairRequest().isEmpty()) {
+		if(policy.repairRequest.isEmpty()) {
 			System.out.println("The ontology is compliant!");
 		}
 		else {
-			 // Generate a seed function
 			System.out.println("The ontology is not compliant!");
-			seedFunction = policy.constructSeedFunction();
+			seedFunction = policy.seedFunctionConstruction();
 			
 			Set<OWLNamedIndividual> setIndividuals = seedFunction.keySet();
 			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
@@ -57,14 +50,14 @@ public class Main {
 				System.out.println(setAtoms);
 				System.out.println();
 			}
-			OntologyAdaptation intermediateOntology = new OntologyAdaptation(manager,ontology,seedFunction);
+			
 			
 		}
 		
+		 // Generate a seed function
 		
 		
-		
-		
+		OWLDataFactory df = OWLManager.getOWLDataFactory();
 		
 		
 	}

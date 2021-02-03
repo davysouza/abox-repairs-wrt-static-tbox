@@ -1,4 +1,3 @@
-package de.tu_dresden.lat.abox_repairs;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -41,39 +40,38 @@ import org.apache.log4j.BasicConfigurator;
 
 
 public class PolicyRepair {
-	// CHECK: check whether for which variables you may be able to minimise the skope where they are visible
-	// If a variable is only used within one method, it should only be initialised there.
-	// If a variable should not change its value once initialised, use the keyword "final"
-	private Set<OWLOntology> importsClosure;
-	private OWLEntityChecker entityChecker;
-	private ManchesterOWLSyntaxParser parser;
-	private final OWLOntology ontology;
-	private final OWLOntologyManager manager;
+	Scanner reader;
+	Set<OWLOntology> importsClosure;
+	OWLEntityChecker entityChecker;
+	ManchesterOWLSyntaxParser parser;
+	OWLOntology ontology;
+	OWLOntologyManager manager;
 
 	
 	
 //	Set<OWLNamedIndividual> setOfIndividuals;
-	private Set<OWLAxiom> setOfPolicy;
-	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
-	private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
+	Set<OWLAxiom> setOfPolicy;
+	Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
 	
-//	private OWLReasonerFactory factory;
-//	private ElkReasoner elk; // CHECK: can you use OWLReasoner here?
-	private OWLDataFactory df;
-	private ReasonerProgressMonitor progressMonitor; // CHECK: should this really be visible anywhere in the class?
-	private FreshEntityPolicy freshEntityPolicy;
-	private long timeOut;
-	private IndividualNodeSetPolicy individualNodeSetPolicy;
-	private OWLReasonerConfiguration conf;
-	private ElkReasonerFactory reasonerFactory; // CHECK: can you use OWLReasonerFactory here?
-	private OWLReasoner reasoner; // CHECK: sure we need two reasoners?
+	OWLReasonerFactory orf;
+	ElkReasoner elk;
+	OWLDataFactory df;
+	ReasonerProgressMonitor progressMonitor;
+	FreshEntityPolicy freshEntityPolicy;
+	long timeOut;
+	IndividualNodeSetPolicy individualNodeSetPolicy;
+	OWLReasonerConfiguration conf;
+	ElkReasonerFactory reasonerFactory;
+	OWLReasoner reasoner;
 	
 	
-	public PolicyRepair(OWLOntology ontology, OWLOntologyManager manager, File repairRequestFile) throws FileNotFoundException {
-		this.ontology = ontology;
-		this.manager = manager;
-		final Scanner reader = new Scanner(repairRequestFile);
-				
+	public PolicyRepair(OWLOntology ontology1, OWLOntologyManager manager1, File repairRequestFile) throws FileNotFoundException {
+		ontology = ontology1;
+		manager = manager1;
+		reader = new Scanner(repairRequestFile);
+		
+		
 		df = OWLManager.getOWLDataFactory();
 		
 		// Set a configuration for the reasoner
@@ -124,26 +122,22 @@ public class PolicyRepair {
 //		System.out.println(repairRequest);
 	}
 	
-	public Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
-		return Collections.unmodifiableMap(repairRequest);
-	}
-
-	public Map<OWLNamedIndividual, Set<OWLClassExpression>> constructSeedFunction() {
-		Random rand = new Random();
-
+	public Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunctionConstruction() {
 		seedFunction = new HashMap<OWLNamedIndividual, Set<OWLClassExpression>>();
 		Set<OWLNamedIndividual> setOfIndividuals = repairRequest.keySet();
 		Iterator<OWLNamedIndividual> iteratorOfIndividuals = setOfIndividuals.iterator();
 		while(iteratorOfIndividuals.hasNext()) {
 			OWLNamedIndividual individual = iteratorOfIndividuals.next();
 			Set<OWLClassExpression> setOfConcepts = repairRequest.get(individual);
-			for(OWLClassExpression concept: setOfConcepts) {
+			Iterator<OWLClassExpression> iteratorOfConcepts = setOfConcepts.iterator();
+			while(iteratorOfConcepts.hasNext()) {
+				OWLClassExpression concept = iteratorOfConcepts.next();
 				if(concept instanceof OWLObjectIntersectionOf) {
 					if(seedFunction.containsKey(individual)) {
 						Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
 						if(Collections.disjoint(seedFunction.get(individual), topLevelConjuncts)) {
 							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(topLevelConjuncts);
-							
+							Random rand = new Random();
 							int randomIndex = rand.nextInt(topLevelConjunctList.size());
 							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
 							seedFunction.get(individual).add(conceptTemp);
@@ -152,7 +146,7 @@ public class PolicyRepair {
 					}
 					else {
 						List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
-						
+						Random rand = new Random();
 						int randomIndex = rand.nextInt(topLevelConjunctList.size());
 						OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
 						Set<OWLClassExpression> setOfConceptsTemp = new HashSet<OWLClassExpression>();
@@ -175,6 +169,7 @@ public class PolicyRepair {
 						
 					}
 				}
+				
 			}
 		}
 		return seedFunction;
