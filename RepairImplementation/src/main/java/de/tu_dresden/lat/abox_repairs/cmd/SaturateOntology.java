@@ -35,7 +35,7 @@ public class SaturateOntology {
         OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File(filename));
         
         System.out.println("TBox: "+ontology.getTBoxAxioms(Imports.INCLUDED).size()
-            +" ABox: "+ontology.getABoxAxioms(Imports.INCLUDED));
+            +" ABox: "+ontology.getABoxAxioms(Imports.INCLUDED).size());
 
         System.out.println("Restricting to pure EL...");
         ELRestrictor.restrictToEL(ontology);

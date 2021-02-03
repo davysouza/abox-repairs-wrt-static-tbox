@@ -10,6 +10,7 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
 import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
@@ -43,11 +44,12 @@ public class ELRestrictor {
         Set<OWLAxiom> toAdd = new HashSet<>();
 
         ontology.axioms(Imports.INCLUDED).forEach(axiom -> {
-            if(!axiomTypeAllowed(axiom))
+            if(!axiomTypeAllowed(axiom)) {
                 toRemove.add(axiom);
-            else if(!axiom.nestedClassExpressions().anyMatch(this::classExpressionAllowed))
+            }
+            else if(!axiom.nestedClassExpressions().allMatch(this::classExpressionAllowed)){
                 toRemove.add(axiom);
-            else {
+            } else {
                 Optional<OWLAxiom> optConverted = convertIfNeeded(axiom);
                 if(optConverted.isPresent()) {
                     toRemove.add(axiom);
@@ -58,8 +60,9 @@ public class ELRestrictor {
 
         toRemove.stream().forEach(a -> System.out.println("Removing (not in EL): "+a));
         toAdd.stream().forEach(a -> System.out.println("Adding (converted): "+a));
-
-        //System.out.println("Removed "+(toRemove.size()-toAdd.size())+" axioms and converted "+toAdd.size()+" axioms.");
+        
+        
+        System.out.println("Removed "+(toRemove.size()-toAdd.size())+" axioms and converted "+toAdd.size()+" axioms.");
 
         toRemove.stream().forEach(ontology::removeAxiom);
         toAdd.stream().forEach(ontology::addAxiom);
@@ -70,7 +73,8 @@ public class ELRestrictor {
                (axiom instanceof OWLObjectPropertyAssertionAxiom) ||
                (axiom instanceof OWLSubClassOfAxiom) ||
                (axiom instanceof OWLEquivalentClassesAxiom) ||
-               (axiom instanceof OWLObjectPropertyRangeAxiom);
+               (axiom instanceof OWLObjectPropertyRangeAxiom) ||
+               (axiom instanceof OWLDeclarationAxiom);
     }
 
     public boolean classExpressionAllowed(OWLClassExpression exp) {
