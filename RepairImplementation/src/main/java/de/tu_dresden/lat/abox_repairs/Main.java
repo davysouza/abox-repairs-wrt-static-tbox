@@ -1,20 +1,38 @@
 package de.tu_dresden.lat.abox_repairs;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Scanner;
 import java.util.Set;
 
+import org.apache.log4j.BasicConfigurator;
+import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-
+import org.semanticweb.owlapi.expression.OWLEntityChecker;
+import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-
+import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.reasoner.FreshEntityPolicy;
+import org.semanticweb.owlapi.reasoner.IndividualNodeSetPolicy;
+import org.semanticweb.owlapi.reasoner.NullReasonerProgressMonitor;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
+import org.semanticweb.owlapi.reasoner.ReasonerProgressMonitor;
+import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
+import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
+import org.semanticweb.owlapi.util.SimpleShortFormProvider;
+import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
 
 public class Main {
@@ -24,48 +42,154 @@ public class Main {
 	 * In this case: check whether they are really needed to be outside the main method,
 	 * and otherwise, add them. 
 	 */
-	private static OWLOntologyManager manager;
-	private static OWLOntology ontology;
-	private static Set<OWLClassExpression> policySet;
-	private static Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	private OWLOntologyManager manager;
+	private OWLOntology ontology;
+	private IRI iri;
+	private OWLDataFactory factory;
+	
+	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
+	private Map<OWLNamedIndividual, Integer> individualCounter;
+	
+	private Set<OWLOntology> importsClosure;
+	private OWLEntityChecker entityChecker;
+	private ManchesterOWLSyntaxParser parser;
+	
+	private ElkReasonerFactory reasonerFactory; // CHECK: can you use OWLReasonerFactory here?
+	private OWLReasoner reasoner; // CHECK: sure we need two reasoners?
+	private OWLReasonerConfiguration conf;
+	
+	private Scanner reader;
+	
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException {
 		
-		manager = OWLManager.createOWLOntologyManager(); 
-		ontology = manager.loadOntologyFromOntologyDocument(new File(args[0]));
+		Main m = new Main();
 		
-		// Reading a policy file
-		File policyFile = new File(args[1]);
+		// Initialize ontology
+		m.ontologyInitialisation(args);
 		
+		// Initialize reasoner
+		m.reasonerInitialisation();
 		
-		PolicyRepair policy = new PolicyRepair(ontology, manager, policyFile);
+		// Initialize parser
+		m.parserInitialisation();
 		
-		if(policy.getRepairRequest().isEmpty()) {
+		// Initialize repair request
+		m.repairRequestScanning(args);
+		
+	
+		if(m.getRepairRequest().isEmpty()) {
 			System.out.println("The ontology is compliant!");
 		}
 		else {
-			 // Generate a seed function
 			System.out.println("The ontology is not compliant!");
-			seedFunction = policy.constructSeedFunction();
+			// Construct seedFunction
+			m.seedFunctionConstruction();
 			
-			Set<OWLNamedIndividual> setIndividuals = seedFunction.keySet();
+			Set<OWLNamedIndividual> setIndividuals = m.seedFunction.keySet();
 			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
 			while(iteSetIndividuals.hasNext()) {
 				OWLNamedIndividual oni = iteSetIndividuals.next();
 				System.out.println(oni);
-				Set<OWLClassExpression> setAtoms = seedFunction.get(oni);
+				Set<OWLClassExpression> setAtoms = m.seedFunction.get(oni);
 				System.out.println(setAtoms);
 				System.out.println();
 			}
-			OntologyAdaptation intermediateOntology = new OntologyAdaptation(manager,ontology,seedFunction);
 			
+			Optional<IRI> opt = m.ontology.getOntologyID().getOntologyIRI();
+			m.iri = opt.get();
+			m.factory = m.ontology.getOWLOntologyManager().getOWLDataFactory();
+			
+			Set<OWLNamedIndividual> setOfIndividuals = m.ontology.getIndividualsInSignature();			
+			m.individualCounter = new HashMap<>();
+			CopiedIndividualsHandler copyHandler = new CopiedIndividualsHandler(m.ontology,m.factory);
+			for(OWLNamedIndividual individual: setOfIndividuals) {
+				m.individualCounter.put(individual, 1);
+				OWLNamedIndividual freshIndividual = m.factory.getOWLNamedIndividual(
+						m.iri + "#" + individual.getIRI().getFragment() + m.individualCounter.get(individual));
+				
+				copyHandler.copyIndividual(individual,freshIndividual);
+			}
+			
+//			Set<OWLNamedIndividual> setOfIndividuals2 = m.ontology.getIndividualsInSignature();
+//			for(OWLNamedIndividual individual: setOfIndividuals2) {
+//				System.out.println("Individual " + individual);
+//				Set<OWLClassAssertionAxiom> ocaa = m.ontology.getClassAssertionAxioms(individual);
+//				System.out.println(ocaa);
+//				Set<OWLObjectPropertyAssertionAxiom> oopaa = m.ontology.getObjectPropertyAssertionAxioms(individual);
+//				System.out.println(oopaa);
+//			}
+		}	
+	}
+	
+	private void ontologyInitialisation(String input[]) throws OWLOntologyCreationException, FileNotFoundException {
+		manager = OWLManager.createOWLOntologyManager();
+		ontology = manager.loadOntologyFromOntologyDocument(new File(input[0]));
+	}
+	
+	private void reasonerInitialisation() {
+		// Set a configuration for the reasoner
+		BasicConfigurator.configure();
+		ReasonerProgressMonitor progressMonitor = new NullReasonerProgressMonitor();
+		FreshEntityPolicy freshEntityPolicy = FreshEntityPolicy.ALLOW;
+		long timeOut = Integer.MAX_VALUE;
+		IndividualNodeSetPolicy individualNodeSetPolicy = IndividualNodeSetPolicy.BY_NAME;
+		conf = new SimpleConfiguration(progressMonitor, freshEntityPolicy, timeOut, individualNodeSetPolicy);
+		
+		// Instantiate an Elk Reasoner Factory
+		reasonerFactory =  new ElkReasonerFactory();
+		reasoner = reasonerFactory.createNonBufferingReasoner(ontology, conf);
+	}
+	
+	private void parserInitialisation() {
+		importsClosure = ontology.getImportsClosure();
+		entityChecker = new ShortFormEntityChecker(
+		        new BidirectionalShortFormProviderAdapter(manager, importsClosure, 
+		            new SimpleShortFormProvider()));
+		
+		parser = OWLManager.createManchesterParser();
+		parser.setDefaultOntology(ontology);
+	    parser.setOWLEntityChecker(entityChecker);
+	    
+	    
+	}
+
+	private void repairRequestScanning(String input[]) throws FileNotFoundException {
+		
+		reader = new Scanner(new File(input[1]));
+		repairRequest = new HashMap<OWLNamedIndividual, Set<OWLClassExpression>>();
+		while(reader.hasNextLine()) {
+			String policy = reader.nextLine();
+		    parser.setStringToParse(policy.trim());
+			
+		    OWLClassAssertionAxiom axiom = (OWLClassAssertionAxiom) parser.parseAxiom();
+		    
+		    if(reasoner.isEntailed(axiom)) {
+		    	OWLNamedIndividual assertedIndividual = (OWLNamedIndividual) axiom.getIndividual();
+			    
+			    if(repairRequest.containsKey(assertedIndividual)) {
+			    	Set<OWLClassExpression> setOfClasses = repairRequest.get(assertedIndividual);
+			    	setOfClasses.add(axiom.getClassExpression());
+			    	repairRequest.put(assertedIndividual, setOfClasses);
+			    }
+			    else {
+			    	Set<OWLClassExpression> setOfClasses = new HashSet<OWLClassExpression>();
+			    	setOfClasses.add(axiom.getClassExpression());
+			    	repairRequest.put(assertedIndividual, setOfClasses);
+			    }
+		    }
 		}
-		
-		
-		
-		
-		
-		
-		
+	}
+	
+	private void seedFunctionConstruction() {
+		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler();
+		seedFunctionHandler.constructSeedFunction(getRepairRequest());
+		seedFunction = seedFunctionHandler.getSeedFunction();
+	}
+	
+	
+	private Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
+		return repairRequest;
 	}
 }
