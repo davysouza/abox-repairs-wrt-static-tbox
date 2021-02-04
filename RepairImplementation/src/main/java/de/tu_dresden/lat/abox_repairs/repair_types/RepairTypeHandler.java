@@ -32,10 +32,9 @@ public class RepairTypeHandler {
      */
     public RepairType minimise(RepairType type){
         Set<OWLClassExpression> newClasses = new HashSet<>(type.getClassExpressions());
-        Set<OWLClassExpression> processed = new HashSet<>();
-
+        
         for(OWLClassExpression exp:type.getClassExpressions()){
-            if(!processed.contains(exp) && newClasses.contains(exp)){
+            if(newClasses.contains(exp)){
                 newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
                 newClasses.add(exp);
             }

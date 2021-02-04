@@ -41,7 +41,7 @@ public class ChaseGenerator implements ABoxSaturator {
 		owlToRulesConverter.addOntology(ontology);
 
 		
-		/*System.out.println("TBox axioms as rules:");
+		System.out.println("TBox axioms as rules:");
 		final Set<Rule> rules = owlToRulesConverter.getRules();
 		for (final Rule rule : rules) {
 			System.out.println(" - rule: " + rule);
@@ -53,7 +53,7 @@ public class ChaseGenerator implements ABoxSaturator {
 			System.out.println(" - fact: " + fact);
 		}
 		System.out.println();
-		*/
+		
 		final KnowledgeBase kb = new KnowledgeBase();
 		kb.addStatements(new ArrayList<>(owlToRulesConverter.getRules()));
 		kb.addStatements(owlToRulesConverter.getFacts());
@@ -73,7 +73,7 @@ public class ChaseGenerator implements ABoxSaturator {
 			//	System.out.println("Fact: "+fact);
 			//	System.out.println("Abox: "+fact2Axiom(fact));
 				OWLAxiom axiom = fact2Axiom(fact);
-				if(!ontology.containsAxiom(axiom)){
+				if(!false){//ontology.containsAxiom(axiom)){
 					//System.out.println("Newly derived: "+axiom);
 					ontology.add(axiom);
 				}
