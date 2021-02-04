@@ -28,7 +28,7 @@ public class CycleChecker {
     private final ReasonerFacade reasoner;
 
     public CycleChecker(OWLOntology ontology) {
-        this(new ReasonerFacade(ontology));
+        this(ReasonerFacade.newReasonerFacadeWithTBox(ontology));
     }
 
     public CycleChecker(ReasonerFacade reasoner) {

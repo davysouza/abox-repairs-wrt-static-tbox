@@ -41,6 +41,8 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 
 		class2ind = new HashMap<>();
 
+		System.out.println("Anonymus individuals: "+ontology.getAnonymousIndividuals());
+
 		ontology.individualsInSignature()
 			.forEach(i -> process(i,ontology));
 	}
@@ -51,7 +53,8 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 			if(exp instanceof OWLClass){
 				OWLAxiom assertion = factory.getOWLClassAssertionAxiom(exp, ind);
 				//System.out.println("Newly added: "+assertion);
-				ontology.addAxiom(assertion);
+				if(!ontology.containsAxiom(assertion))
+					ontology.addAxiom(assertion);
 			}else if(exp instanceof OWLObjectSomeValuesFrom){
 				OWLObjectSomeValuesFrom some = (OWLObjectSomeValuesFrom) exp;
 
@@ -61,7 +64,8 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 						ind, 
 						getIndividual(some.getFiller(), ontology));
 						//System.out.println("Newly added: "+assertion);
-					ontology.addAxiom(assertion);
+					if(!ontology.containsAxiom(assertion))
+						ontology.addAxiom(assertion);
 				} 
 			}
 		}

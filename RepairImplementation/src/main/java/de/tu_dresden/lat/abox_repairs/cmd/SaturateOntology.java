@@ -40,10 +40,13 @@ public class SaturateOntology {
         System.out.println("Restricting to pure EL...");
         ELRestrictor.restrictToEL(ontology);
 
+        System.out.println("TBox: "+ontology.getTBoxAxioms(Imports.INCLUDED).size()
+            +" ABox: "+ontology.getABoxAxioms(Imports.INCLUDED).size());
+            
         int axiomsBefore = ontology.getAxiomCount();
         
         System.out.println("Classifying...");
-        ReasonerFacade reasoner = new ReasonerFacade(ontology);
+        ReasonerFacade reasoner = ReasonerFacade.newReasonerFacadeWithTBox(ontology);
 
         System.out.println("Checking for cycles...");
 		CycleChecker cycleChecker = new CycleChecker(reasoner);

@@ -32,22 +32,21 @@ public class SeedFunctionHandler {
 
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunctionCollector;
-	private OWLReasoner reasoner;
-	private ReasonerFacade facade1;
-	private ReasonerFacade facade2;
-	private OWLDataFactory factory;
+	//private OWLReasoner reasoner;
+	private final ReasonerFacade reasonerWithTBox;
+	private final ReasonerFacade reasonerWithoutTBox;
+	private final OWLDataFactory factory;
 	
-	public SeedFunctionHandler(OWLReasoner reasoner, ReasonerFacade facade1, ReasonerFacade facade2) {
-		this.reasoner = reasoner;
-		this.facade1 = facade1;
-		this.facade2 = facade2;
+	public SeedFunctionHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
+		this.reasonerWithTBox = reasonerWithTBox;
+		this.reasonerWithoutTBox = reasonerWithoutTBox;
 		this.factory = OWLManager.getOWLDataFactory();
 	}
 	
 	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
 		seedFunction = new HashMap<>();
 		Set<OWLNamedIndividual> setOfIndividuals = seedFunctionCollector.keySet();
-		RepairTypeHandler typeHandler = new RepairTypeHandler(facade1, facade2);
+		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
 			
@@ -117,8 +116,8 @@ public class SeedFunctionHandler {
 		
 		for(OWLClassExpression atom1 : set1) {
 			for(OWLClassExpression atom2 : set2) {
-				OWLAxiom axiom = factory.getOWLSubClassOfAxiom(atom1, atom2);
-				if(reasoner.isEntailed(axiom)) {
+				//OWLAxiom axiom = factory.getOWLSubClassOfAxiom(atom1, atom2);
+				if(reasonerWithTBox.subsumedBy(atom1, atom2)) {
 					return atom2;
 				}
 			}
