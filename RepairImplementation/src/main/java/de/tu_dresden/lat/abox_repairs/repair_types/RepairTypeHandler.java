@@ -19,7 +19,7 @@ public class RepairTypeHandler {
 
     public RepairTypeHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
         this.reasonerWithTBox=reasonerWithTBox;
-        this.reasonerWithoutTBox=reasonerWithTBox;
+        this.reasonerWithoutTBox=reasonerWithoutTBox;
     }
 
     public RepairType newMinimisedRepairType(Set<OWLClassExpression> classExpressions) {

@@ -46,7 +46,7 @@ public class SaturateOntology {
         int axiomsBefore = ontology.getAxiomCount();
         
         System.out.println("Classifying...");
-        ReasonerFacade reasoner = new ReasonerFacade(ontology);
+        ReasonerFacade reasoner = ReasonerFacade.newReasonerFacadeWithTBox(ontology);
 
         System.out.println("Checking for cycles...");
 		CycleChecker cycleChecker = new CycleChecker(reasoner);

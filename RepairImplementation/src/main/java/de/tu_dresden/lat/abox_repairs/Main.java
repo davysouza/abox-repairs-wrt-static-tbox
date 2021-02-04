@@ -1,9 +1,12 @@
 package de.tu_dresden.lat.abox_repairs;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
@@ -59,11 +62,11 @@ public class Main {
 	private OWLEntityChecker entityChecker;
 	private ManchesterOWLSyntaxParser parser;
 	
-	private ElkReasonerFactory reasonerFactory; // CHECK: can you use OWLReasonerFactory here?
+	//private ElkReasonerFactory reasonerFactory; // CHECK: can you use OWLReasonerFactory here?
 	private OWLReasoner reasoner; // CHECK: sure we need two reasoners?
-	private OWLReasonerConfiguration conf;
+	//private OWLReasonerConfiguration conf;
 	
-	private ReasonerFacade reasonerFacade;
+	private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 	
 	private Scanner reader;
 	
@@ -75,14 +78,19 @@ public class Main {
 		// Initialize ontology
 		m.ontologyInitialisation(args);
 		
-		// Initialize reasoner
+		// Initialize reasoner 
 		m.reasonerInitialisation();
-		
 		// Initialize parser
 		m.parserInitialisation();
 		
 		// Initialize repair request
 		m.repairRequestScanning(args);
+		
+		// TODO we need the reasoner when parsing the repair request, and we need the repair request
+		// to initialise the reasoner facades. Might be worth decoupling this, so that we do not 
+		// need to use the reasoner object at all. (For example, filter out useless repair requests in the end,
+		// or just leave them in.)
+		m.reasonerFacadeInitialisation();
 		
 	
 		if(m.getRepairRequest().isEmpty()) {
@@ -143,17 +151,35 @@ public class Main {
 	}
 	
 	private void reasonerInitialisation() {
+		
 		// Set a configuration for the reasoner
 		BasicConfigurator.configure();
 		ReasonerProgressMonitor progressMonitor = new NullReasonerProgressMonitor();
 		FreshEntityPolicy freshEntityPolicy = FreshEntityPolicy.ALLOW;
 		long timeOut = Integer.MAX_VALUE;
 		IndividualNodeSetPolicy individualNodeSetPolicy = IndividualNodeSetPolicy.BY_NAME;
-		conf = new SimpleConfiguration(progressMonitor, freshEntityPolicy, timeOut, individualNodeSetPolicy);
+		OWLReasonerConfiguration conf = new SimpleConfiguration(progressMonitor, freshEntityPolicy, timeOut, individualNodeSetPolicy);
 		
 		// Instantiate an Elk Reasoner Factory
-		reasonerFactory =  new ElkReasonerFactory();
+		ElkReasonerFactory reasonerFactory =  new ElkReasonerFactory();
 		reasoner = reasonerFactory.createNonBufferingReasoner(ontology, conf);
+		
+
+
+	}
+
+	private void reasonerFacadeInitialisation() throws OWLOntologyCreationException {
+		List<OWLClassExpression> additionalExpressions = new LinkedList<>();
+
+		for(Collection<OWLClassExpression> exps:repairRequest.values()){
+			for(OWLClassExpression exp: exps){
+				additionalExpressions.add(exp);
+				additionalExpressions.addAll(exp.getNestedClassExpressions());
+			}
+		}
+
+		reasonerWithTBox = ReasonerFacade.newReasonerFacadeWithTBox(ontology, additionalExpressions);
+		reasonerWithoutTBox = ReasonerFacade.newReasonerFacadeWithoutTBox(ontology, additionalExpressions);
 	}
 	
 	private void parserInitialisation() {
@@ -172,7 +198,7 @@ public class Main {
 	private void repairRequestScanning(String input[]) throws FileNotFoundException {
 		
 		reader = new Scanner(new File(input[1]));
-		repairRequest = new HashMap<OWLNamedIndividual, Set<OWLClassExpression>>();
+		repairRequest = new HashMap<>();
 		while(reader.hasNextLine()) {
 			String policy = reader.nextLine();
 		    parser.setStringToParse(policy.trim());
@@ -197,9 +223,7 @@ public class Main {
 	}
 	
 	private void seedFunctionConstruction() {
-		ReasonerFacade facade1 = new ReasonerFacade(ontology);
-		ReasonerFacade facade2 = new ReasonerFacade(ontology);
-		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasoner, facade1, facade2);
+		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasonerWithTBox, reasonerWithoutTBox);
 		seedFunctionHandler.constructSeedFunction(getRepairRequest());
 		seedFunction = seedFunctionHandler.getSeedFunction();
 	}
