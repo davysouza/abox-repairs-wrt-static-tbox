@@ -15,6 +15,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -34,6 +35,9 @@ import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
+import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
+import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+
 
 public class Main {
 	
@@ -47,9 +51,9 @@ public class Main {
 	private IRI iri;
 	private OWLDataFactory factory;
 	
-	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
-	private Map<OWLNamedIndividual, Integer> individualCounter;
+	private Map<OWLNamedIndividual, Integer> individualCounter; 
 	
 	private Set<OWLOntology> importsClosure;
 	private OWLEntityChecker entityChecker;
@@ -58,6 +62,8 @@ public class Main {
 	private ElkReasonerFactory reasonerFactory; // CHECK: can you use OWLReasonerFactory here?
 	private OWLReasoner reasoner; // CHECK: sure we need two reasoners?
 	private OWLReasonerConfiguration conf;
+	
+	private ReasonerFacade reasonerFacade;
 	
 	private Scanner reader;
 	
@@ -87,34 +93,42 @@ public class Main {
 			// Construct seedFunction
 			m.seedFunctionConstruction();
 			
+			
+			
 			Set<OWLNamedIndividual> setIndividuals = m.seedFunction.keySet();
 			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
 			while(iteSetIndividuals.hasNext()) {
 				OWLNamedIndividual oni = iteSetIndividuals.next();
 				System.out.println(oni);
-				Set<OWLClassExpression> setAtoms = m.seedFunction.get(oni);
-				System.out.println(setAtoms);
+				RepairType type = m.seedFunction.get(oni);
+				System.out.println(type.getClassExpressions());
 				System.out.println();
 			}
 			
-			Optional<IRI> opt = m.ontology.getOntologyID().getOntologyIRI();
-			m.iri = opt.get();
-			m.factory = m.ontology.getOWLOntologyManager().getOWLDataFactory();
-			
-			Set<OWLNamedIndividual> setOfIndividuals = m.ontology.getIndividualsInSignature();			
-			m.individualCounter = new HashMap<>();
-			CopiedIndividualsHandler copyHandler = new CopiedIndividualsHandler(m.ontology,m.factory);
-			for(OWLNamedIndividual individual: setOfIndividuals) {
-				m.individualCounter.put(individual, 1);
-				OWLNamedIndividual freshIndividual = m.factory.getOWLNamedIndividual(
-						m.iri + "#" + individual.getIRI().getFragment() + m.individualCounter.get(individual));
-				
-				copyHandler.copyIndividual(individual,freshIndividual);
-			}
-			
+//			Optional<IRI> opt = m.ontology.getOntologyID().getOntologyIRI();
+//			m.iri = opt.get();
+//			m.factory = m.ontology.getOWLOntologyManager().getOWLDataFactory();
+//			
+//			Set<OWLNamedIndividual> setOfIndividuals = m.ontology.getIndividualsInSignature();			
+//			m.individualCounter = new HashMap<>();
+//			CopiedIndividualsHandler copyHandler = new CopiedIndividualsHandler(m.ontology);
+//			for(OWLNamedIndividual individual: setOfIndividuals) {
+//				m.individualCounter.put(individual, 1);
+//				OWLNamedIndividual freshIndividual = m.factory.getOWLNamedIndividual(
+//						m.iri + "#" + individual.getIRI().getFragment() + m.individualCounter.get(individual));
+//				
+//				copyHandler.copyIndividual(individual,freshIndividual);
+//			}
+//			
+//			m.reasonerFacade = new ReasonerFacade(m.ontology);
+//			RepairRules rules = new RepairRules(m.reasonerFacade);
+//			rules.repair(m.ontology, m.seedFunction);
+//			m.ontology = rules.getOntology();
+//			
 //			Set<OWLNamedIndividual> setOfIndividuals2 = m.ontology.getIndividualsInSignature();
+//			System.out.println();
 //			for(OWLNamedIndividual individual: setOfIndividuals2) {
-//				System.out.println("Individual " + individual);
+//				System.out.println("Result " + individual);
 //				Set<OWLClassAssertionAxiom> ocaa = m.ontology.getClassAssertionAxioms(individual);
 //				System.out.println(ocaa);
 //				Set<OWLObjectPropertyAssertionAxiom> oopaa = m.ontology.getObjectPropertyAssertionAxioms(individual);
@@ -183,7 +197,9 @@ public class Main {
 	}
 	
 	private void seedFunctionConstruction() {
-		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler();
+		ReasonerFacade facade1 = new ReasonerFacade(ontology);
+		ReasonerFacade facade2 = new ReasonerFacade(ontology);
+		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasoner, facade1, facade2);
 		seedFunctionHandler.constructSeedFunction(getRepairRequest());
 		seedFunction = seedFunctionHandler.getSeedFunction();
 	}
@@ -192,4 +208,6 @@ public class Main {
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
 		return repairRequest;
 	}
+	
+	
 }

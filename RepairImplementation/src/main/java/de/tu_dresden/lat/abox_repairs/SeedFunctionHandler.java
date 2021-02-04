@@ -11,10 +11,17 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+
+import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
+import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
 
 
 public class SeedFunctionHandler {
@@ -23,65 +30,100 @@ public class SeedFunctionHandler {
 	// If a variable should not change its value once initialised, use the keyword "final"
 	
 
-	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	private Map<OWLNamedIndividual, RepairType> seedFunction;
+	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunctionCollector;
+	private OWLReasoner reasoner;
+	private ReasonerFacade facade1;
+	private ReasonerFacade facade2;
+	private OWLDataFactory factory;
 	
-
-	public Map<OWLNamedIndividual, Set<OWLClassExpression>> getSeedFunction(){
-		return Collections.unmodifiableMap(seedFunction);
+	public SeedFunctionHandler(OWLReasoner reasoner, ReasonerFacade facade1, ReasonerFacade facade2) {
+		this.reasoner = reasoner;
+		this.facade1 = facade1;
+		this.facade2 = facade2;
+		this.factory = OWLManager.getOWLDataFactory();
+	}
+	
+	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
+		seedFunction = new HashMap<>();
+		Set<OWLNamedIndividual> setOfIndividuals = seedFunctionCollector.keySet();
+		RepairTypeHandler typeHandler = new RepairTypeHandler(facade1, facade2);
+		
+		for(OWLNamedIndividual individual : setOfIndividuals) {
+			
+//			System.out.println(seedFunctionCollector.get(individual));
+			RepairType type = typeHandler.newMinimisedRepairType(seedFunctionCollector.get(individual));
+			seedFunction.put(individual, type);
+		}
+		return seedFunction;
 	}
 
-	public Map<OWLNamedIndividual, Set<OWLClassExpression>> constructSeedFunction(
-			Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest) {
+	public void constructSeedFunction(Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest) {
+		
 		Random rand = new Random();
 
-		seedFunction = new HashMap<OWLNamedIndividual, Set<OWLClassExpression>>();
+		seedFunctionCollector = new HashMap<>();
 		Set<OWLNamedIndividual> setOfIndividuals = repairRequest.keySet();
-		Iterator<OWLNamedIndividual> iteratorOfIndividuals = setOfIndividuals.iterator();
-		while(iteratorOfIndividuals.hasNext()) {
-			OWLNamedIndividual individual = iteratorOfIndividuals.next();
+		for(OWLNamedIndividual individual : setOfIndividuals) {
 			Set<OWLClassExpression> setOfConcepts = repairRequest.get(individual);
-			for(OWLClassExpression concept: setOfConcepts) {
+			System.out.println("Repair Request " + individual + " " + setOfConcepts);
+			for(OWLClassExpression concept : setOfConcepts) {
 				if(concept instanceof OWLObjectIntersectionOf) {
-					if(seedFunction.containsKey(individual)) {
+					if(seedFunctionCollector.containsKey(individual)) {
 						Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-						if(Collections.disjoint(seedFunction.get(individual), topLevelConjuncts)) {
+						OWLClassExpression tempConcept = atLeastOneCovered(
+								seedFunctionCollector.get(individual), topLevelConjuncts);
+						if(tempConcept != null) {
+//							System.out.println("I got you");
+							seedFunctionCollector.get(individual).add(tempConcept);
+							seedFunctionCollector.put(individual, seedFunctionCollector.get(individual));
+						}
+						else {
 							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(topLevelConjuncts);
-							
 							int randomIndex = rand.nextInt(topLevelConjunctList.size());
 							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
-							seedFunction.get(individual).add(conceptTemp);
-							seedFunction.put(individual, seedFunction.get(individual));
+							seedFunctionCollector.get(individual).add(conceptTemp);
+							seedFunctionCollector.put(individual, seedFunctionCollector.get(individual));
 						}
 					}
 					else {
 						List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
-						
 						int randomIndex = rand.nextInt(topLevelConjunctList.size());
 						OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
 						Set<OWLClassExpression> setOfConceptsTemp = new HashSet<OWLClassExpression>();
 						setOfConceptsTemp.add(conceptTemp);
-						seedFunction.put(individual, setOfConceptsTemp);
+						seedFunctionCollector.put(individual, setOfConceptsTemp);
 					}
 				}
 				else {
-					if(seedFunction.containsKey(individual)) {
-						if(!seedFunction.get(individual).contains(concept)) {
-							Set<OWLClassExpression> setOfConceptsTemp = seedFunction.get(individual);
+					if(seedFunctionCollector.containsKey(individual)) {
+						if(!seedFunctionCollector.get(individual).contains(concept)) {
+							Set<OWLClassExpression> setOfConceptsTemp = seedFunctionCollector.get(individual);
 							setOfConceptsTemp.add(concept);
-							seedFunction.put(individual, setOfConceptsTemp);
+							seedFunctionCollector.put(individual, setOfConceptsTemp);
 						}
 					}
 					else {
 						Set<OWLClassExpression> setOfConceptsTemp = new HashSet<OWLClassExpression>();
 						setOfConceptsTemp.add(concept);
-						seedFunction.put(individual, setOfConceptsTemp);
-						
+						seedFunctionCollector.put(individual, setOfConceptsTemp);
 					}
 				}
 			}
 		}
-		return seedFunction;
+	}
+	
+	private OWLClassExpression atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
 		
+		for(OWLClassExpression atom1 : set1) {
+			for(OWLClassExpression atom2 : set2) {
+				OWLAxiom axiom = factory.getOWLSubClassOfAxiom(atom1, atom2);
+				if(reasoner.isEntailed(axiom)) {
+					return atom2;
+				}
+			}
+		}
 		
+		return null;
 	}
 }
