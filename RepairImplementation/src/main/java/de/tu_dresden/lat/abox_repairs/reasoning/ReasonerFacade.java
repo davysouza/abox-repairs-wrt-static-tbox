@@ -139,7 +139,7 @@ public class ReasonerFacade {
     }
 
 
-    public Set<OWLClassExpression> equivalentOrSubsumed(OWLClassExpression exp) throws IllegalAccessError {
+    public Set<OWLClassExpression> equivalentOrSubsumed(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
         Set<OWLClassExpression> result = subsumees(exp);
