@@ -32,15 +32,12 @@ public class SeedFunctionHandler {
 
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunctionCollector;
-	//private OWLReasoner reasoner;
 	private final ReasonerFacade reasonerWithTBox;
 	private final ReasonerFacade reasonerWithoutTBox;
-//	private final OWLDataFactory factory;
 	
 	public SeedFunctionHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
 		this.reasonerWithTBox = reasonerWithTBox;
 		this.reasonerWithoutTBox = reasonerWithoutTBox;
-//		this.factory = OWLManager.getOWLDataFactory();
 	}
 	
 	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
@@ -49,8 +46,6 @@ public class SeedFunctionHandler {
 		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
-			
-//			System.out.println(seedFunctionCollector.get(individual));
 			RepairType type = typeHandler.newMinimisedRepairType(seedFunctionCollector.get(individual));
 			seedFunction.put(individual, type);
 		}
@@ -67,11 +62,11 @@ public class SeedFunctionHandler {
 			Set<OWLClassExpression> setOfConcepts = repairRequest.get(individual);
 			System.out.println("Repair Request " + individual + " " + setOfConcepts);
 			for(OWLClassExpression concept : setOfConcepts) {
-//				System.out.println("HELLO0!");
+
 				if(reasonerWithTBox.instanceOf(individual, concept)) {
-//					System.out.println("HELLO1!");
+
 					if(concept instanceof OWLObjectIntersectionOf) {
-//						System.out.println("HELLO2!");
+
 						if(seedFunctionCollector.containsKey(individual)) {
 							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
 							OWLClassExpression tempConcept = atLeastOneCovered(

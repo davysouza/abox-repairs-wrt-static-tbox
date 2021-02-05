@@ -47,9 +47,11 @@ public class CopiedIndividualsHandler {
 				// Copy Class Assertions containing ind1
 				if(ax instanceof OWLClassAssertionAxiom) {
 					OWLClassAssertionAxiom ax2 = (OWLClassAssertionAxiom) ax;
-					OWLClassExpression concept = ax2.getClassExpression();
-					OWLClassAssertionAxiom freshConceptAssertion = factory.getOWLClassAssertionAxiom(concept, ind2);
-					ontology.addAxiom(freshConceptAssertion);
+					if(ax2.getIndividual().equals(ind1)) {
+						OWLClassExpression concept = ax2.getClassExpression();
+						OWLClassAssertionAxiom freshConceptAssertion = factory.getOWLClassAssertionAxiom(concept, ind2);
+						ontology.addAxiom(freshConceptAssertion);
+					}
 				}
 				// Copy Role Assertions containing ind1 
 				else if (ax instanceof OWLObjectPropertyAssertionAxiom) {

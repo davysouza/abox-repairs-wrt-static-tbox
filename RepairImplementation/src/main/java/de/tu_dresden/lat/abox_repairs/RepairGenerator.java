@@ -100,10 +100,7 @@ public class RepairGenerator {
 				ax -> {System.out.println(ax);});
 		
 		
-		// Applying the repair rules exhaustively until no rule is applicable to each individual
-//		ontology.individualsInSignature()
-//		.forEach(i -> process(i,ontology));
-		
+		// Applying the repair rules exhaustively until no rule is applicable to each individual		
 		while(!orderedIndividuals.isEmpty()) {
 			OWLNamedIndividual i = orderedIndividuals.poll();
 //			System.out.println(i);
@@ -153,32 +150,34 @@ public class RepairGenerator {
 										Set<OWLClassExpression> tempType = (type != null)? 
 												new HashSet<>(type.getClassExpressions()) : new HashSet<>();
 										tempType.add(atom);
-//										System.out.println("hai " + originalObject + " " + tempType);
+
 										RepairType newType = typeHandler.newMinimisedRepairType(tempType);
 										boolean objectAlreadyExists = false;
 										for(OWLNamedIndividual ind : originalToCopy.get(originalObject)) {
-//											System.out.println("Who " + ind + " are you?");
+
 											if(seedFunction.get(ind) != null && seedFunction.get(ind).equals(newType)) {
 												objectAlreadyExists = true;
-//												System.out.println("hola " + ind + " " + newType.getClassExpressions());
 												break;
 											}
 										}
-//										System.out.println(objectAlreadyExists);
+
 										if(!objectAlreadyExists) {
 											individualCounter.put(originalObject, individualCounter.get(originalObject) + 1);
 											OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
 													iri + "#" + originalObject.getIRI().getFragment() + 
 													individualCounter.get(originalObject));
-//											System.out.println("Test " + freshIndividual + " " + newType.getClassExpressions());
+
 											seedFunction.put(freshIndividual, newType);
 											copyToOriginal.put(freshIndividual, originalObject);
+											
 											Set<OWLNamedIndividual> tempSet = originalToCopy.get(originalObject);
 											tempSet.add(freshIndividual);
 											originalToCopy.put(originalObject, tempSet);
+											
 											copyHandler.setOntology(ontology);
 											copyHandler.copyIndividual(object,freshIndividual);
 											ontology = copyHandler.getOntology();
+											
 											orderedIndividuals.add(freshIndividual);
 										}
 									}

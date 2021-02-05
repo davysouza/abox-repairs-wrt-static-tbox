@@ -92,14 +92,14 @@ public class Main {
 		// to initialise the reasoner facades. Might be worth decoupling this, so that we do not 
 		// need to use the reasoner object at all. (For example, filter out useless repair requests in the end,
 		// or just leave them in.)
-//		m.reasonerFacadeInitialisation();
-		m.seedFunctionConstruction(m.repairRequest);
-		if(m.seedFunction.isEmpty()) {
+		
+		if(m.isCompliant(m.ontology, m.repairRequest)) {
 			System.out.println("The ontology is compliant!");
 		}
 		else {
 			System.out.println("The ontology is not compliant!");
 			
+			m.seedFunctionConstruction(m.repairRequest);
 			Set<OWLNamedIndividual> setIndividuals = m.seedFunction.keySet();
 			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
 			while(iteSetIndividuals.hasNext()) {
@@ -113,8 +113,21 @@ public class Main {
 			RepairGenerator generator = new RepairGenerator(m.ontology, m.seedFunction);
 			generator.setReasoner(m.reasonerWithTBox, m.reasonerWithoutTBox);
 			generator.repair();
-
+			m.ontology = generator.getOntology();
+			System.out.println("Size " + m.ontology.getIndividualsInSignature().size());
+			
+			m.reasonerFacadeInitialisation();
+			
+			if(m.isCompliant(m.ontology, m.repairRequest)) {
+				System.out.println("The ontology is now compliant");
+			}
+			else {
+				System.out.println("The ontology is still not compliant");
+			}
 		}
+		
+		
+		
 	}
 	
 	private void ontologyInitialisation(String input[]) throws OWLOntologyCreationException, FileNotFoundException {
@@ -186,6 +199,32 @@ public class Main {
 		seedFunction = seedFunctionHandler.getSeedFunction();
 	}
 	
+	private boolean isCompliant(OWLOntology inputOntology, Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {
+		boolean check = true;
+		
+//		List<OWLClassExpression> additionalExpressions = new LinkedList<>();
+//
+//		for(Collection<OWLClassExpression> exps:inputRepairRequest.values()){
+//			for(OWLClassExpression exp: exps){
+//				additionalExpressions.add(exp);
+//				additionalExpressions.addAll(exp.getNestedClassExpressions());
+//			}
+//		}
+//
+//		ReasonerFacade reasoner = ReasonerFacade.newReasonerFacadeWithTBox(inputOntology, additionalExpressions);
+		
+		for(OWLNamedIndividual individual : inputRepairRequest.keySet()) {
+			for(OWLClassExpression concept : inputRepairRequest.get(individual)) {
+				if(reasonerWithTBox.instanceOf(individual, concept)) {
+					System.out.println(individual + " " + concept);
+					check = false;
+					break;
+				}
+			}
+		}
+		
+		return check;
+	}
 	
 //	private Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
 //		return repairRequest;
