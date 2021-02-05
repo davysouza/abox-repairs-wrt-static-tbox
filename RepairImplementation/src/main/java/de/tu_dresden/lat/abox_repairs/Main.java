@@ -56,14 +56,14 @@ public class Main {
 	
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
-	private Map<OWLNamedIndividual, Integer> individualCounter; 
+	 
 	
 	private Set<OWLOntology> importsClosure;
 	private OWLEntityChecker entityChecker;
 	private ManchesterOWLSyntaxParser parser;
 	
 	//private ElkReasonerFactory reasonerFactory; // CHECK: can you use OWLReasonerFactory here?
-	private OWLReasoner reasoner; // CHECK: sure we need two reasoners?
+//	private OWLReasoner reasoner; // CHECK: sure we need two reasoners?
 	//private OWLReasonerConfiguration conf;
 	
 	private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
@@ -78,30 +78,27 @@ public class Main {
 		// Initialize ontology
 		m.ontologyInitialisation(args);
 		
-		// Initialize reasoner 
-		m.reasonerInitialisation();
 		// Initialize parser
 		m.parserInitialisation();
 		
 		// Initialize repair request
 		m.repairRequestScanning(args);
 		
+		// Initialize reasoner 
+		m.reasonerFacadeInitialisation();
+		
+		
 		// TODO we need the reasoner when parsing the repair request, and we need the repair request
 		// to initialise the reasoner facades. Might be worth decoupling this, so that we do not 
 		// need to use the reasoner object at all. (For example, filter out useless repair requests in the end,
 		// or just leave them in.)
-		m.reasonerFacadeInitialisation();
-		
-	
-		if(m.getRepairRequest().isEmpty()) {
+//		m.reasonerFacadeInitialisation();
+		m.seedFunctionConstruction(m.repairRequest);
+		if(m.seedFunction.isEmpty()) {
 			System.out.println("The ontology is compliant!");
 		}
 		else {
 			System.out.println("The ontology is not compliant!");
-			// Construct seedFunction
-			m.seedFunctionConstruction();
-			
-			
 			
 			Set<OWLNamedIndividual> setIndividuals = m.seedFunction.keySet();
 			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
@@ -113,36 +110,11 @@ public class Main {
 				System.out.println();
 			}
 			
-//			Optional<IRI> opt = m.ontology.getOntologyID().getOntologyIRI();
-//			m.iri = opt.get();
-//			m.factory = m.ontology.getOWLOntologyManager().getOWLDataFactory();
-//			
-//			Set<OWLNamedIndividual> setOfIndividuals = m.ontology.getIndividualsInSignature();			
-//			m.individualCounter = new HashMap<>();
-//			CopiedIndividualsHandler copyHandler = new CopiedIndividualsHandler(m.ontology);
-//			for(OWLNamedIndividual individual: setOfIndividuals) {
-//				m.individualCounter.put(individual, 1);
-//				OWLNamedIndividual freshIndividual = m.factory.getOWLNamedIndividual(
-//						m.iri + "#" + individual.getIRI().getFragment() + m.individualCounter.get(individual));
-//				
-//				copyHandler.copyIndividual(individual,freshIndividual);
-//			}
-//			
-//			m.reasonerFacade = new ReasonerFacade(m.ontology);
-//			RepairRules rules = new RepairRules(m.reasonerFacade);
-//			rules.repair(m.ontology, m.seedFunction);
-//			m.ontology = rules.getOntology();
-//			
-//			Set<OWLNamedIndividual> setOfIndividuals2 = m.ontology.getIndividualsInSignature();
-//			System.out.println();
-//			for(OWLNamedIndividual individual: setOfIndividuals2) {
-//				System.out.println("Result " + individual);
-//				Set<OWLClassAssertionAxiom> ocaa = m.ontology.getClassAssertionAxioms(individual);
-//				System.out.println(ocaa);
-//				Set<OWLObjectPropertyAssertionAxiom> oopaa = m.ontology.getObjectPropertyAssertionAxioms(individual);
-//				System.out.println(oopaa);
-//			}
-		}	
+			RepairGenerator generator = new RepairGenerator(m.ontology, m.seedFunction);
+			generator.setReasoner(m.reasonerWithTBox, m.reasonerWithoutTBox);
+			generator.repair();
+
+		}
 	}
 	
 	private void ontologyInitialisation(String input[]) throws OWLOntologyCreationException, FileNotFoundException {
@@ -150,23 +122,7 @@ public class Main {
 		ontology = manager.loadOntologyFromOntologyDocument(new File(input[0]));
 	}
 	
-	private void reasonerInitialisation() {
-		
-		// Set a configuration for the reasoner
-		BasicConfigurator.configure();
-		ReasonerProgressMonitor progressMonitor = new NullReasonerProgressMonitor();
-		FreshEntityPolicy freshEntityPolicy = FreshEntityPolicy.ALLOW;
-		long timeOut = Integer.MAX_VALUE;
-		IndividualNodeSetPolicy individualNodeSetPolicy = IndividualNodeSetPolicy.BY_NAME;
-		OWLReasonerConfiguration conf = new SimpleConfiguration(progressMonitor, freshEntityPolicy, timeOut, individualNodeSetPolicy);
-		
-		// Instantiate an Elk Reasoner Factory
-		ElkReasonerFactory reasonerFactory =  new ElkReasonerFactory();
-		reasoner = reasonerFactory.createNonBufferingReasoner(ontology, conf);
-		
 
-
-	}
 
 	private void reasonerFacadeInitialisation() throws OWLOntologyCreationException {
 		List<OWLClassExpression> additionalExpressions = new LinkedList<>();
@@ -205,33 +161,39 @@ public class Main {
 			
 		    OWLClassAssertionAxiom axiom = (OWLClassAssertionAxiom) parser.parseAxiom();
 		    
-		    if(reasoner.isEntailed(axiom)) {
-		    	OWLNamedIndividual assertedIndividual = (OWLNamedIndividual) axiom.getIndividual();
-			    
-			    if(repairRequest.containsKey(assertedIndividual)) {
-			    	Set<OWLClassExpression> setOfClasses = repairRequest.get(assertedIndividual);
-			    	setOfClasses.add(axiom.getClassExpression());
-			    	repairRequest.put(assertedIndividual, setOfClasses);
-			    }
-			    else {
-			    	Set<OWLClassExpression> setOfClasses = new HashSet<OWLClassExpression>();
-			    	setOfClasses.add(axiom.getClassExpression());
-			    	repairRequest.put(assertedIndividual, setOfClasses);
-			    }
+		    OWLNamedIndividual assertedIndividual = (OWLNamedIndividual) axiom.getIndividual();
+		    
+		    if(repairRequest.containsKey(assertedIndividual)) {
+		    	Set<OWLClassExpression> setOfClasses = repairRequest.get(assertedIndividual);
+		    	setOfClasses.add(axiom.getClassExpression());
+		    	repairRequest.put(assertedIndividual, setOfClasses);
 		    }
+		    else {
+		    	Set<OWLClassExpression> setOfClasses = new HashSet<OWLClassExpression>();
+		    	setOfClasses.add(axiom.getClassExpression());
+		    	repairRequest.put(assertedIndividual, setOfClasses);
+		    }
+		    
+//		    if(reasoner.isEntailed(axiom)) {
+//		    	
+//		    }
 		}
 	}
 	
-	private void seedFunctionConstruction() {
+	private void seedFunctionConstruction(Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {
 		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasonerWithTBox, reasonerWithoutTBox);
-		seedFunctionHandler.constructSeedFunction(getRepairRequest());
+		seedFunctionHandler.constructSeedFunction(inputRepairRequest);
 		seedFunction = seedFunctionHandler.getSeedFunction();
 	}
 	
 	
-	private Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
-		return repairRequest;
-	}
+//	private Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
+//		return repairRequest;
+//	}
+//	
+//	private Map<OWLNamedIndividual, RepairType> getSeedFunction(){
+//		return seedFunction;
+//	}
 	
 	
 }

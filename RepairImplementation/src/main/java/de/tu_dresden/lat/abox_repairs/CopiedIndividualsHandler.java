@@ -34,43 +34,47 @@ public class CopiedIndividualsHandler {
 //		this.seedFunction = inputSeedFunction;
 	}
 	
+	public void setOntology(OWLOntology inputOntology) {
+		this.ontology = inputOntology;
+		this.factory = inputOntology.getOWLOntologyManager().getOWLDataFactory();
+	}
+	
 	public void copyIndividual(OWLNamedIndividual ind1, OWLNamedIndividual ind2) {
-		
-		// Copy Class Assertions containing ind1
-		Set<OWLClassAssertionAxiom> classAssertion = ontology.getClassAssertionAxioms(ind1);
-		for(OWLClassAssertionAxiom axiom: classAssertion) {
-			OWLClassExpression concept = axiom.getClassExpression();
-			OWLClassAssertionAxiom freshConceptAssertion = factory.getOWLClassAssertionAxiom(concept, ind2);
-			ontology.addAxiom(freshConceptAssertion);
-			
-		}
-		
-		// Copy Role Assertions containing ind1 as the subject
-		Set<OWLObjectPropertyAssertionAxiom> setOfRoleAssertions = ontology.getObjectPropertyAssertionAxioms(ind1);
-		for(OWLObjectPropertyAssertionAxiom axiom: setOfRoleAssertions) {
-			OWLNamedIndividual subject = (OWLNamedIndividual) axiom.getSubject();
-			OWLNamedIndividual object = (OWLNamedIndividual) axiom.getObject();
-			
-			if(subject.equals(ind1) && !object.equals(ind1)) {
-				OWLObjectPropertyAssertionAxiom freshRoleAssertion = factory.getOWLObjectPropertyAssertionAxiom(
-						axiom.getProperty(), ind2, object);
-				ontology.addAxiom(freshRoleAssertion);
-			}
-			else if (subject.equals(ind1) && object.equals(ind1)) {
-				OWLObjectPropertyAssertionAxiom freshRoleAssertion = factory.getOWLObjectPropertyAssertionAxiom(
-						axiom.getProperty(), ind2, ind2);
-				ontology.addAxiom(freshRoleAssertion);
-			}
-		}
-		
-		// Copy Role Assertions containing ind1 as the object
 		
 		Stream<OWLAxiom> setOfAxioms = ontology.aboxAxioms(Imports.INCLUDED);
 		setOfAxioms.forEach(
 			ax -> {
-				if (ax instanceof OWLObjectPropertyAssertionAxiom) {
+				// Copy Class Assertions containing ind1
+				if(ax instanceof OWLClassAssertionAxiom) {
+					OWLClassAssertionAxiom ax2 = (OWLClassAssertionAxiom) ax;
+					OWLClassExpression concept = ax2.getClassExpression();
+					OWLClassAssertionAxiom freshConceptAssertion = factory.getOWLClassAssertionAxiom(concept, ind2);
+					ontology.addAxiom(freshConceptAssertion);
+				}
+				// Copy Role Assertions containing ind1 
+				else if (ax instanceof OWLObjectPropertyAssertionAxiom) {
 					OWLObjectPropertyAssertionAxiom ax2 = (OWLObjectPropertyAssertionAxiom) ax;
-					if(((OWLObjectPropertyAssertionAxiom) ax2).getObject().equals(ind1)) {
+					if(ax2.getSubject().equals(ind1) && !ax2.getObject().equals(ind1)) {
+						OWLObjectPropertyAssertionAxiom freshRoleAssertion = factory.getOWLObjectPropertyAssertionAxiom(
+								ax2.getProperty(), ind2, ax2.getObject());
+						ontology.addAxiom(freshRoleAssertion);
+					}
+					
+					if(ax2.getSubject().equals(ind1) && ax2.getObject().equals(ind1)) {
+						OWLObjectPropertyAssertionAxiom freshRoleAssertion1 = factory.getOWLObjectPropertyAssertionAxiom(
+								ax2.getProperty(), ind2, ind2);
+						ontology.addAxiom(freshRoleAssertion1);
+						
+						OWLObjectPropertyAssertionAxiom freshRoleAssertion2 = factory.getOWLObjectPropertyAssertionAxiom(
+								ax2.getProperty(), ind1, ind2);
+						ontology.addAxiom(freshRoleAssertion2);
+						
+						OWLObjectPropertyAssertionAxiom freshRoleAssertion3 = factory.getOWLObjectPropertyAssertionAxiom(
+								ax2.getProperty(), ind2, ind1);
+						ontology.addAxiom(freshRoleAssertion3);
+					}
+					
+					if(!ax2.getSubject().equals(ind1) && ax2.getObject().equals(ind1)) {
 						OWLObjectPropertyAssertionAxiom freshRoleAssertion = factory.getOWLObjectPropertyAssertionAxiom(
 								ax2.getProperty(), ax2.getSubject(), ind2);
 						ontology.addAxiom(freshRoleAssertion);
@@ -78,33 +82,12 @@ public class CopiedIndividualsHandler {
 				}
 			});
 		
-//		Set<OWLNamedIndividual> setOfIndividuals = ontology.getIndividualsInSignature();
-//		for(OWLNamedIndividual ind: setOfIndividuals) {
-//			if(!ind.equals(ind1)) {
-//				Set<OWLObjectPropertyAssertionAxiom> tempSetOfRoleAssertions = ontology.getObjectPropertyAssertionAxioms(ind);
-//				for(OWLObjectPropertyAssertionAxiom axiom: tempSetOfRoleAssertions) {
-//					OWLNamedIndividual object = (OWLNamedIndividual) axiom.getObject();
-//					if(object.equals(ind1)) {
-//						OWLObjectPropertyAssertionAxiom freshRoleAssertion = factory.getOWLObjectPropertyAssertionAxiom(
-//								axiom.getProperty(), axiom.getSubject(), ind2);
-//						ontology.addAxiom(freshRoleAssertion);
-//					}
-//				}
-//			}
-//			
-//		}
-	}
-	
-	public void adjustSeedFunction() {
-		
+
 	}
 	
 	public OWLOntology getOntology() {
 		return ontology;
 	}
 	
-//	public Map<OWLNamedIndividual, Set<OWLClassExpression>> getSeedFunction() {
-//		return seedFunction;
-//	}
 	
 }
