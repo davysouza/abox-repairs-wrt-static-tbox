@@ -1,56 +1,193 @@
 package de.tu_dresden.lat.abox_repairs;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
+import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
 
 public class RepairGenerator {
 	
 	private OWLOntology ontology;
 	private OWLDataFactory factory;
-	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunction;
+	private IRI iri;
+	private Map<OWLNamedIndividual, RepairType> seedFunction;
+	private Map<OWLNamedIndividual, Integer> individualCounter;
+	private Map<OWLNamedIndividual, OWLNamedIndividual> copyToOriginal;
+	private Map<OWLNamedIndividual, Set<OWLNamedIndividual>> originalToCopy;
 	
-	private ReasonerFacade reasoner;
-		
-	public RepairGenerator(ReasonerFacade inputReasoner) {
-		this.reasoner = inputReasoner;
-	}
+	private Set<OWLNamedIndividual> setOfOriginalIndividuals;
 	
-	public void repair(OWLOntology inputOntology,
-			Map<OWLNamedIndividual, Set<OWLClassExpression>> inputSeedFunction) {
+	private Queue<OWLNamedIndividual> orderedIndividuals;
+	
+	private ReasonerFacade reasonerWithTBox;
+	private ReasonerFacade reasonerWithoutTBox;
+	
+	private RepairTypeHandler typeHandler;
+	
+	private CopiedIndividualsHandler copyHandler;
+	
+	public RepairGenerator(OWLOntology inputOntology,
+			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
 		this.ontology = inputOntology;
 		this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 		this.seedFunction = inputSeedFunction;
-		
-		ontology.individualsInSignature()
-		.forEach(i -> process(i,ontology));
+		this.setOfOriginalIndividuals  = ontology.getIndividualsInSignature();
+		this.copyToOriginal = new HashMap<>();
+		this.originalToCopy = new HashMap<>();
+		this.individualCounter = new HashMap<>();
+		// Initializing originalToCopy 
+		for(OWLNamedIndividual oriIndividual : setOfOriginalIndividuals) {
+			Set<OWLNamedIndividual> initSet = new HashSet<OWLNamedIndividual>();
+			initSet.add(oriIndividual);
+			individualCounter.put(oriIndividual, 0);
+			originalToCopy.put(oriIndividual, initSet);
+		}
+
+		Optional<IRI> opt = ontology.getOntologyID().getOntologyIRI();
+		this.iri = opt.get();
 	}
 	
-	private void process(OWLNamedIndividual inputIndividual, OWLOntology inputOntology) {
-		System.out.println("processing " + inputIndividual);
-		for(OWLClassExpression exp:reasoner.instanceOf(inputIndividual)) {
-			System.out.println("class 1 " + exp);
-			if(exp instanceof OWLClass) {
-				System.out.println("class 2 " + exp);
-				if(seedFunction.get(inputIndividual) != null) {
-					if(seedFunction.get(inputIndividual).contains(exp)) {
-						OWLAxiom assertion = factory.getOWLClassAssertionAxiom(exp, inputIndividual);
-						System.out.println("Assertion " + assertion);
-						ontology.remove(assertion);
+	public void setReasoner(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
+		this.reasonerWithTBox = reasonerWithTBox;
+		this.reasonerWithoutTBox = reasonerWithoutTBox;
+		this.typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
+	}
+	
+	public void repair() {
+		
+		
+		
+		// Renaming and Copying Individuals
+		Set<OWLNamedIndividual> setOfIndividuals = seedFunction.keySet();
+		
+		copyHandler = new CopiedIndividualsHandler(ontology);
+		for(OWLNamedIndividual individual : setOfIndividuals) {
+			individualCounter.put(individual, individualCounter.get(individual) + 1);
+			OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
+					iri + "#" + individual.getIRI().getFragment() + (individualCounter.get(individual)));
+			
+			copyToOriginal.put(freshIndividual, individual);
+			Set<OWLNamedIndividual> tempSet = originalToCopy.get(individual);
+			tempSet.add(freshIndividual);
+			originalToCopy.put(individual, tempSet);
+			copyHandler.copyIndividual(individual,freshIndividual);
+		}
+		ontology = copyHandler.getOntology();
+		
+		this.orderedIndividuals = new PriorityQueue<>(ontology.getIndividualsInSignature());
+		
+		System.out.println("Before Repairing:");
+		ontology.aboxAxioms(Imports.INCLUDED).forEach(
+				ax -> {System.out.println(ax);});
+		
+		
+		// Applying the repair rules exhaustively until no rule is applicable to each individual		
+		while(!orderedIndividuals.isEmpty()) {
+			OWLNamedIndividual i = orderedIndividuals.poll();
+//			System.out.println(i);
+			process(i);
+		}
+		System.out.println();
+		System.out.println("After Repairing:");
+		ontology.aboxAxioms(Imports.INCLUDED).forEach(
+				ax -> {System.out.println(ax);});
+		
+	}
+	
+	private void process(OWLNamedIndividual inputIndividual) {
+//		System.out.println("processing " + inputIndividual);
+		
+		if(seedFunction.get(inputIndividual) != null) {
+			for(OWLClassExpression exp : seedFunction.get(inputIndividual).getClassExpressions()) {
+				if(exp instanceof OWLClass) {
+					OWLAxiom ax = factory.getOWLClassAssertionAxiom(exp, inputIndividual);
+					if(ontology.aboxAxioms(Imports.INCLUDED).anyMatch(axiom -> axiom.equals(ax))) {
+						ontology.remove(ax);
 					}
 				}
-			}
-			else if (exp instanceof OWLObjectSomeValuesFrom) {
-				OWLObjectSomeValuesFrom some = (OWLObjectSomeValuesFrom) exp;
+				else if (exp instanceof OWLObjectSomeValuesFrom) {
+					OWLObjectSomeValuesFrom some = (OWLObjectSomeValuesFrom) exp;
+					OWLClassExpression filler = some.getFiller();
+					OWLObjectProperty roleName = (OWLObjectProperty) some.getProperty();
+					for(OWLObjectPropertyAssertionAxiom roleAssertion: ontology.getObjectPropertyAssertionAxioms(inputIndividual)) {
+						if(roleAssertion.getProperty().equals(roleName)) {
+							OWLNamedIndividual object = (OWLNamedIndividual) roleAssertion.getObject();
+							OWLNamedIndividual originalObject = setOfOriginalIndividuals.contains((object))?
+									object :copyToOriginal.get(object);
+							if(reasonerWithTBox.instanceOf(originalObject, filler)) {
+								RepairType type = seedFunction.get(object);
+								boolean check = false;
+								if(type != null) {
+									for(OWLClassExpression atom: type.getClassExpressions()) {
+										if(reasonerWithoutTBox.subsumedBy(filler, atom)) {
+											check = true;
+											break;
+										}
+									}
+								}
+								
+								if(type == null || check == false) {
+									for(OWLClassExpression atom : filler.asConjunctSet()) {
+										Set<OWLClassExpression> tempType = (type != null)? 
+												new HashSet<>(type.getClassExpressions()) : new HashSet<>();
+										tempType.add(atom);
+
+										RepairType newType = typeHandler.newMinimisedRepairType(tempType);
+										boolean objectAlreadyExists = false;
+										for(OWLNamedIndividual ind : originalToCopy.get(originalObject)) {
+
+											if(seedFunction.get(ind) != null && seedFunction.get(ind).equals(newType)) {
+												objectAlreadyExists = true;
+												break;
+											}
+										}
+
+										if(!objectAlreadyExists) {
+											individualCounter.put(originalObject, individualCounter.get(originalObject) + 1);
+											OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
+													iri + "#" + originalObject.getIRI().getFragment() + 
+													individualCounter.get(originalObject));
+
+											seedFunction.put(freshIndividual, newType);
+											copyToOriginal.put(freshIndividual, originalObject);
+											
+											Set<OWLNamedIndividual> tempSet = originalToCopy.get(originalObject);
+											tempSet.add(freshIndividual);
+											originalToCopy.put(originalObject, tempSet);
+											
+											copyHandler.setOntology(ontology);
+											copyHandler.copyIndividual(object,freshIndividual);
+											ontology = copyHandler.getOntology();
+											
+											orderedIndividuals.add(freshIndividual);
+										}
+									}
+									ontology.remove(roleAssertion);
+								}
+							}
+						}
+					}
+				}
+				
 			}
 		}
 	}
