@@ -32,15 +32,12 @@ public class SeedFunctionHandler {
 
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> seedFunctionCollector;
-	//private OWLReasoner reasoner;
 	private final ReasonerFacade reasonerWithTBox;
 	private final ReasonerFacade reasonerWithoutTBox;
-	private final OWLDataFactory factory;
 	
 	public SeedFunctionHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
 		this.reasonerWithTBox = reasonerWithTBox;
 		this.reasonerWithoutTBox = reasonerWithoutTBox;
-		this.factory = OWLManager.getOWLDataFactory();
 	}
 	
 	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
@@ -49,8 +46,6 @@ public class SeedFunctionHandler {
 		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
-			
-//			System.out.println(seedFunctionCollector.get(individual));
 			RepairType type = typeHandler.newMinimisedRepairType(seedFunctionCollector.get(individual));
 			seedFunction.put(individual, type);
 		}
@@ -67,45 +62,49 @@ public class SeedFunctionHandler {
 			Set<OWLClassExpression> setOfConcepts = repairRequest.get(individual);
 			System.out.println("Repair Request " + individual + " " + setOfConcepts);
 			for(OWLClassExpression concept : setOfConcepts) {
-				if(concept instanceof OWLObjectIntersectionOf) {
-					if(seedFunctionCollector.containsKey(individual)) {
-						Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-						OWLClassExpression tempConcept = atLeastOneCovered(
-								seedFunctionCollector.get(individual), topLevelConjuncts);
-						if(tempConcept != null) {
-//							System.out.println("I got you");
-							seedFunctionCollector.get(individual).add(tempConcept);
-							seedFunctionCollector.put(individual, seedFunctionCollector.get(individual));
+
+				if(reasonerWithTBox.instanceOf(individual, concept)) {
+
+					if(concept instanceof OWLObjectIntersectionOf) {
+
+						if(seedFunctionCollector.containsKey(individual)) {
+							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
+							OWLClassExpression tempConcept = atLeastOneCovered(
+									seedFunctionCollector.get(individual), topLevelConjuncts);
+							if(tempConcept != null) {
+								seedFunctionCollector.get(individual).add(tempConcept);
+								seedFunctionCollector.put(individual, seedFunctionCollector.get(individual));
+							}
+							else {
+								List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(topLevelConjuncts);
+								int randomIndex = rand.nextInt(topLevelConjunctList.size());
+								OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
+								seedFunctionCollector.get(individual).add(conceptTemp);
+								seedFunctionCollector.put(individual, seedFunctionCollector.get(individual));
+							}
 						}
 						else {
-							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(topLevelConjuncts);
+							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
 							int randomIndex = rand.nextInt(topLevelConjunctList.size());
 							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
-							seedFunctionCollector.get(individual).add(conceptTemp);
-							seedFunctionCollector.put(individual, seedFunctionCollector.get(individual));
-						}
-					}
-					else {
-						List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
-						int randomIndex = rand.nextInt(topLevelConjunctList.size());
-						OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
-						Set<OWLClassExpression> setOfConceptsTemp = new HashSet<OWLClassExpression>();
-						setOfConceptsTemp.add(conceptTemp);
-						seedFunctionCollector.put(individual, setOfConceptsTemp);
-					}
-				}
-				else {
-					if(seedFunctionCollector.containsKey(individual)) {
-						if(!seedFunctionCollector.get(individual).contains(concept)) {
-							Set<OWLClassExpression> setOfConceptsTemp = seedFunctionCollector.get(individual);
-							setOfConceptsTemp.add(concept);
+							Set<OWLClassExpression> setOfConceptsTemp = new HashSet<OWLClassExpression>();
+							setOfConceptsTemp.add(conceptTemp);
 							seedFunctionCollector.put(individual, setOfConceptsTemp);
 						}
 					}
 					else {
-						Set<OWLClassExpression> setOfConceptsTemp = new HashSet<OWLClassExpression>();
-						setOfConceptsTemp.add(concept);
-						seedFunctionCollector.put(individual, setOfConceptsTemp);
+						if(seedFunctionCollector.containsKey(individual)) {
+							if(!seedFunctionCollector.get(individual).contains(concept)) {
+								Set<OWLClassExpression> setOfConceptsTemp = seedFunctionCollector.get(individual);
+								setOfConceptsTemp.add(concept);
+								seedFunctionCollector.put(individual, setOfConceptsTemp);
+							}
+						}
+						else {
+							Set<OWLClassExpression> setOfConceptsTemp = new HashSet<OWLClassExpression>();
+							setOfConceptsTemp.add(concept);
+							seedFunctionCollector.put(individual, setOfConceptsTemp);
+						}
 					}
 				}
 			}
@@ -117,7 +116,7 @@ public class SeedFunctionHandler {
 		for(OWLClassExpression atom1 : set1) {
 			for(OWLClassExpression atom2 : set2) {
 				//OWLAxiom axiom = factory.getOWLSubClassOfAxiom(atom1, atom2);
-				if(reasonerWithTBox.subsumedBy(atom1, atom2)) {
+				if(reasonerWithoutTBox.subsumedBy(atom1, atom2)) {
 					return atom2;
 				}
 			}

@@ -1,3 +1,2 @@
 d Type: related some (Politician and Businessman)
 d Type: Politician and Businessman
-g Type: Politician and Businessman
