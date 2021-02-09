@@ -1,18 +1,16 @@
 package de.tu_dresden.lat.abox_repairs.saturation;
 
-import java.io.File;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.semanticweb.owlapi.apibinding.OWLManager;
+
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.rulewerk.core.model.api.Fact;
 import org.semanticweb.rulewerk.core.model.api.PositiveLiteral;
 import org.semanticweb.rulewerk.core.model.api.Predicate;
@@ -30,11 +28,12 @@ import org.semanticweb.rulewerk.reasoner.vlog.VLogReasoner;
  */
 public class ChaseGenerator implements ABoxSaturator {
 
-
 	private OWLDataFactory factory;
+	private OWLOntology ontology;
 
 	public void saturate(OWLOntology ontology) throws SaturationException {
-
+		
+		this.ontology = ontology;
 		factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
 		final OwlToRulesConverter owlToRulesConverter = new OwlToRulesConverter();
@@ -74,7 +73,7 @@ public class ChaseGenerator implements ABoxSaturator {
 			//	System.out.println("Abox: "+fact2Axiom(fact));
 				OWLAxiom axiom = fact2Axiom(fact);
 				if(!false){//ontology.containsAxiom(axiom)){
-					//System.out.println("Newly derived: "+axiom);
+					System.out.println("Newly derived: "+axiom);
 					ontology.add(axiom);
 				}
 			});
@@ -98,6 +97,8 @@ public class ChaseGenerator implements ABoxSaturator {
 				factory.getOWLNamedIndividual(toIRI(arguments.get(1))));
 		}
 	}
+	
+	
 
 	private static IRI toIRI(Predicate predicate) {
 		return IRI.create(predicate.getName());
@@ -106,5 +107,8 @@ public class ChaseGenerator implements ABoxSaturator {
 	private static IRI toIRI(Term term) {
 		return IRI.create(term.getName());
 	}
-
+	
+	public OWLOntology getOntology() {
+		return ontology;
+	}
 }

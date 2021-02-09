@@ -1,7 +1,11 @@
 package de.tu_dresden.lat.abox_repairs.repair_types;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
@@ -66,7 +70,7 @@ public class RepairTypeHandler {
      * the repair type contains some class expression D s.t. the ontology entails 
      * exp SubClassOf D
      */
-    public Set<RepairType> premiseSaturate(RepairType type, OWLClassExpression exp) {
+    private Set<RepairType> premiseSaturate(RepairType type, OWLClassExpression exp) {
 
         Set<RepairType> result = new HashSet<>();
 
@@ -79,5 +83,26 @@ public class RepairTypeHandler {
         }
 
         return result;
+    }
+    
+    public Set<RepairType> premiseSaturate(RepairType type, Set<OWLClassExpression> expSet) {
+    	
+    	Set<RepairType> result = new HashSet<>();
+    	
+    	if(expSet.size() == 1) {
+    		Iterator<OWLClassExpression> ite = expSet.iterator();
+    		return premiseSaturate(type, ite.next());
+    	} else {
+    		Iterator<OWLClassExpression> ite = expSet.iterator();
+    		OWLClassExpression concept = ite.next();
+    		Set<RepairType> resultSet = premiseSaturate(type, concept);
+    		expSet.remove(concept);
+    	
+    		for(RepairType currentType : resultSet) {
+    		
+    			result.addAll(premiseSaturate(currentType, expSet));
+    		}
+    	}
+    	return result;
     }
 }
