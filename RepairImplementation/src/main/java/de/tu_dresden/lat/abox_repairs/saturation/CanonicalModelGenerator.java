@@ -29,6 +29,8 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 	private Map<OWLClassExpression, OWLNamedIndividual> class2ind;
 
 	private OWLDataFactory factory;
+	
+	private OWLOntology ontology;
 
 
 	public CanonicalModelGenerator(ReasonerFacade reasoner) {
@@ -36,7 +38,8 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 	}
 
 	public void saturate(OWLOntology ontology) {
-
+		
+		this.ontology = ontology;
 		factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
 		class2ind = new HashMap<>();
@@ -127,6 +130,10 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 	private IRI nameFor(OWLClassExpression exp) {
 		individualNameCounter++;
 		return IRI.create("__i__"+individualNameCounter);
+	}
+	
+	public OWLOntology getOntology() {
+		return ontology;
 	}
 
 

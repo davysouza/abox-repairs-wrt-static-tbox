@@ -8,38 +8,27 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 
-import org.apache.log4j.BasicConfigurator;
-import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.reasoner.FreshEntityPolicy;
-import org.semanticweb.owlapi.reasoner.IndividualNodeSetPolicy;
-import org.semanticweb.owlapi.reasoner.NullReasonerProgressMonitor;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
-import org.semanticweb.owlapi.reasoner.ReasonerProgressMonitor;
-import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
 import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.saturation.CanonicalModelGenerator;
+import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
+import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 
 
 public class Main {
@@ -51,88 +40,101 @@ public class Main {
 	 */
 	private OWLOntologyManager manager;
 	private OWLOntology ontology;
-	private IRI iri;
-	private OWLDataFactory factory;
 	
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
 	 
-	
 	private Set<OWLOntology> importsClosure;
 	private OWLEntityChecker entityChecker;
 	private ManchesterOWLSyntaxParser parser;
-	
-	//private ElkReasonerFactory reasonerFactory; // CHECK: can you use OWLReasonerFactory here?
-//	private OWLReasoner reasoner; // CHECK: sure we need two reasoners?
-	//private OWLReasonerConfiguration conf;
 	
 	private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 	
 	private Scanner reader;
 	
 	
-	public static void main(String args[]) throws IOException, OWLOntologyCreationException {
+	public static void main(String args[]) throws IOException, OWLOntologyCreationException, SaturationException {
 		
 		Main m = new Main();
 		
-		// Initialize ontology
-		m.ontologyInitialisation(args);
-		
-		// Initialize parser
-		m.parserInitialisation();
-		
-		// Initialize repair request
-		m.repairRequestScanning(args);
-		
-		// Initialize reasoner 
-		m.reasonerFacadeInitialisation();
-		
-		
-		// TODO we need the reasoner when parsing the repair request, and we need the repair request
-		// to initialise the reasoner facades. Might be worth decoupling this, so that we do not 
-		// need to use the reasoner object at all. (For example, filter out useless repair requests in the end,
-		// or just leave them in.)
-		
-		if(m.isCompliant(m.ontology, m.repairRequest)) {
-			System.out.println("The ontology is compliant!");
-		}
-		else {
-			System.out.println("The ontology is not compliant!");
+		int i = 0;
+		while(i < args.length) {
+			// Initialize ontology
+			m.ontologyInitialisation(args, i);
 			
-			m.seedFunctionConstruction(m.repairRequest);
-			Set<OWLNamedIndividual> setIndividuals = m.seedFunction.keySet();
-			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
-			while(iteSetIndividuals.hasNext()) {
-				OWLNamedIndividual oni = iteSetIndividuals.next();
-				System.out.println(oni);
-				RepairType type = m.seedFunction.get(oni);
-				System.out.println(type.getClassExpressions());
-				System.out.println();
+			// Initialize parser
+			m.parserInitialisation();
+			
+			// Initialize repair request
+			m.repairRequestScanning(args, i);
+			
+			
+			// Saturate the ontology
+			if(args[i+2] instanceof String && args[i+2].equals("IQ")) {
+//				m.iqSaturate();
+			}
+			else {
+				m.cqSaturate();
 			}
 			
-			RepairGenerator generator = new RepairGenerator(m.ontology, m.seedFunction);
-			generator.setReasoner(m.reasonerWithTBox, m.reasonerWithoutTBox);
-			generator.repair();
-			m.ontology = generator.getOntology();
-			System.out.println("Size " + m.ontology.getIndividualsInSignature().size());
+//			
 			
+			// Initialize reasoner 
 			m.reasonerFacadeInitialisation();
 			
 			if(m.isCompliant(m.ontology, m.repairRequest)) {
-				System.out.println("The ontology is now compliant");
+				System.out.println("The ontology is compliant!");
 			}
 			else {
-				System.out.println("The ontology is still not compliant");
+				System.out.println("The ontology is not compliant!");
+				
+				m.seedFunctionConstruction(m.repairRequest);
+				Set<OWLNamedIndividual> setIndividuals = m.seedFunction.keySet();
+				Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
+				System.out.println("Seed Function");
+				while(iteSetIndividuals.hasNext()) {
+					OWLNamedIndividual oni = iteSetIndividuals.next();
+					System.out.println(oni);
+					RepairType type = m.seedFunction.get(oni);
+					System.out.println(type.getClassExpressions());
+					System.out.println();
+				}
+				
+				
+				if(args[i+2] instanceof String && args[i+2].equals("IQ")) {
+					m.IQRepair();
+					
+					System.out.println("Size of the IQ-repair:" + m.ontology.getIndividualsInSignature().size());
+				}
+				else {
+					m.CQRepair();
+					
+					System.out.println("Size of the CQ-repair:" + m.ontology.getIndividualsInSignature().size());
+				}
+			
+				
+//				m.oldRepair();
+				
+			
+				m.reasonerFacadeInitialisation();
+				
+				if(m.isCompliant(m.ontology, m.repairRequest)) {
+					System.out.println("The ontology is now compliant");
+				}
+				else {
+					System.out.println("The ontology is still not compliant");
+				}
 			}
+			i+=3;
+			if(i < args.length) System.out.println("\n" + "=================================================");
 		}
-		
 		
 		
 	}
 	
-	private void ontologyInitialisation(String input[]) throws OWLOntologyCreationException, FileNotFoundException {
+	private void ontologyInitialisation(String input[], int i) throws OWLOntologyCreationException, FileNotFoundException {
 		manager = OWLManager.createOWLOntologyManager();
-		ontology = manager.loadOntologyFromOntologyDocument(new File(input[0]));
+		ontology = manager.loadOntologyFromOntologyDocument(new File(input[i]));
 	}
 	
 
@@ -164,9 +166,9 @@ public class Main {
 	    
 	}
 
-	private void repairRequestScanning(String input[]) throws FileNotFoundException {
+	private void repairRequestScanning(String input[], int i) throws FileNotFoundException {
 		
-		reader = new Scanner(new File(input[1]));
+		reader = new Scanner(new File(input[i+1]));
 		repairRequest = new HashMap<>();
 		while(reader.hasNextLine()) {
 			String policy = reader.nextLine();
@@ -186,11 +188,19 @@ public class Main {
 		    	setOfClasses.add(axiom.getClassExpression());
 		    	repairRequest.put(assertedIndividual, setOfClasses);
 		    }
-		    
-//		    if(reasoner.isEntailed(axiom)) {
-//		    	
-//		    }
 		}
+	}
+	
+	private void cqSaturate() throws SaturationException {
+		ChaseGenerator chase = new ChaseGenerator();
+		chase.saturate(ontology);
+		ontology = chase.getOntology(); 
+	}
+	
+	private void iqSaturate() throws SaturationException {
+		CanonicalModelGenerator cmg = new CanonicalModelGenerator(reasonerWithTBox);
+		cmg.saturate(ontology);
+		ontology = cmg.getOntology(); 
 	}
 	
 	private void seedFunctionConstruction(Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {
@@ -200,39 +210,32 @@ public class Main {
 	}
 	
 	private boolean isCompliant(OWLOntology inputOntology, Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {
-		boolean check = true;
-		
-//		List<OWLClassExpression> additionalExpressions = new LinkedList<>();
-//
-//		for(Collection<OWLClassExpression> exps:inputRepairRequest.values()){
-//			for(OWLClassExpression exp: exps){
-//				additionalExpressions.add(exp);
-//				additionalExpressions.addAll(exp.getNestedClassExpressions());
-//			}
-//		}
-//
-//		ReasonerFacade reasoner = ReasonerFacade.newReasonerFacadeWithTBox(inputOntology, additionalExpressions);
+		boolean compliant = true;
 		
 		for(OWLNamedIndividual individual : inputRepairRequest.keySet()) {
 			for(OWLClassExpression concept : inputRepairRequest.get(individual)) {
 				if(reasonerWithTBox.instanceOf(individual, concept)) {
-					System.out.println(individual + " " + concept);
-					check = false;
-					break;
+					return false;
 				}
 			}
+			
 		}
 		
-		return check;
+		return compliant;
 	}
 	
-//	private Map<OWLNamedIndividual, Set<OWLClassExpression>> getRepairRequest(){
-//		return repairRequest;
-//	}
-//	
-//	private Map<OWLNamedIndividual, RepairType> getSeedFunction(){
-//		return seedFunction;
-//	}
 	
+	private void CQRepair() throws OWLOntologyCreationException {
+		CQRepairGenerator generator = new CQRepairGenerator(ontology, seedFunction);
+		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
+		generator.CQRepair();
+		ontology = generator.getOntology();
+	}
 	
+	private void IQRepair() throws OWLOntologyCreationException {
+		IQRepairGenerator generator = new IQRepairGenerator(ontology, seedFunction);
+		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
+		generator.IQRepair();
+		ontology = generator.getOntology();
+	}
 }
