@@ -210,5 +210,32 @@ public class ReasonerFacade {
         else
             return freshName(expressions);
     }
+    
+    public boolean isCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
+//    	System.out.println("Sets " + set1 + " " + set2);
+    	for(OWLClassExpression atom1 : set1) {
+    		Set<OWLClassExpression> singleton = new HashSet<>();
+    		singleton.add(atom1);
+    		OWLClassExpression tempConcept = atLeastOneCovered(singleton, set2);
+    		if(tempConcept == null) {
+    			return false;
+    		}
+    		
+    	}
+    	return true;
+    }
+    
+    public OWLClassExpression atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
+		
+		for(OWLClassExpression atom1 : set1) {
+			for(OWLClassExpression atom2 : set2) {
+				if(subsumedBy(atom1, atom2)) {
+					return atom2;
+				}
+			}
+		}
+		
+		return null;
+	}
 
 }

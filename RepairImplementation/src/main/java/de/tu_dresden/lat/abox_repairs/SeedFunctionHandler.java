@@ -69,7 +69,7 @@ public class SeedFunctionHandler {
 
 						if(seedFunctionCollector.containsKey(individual)) {
 							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-							OWLClassExpression tempConcept = atLeastOneCovered(
+							OWLClassExpression tempConcept = reasonerWithoutTBox.atLeastOneCovered(
 									seedFunctionCollector.get(individual), topLevelConjuncts);
 							if(tempConcept != null) {
 								seedFunctionCollector.get(individual).add(tempConcept);
@@ -111,17 +111,5 @@ public class SeedFunctionHandler {
 		}
 	}
 	
-	private OWLClassExpression atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
-		
-		for(OWLClassExpression atom1 : set1) {
-			for(OWLClassExpression atom2 : set2) {
-				//OWLAxiom axiom = factory.getOWLSubClassOfAxiom(atom1, atom2);
-				if(reasonerWithoutTBox.subsumedBy(atom1, atom2)) {
-					return atom2;
-				}
-			}
-		}
-		
-		return null;
-	}
+	
 }
