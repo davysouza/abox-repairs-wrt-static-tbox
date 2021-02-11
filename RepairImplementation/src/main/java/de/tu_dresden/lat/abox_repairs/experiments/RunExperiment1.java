@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 public class RunExperiment1 {
 
+
     public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
         if(args.length<4) {
             System.out.println("Usage: ");
@@ -103,8 +104,6 @@ public class RunExperiment1 {
             request.put(individual, randomClasses(classList, proportionClassNames));
         }
 
-        System.out.println(request.size());
-
         return request;
     }
 
@@ -113,7 +112,7 @@ public class RunExperiment1 {
 
         List<OWLNamedIndividual> individuals = ontology.individualsInSignature().collect(Collectors.toList());
 
-        System.out.println("Requests for "+proportion*individuals.size()+" individual names.");
+        System.out.println("Requests for "+((int)proportion*individuals.size())+" individual names.");
 
         for(int i=0; i<proportion*individuals.size(); i++) {
             OWLNamedIndividual ind = individuals.get(random.nextInt(individuals.size()));

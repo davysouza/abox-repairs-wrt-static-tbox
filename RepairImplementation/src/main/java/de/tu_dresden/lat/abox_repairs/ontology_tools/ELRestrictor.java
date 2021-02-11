@@ -5,6 +5,8 @@ import java.util.Set;
 
 import com.github.jsonldjava.shaded.com.google.common.base.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
@@ -28,6 +30,9 @@ import org.semanticweb.owlapi.model.parameters.Imports;
  * @author Patrick Koopmann
  */
 public class ELRestrictor {
+    private static Logger logger = LogManager.getLogger(ELRestrictor.class);
+
+
     private final OWLDataFactory dataFactory;
 
     public static void restrictToEL(OWLOntology ontology) {
@@ -42,6 +47,8 @@ public class ELRestrictor {
     public void restrict(OWLOntology ontology) {
         Set<OWLAxiom> toRemove = new HashSet<>();
         Set<OWLAxiom> toAdd = new HashSet<>();
+
+        logger.debug("Restricting to pure EL...");
 
         ontology.axioms(Imports.INCLUDED).forEach(axiom -> {
             if(!axiomTypeAllowed(axiom)) {
@@ -58,8 +65,8 @@ public class ELRestrictor {
             }
         });
 
-        toRemove.stream().forEach(a -> System.out.println("Removing (not in EL): "+a));
-        toAdd.stream().forEach(a -> System.out.println("Adding (converted): "+a));
+        toRemove.stream().forEach(a -> logger.debug("Removing (not in EL): "+a));
+        toAdd.stream().forEach(a -> logger.debug("Adding (converted): "+a));
         
         
         //System.out.println("Removed "+(toRemove.size()-toAdd.size())+" axioms and converted "+toAdd.size()+" axioms.");
