@@ -14,13 +14,7 @@ import java.util.Set;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
@@ -33,6 +27,8 @@ import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 import de.tu_dresden.lat.abox_repairs.saturation.CanonicalModelGenerator;
 import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
+
+import javax.print.attribute.standard.RequestingUserName;
 
 
 public class Main {
@@ -47,17 +43,14 @@ public class Main {
 	
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
-	 
-	private Set<OWLOntology> importsClosure;
-	private OWLEntityChecker entityChecker;
-	private ManchesterOWLSyntaxParser parser;
 	
 	private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 	
-	private Scanner reader;
+	//private Scanner reader;
 	
-	private CycleChecker checker;
-	
+	//private CycleChecker checker;
+
+	public enum RepairVariant {IQ, CQ, INVALID};
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException, SaturationException {
 		
@@ -66,113 +59,139 @@ public class Main {
 		int i = 0;
 		while(i < args.length) {
 			// Initialize ontology
-			m.ontologyInitialisation(args, i);
-			
-			System.out.println("after initializing ontology: ");
-			for(OWLAxiom ax : m.ontology.getTBoxAxioms(Imports.INCLUDED)) {
+			// m.ontologyInitialisation(args, i);
+
+			OWLOntology ontology =
+					OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(args[i]));
+
+			System.out.println("after loading ontology: ");
+			for(OWLAxiom ax : ontology.getTBoxAxioms(Imports.INCLUDED)) {
 				System.out.println("tbox axiom " + ax);
 			}
+
 			
-			
-			boolean tboxExists = true;
-			if(m.ontology.getTBoxAxioms(Imports.INCLUDED).isEmpty()) {
-				tboxExists = false;
-			}
-			
-			// Initialize parser
-			m.parserInitialisation();
+			// // Initialize parser
+			// m.parserInitialisation();
 			
 			// Initialize repair request
-			m.repairRequestScanning(args, i);
-			
-			
-			if(args[i+2].equals("CQ") && tboxExists) {	
-				m.cqSaturate();
+
+			File file = new File(args[i+1]);
+			RepairRequestParser rrParser = new RepairRequestParser(m.ontology);
+			Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest = rrParser.repairRequestScanning(file);
+
+
+			RepairVariant variant;
+
+			switch(args[i+2]){
+				case "IQ": variant = RepairVariant.IQ; break;
+				case "CQ": variant = RepairVariant.CQ; break;
+				default: variant = RepairVariant.INVALID;
+			}
+
+			m.performRepair(ontology, repairRequest, variant);
+
+				i+=3;
+				if(i < args.length) System.out.println("\n" + "=================================================");
+//			}
+		}		
+	}
+
+	public void performRepair(OWLOntology ontology,
+							  Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest,
+							  RepairVariant repairVariant) throws OWLOntologyCreationException, SaturationException {
+
+		setOntology(ontology);
+		this.repairRequest=repairRequest;
+
+		boolean tboxExists = true;
+		if (ontology.getTBoxAxioms(Imports.INCLUDED).isEmpty()) {
+			tboxExists = false;
+		}
+
+		if (repairVariant.equals(RepairVariant.CQ) && tboxExists) {
+			cqSaturate();
 //				for(OWLAxiom ax : m.ontology.getTBoxAxioms(Imports.INCLUDED)) {
 //					System.out.println("axiom debug" + ax);
 //				}
-			}
-			
-			// Initialize reasoner 
-			m.reasonerFacadeInitialisation();
-			
-			System.out.println("after initializing reasoners: ");
-			for(OWLAxiom ax : m.ontology.getTBoxAxioms(Imports.INCLUDED)) {
-				System.out.println("tbox axiom " + ax);
-			}
-			
-			// Saturate the ontology
-			if(args[i+2].equals("IQ") && tboxExists) {
-				m.iqSaturate();
-			}
-			
-		
+		}
+
+		// Initialize reasoner
+		initReasonerFacade();
+
+		System.out.println("after initializing reasoners: ");
+		for (OWLAxiom ax : ontology.getTBoxAxioms(Imports.INCLUDED)) {
+			System.out.println("tbox axiom " + ax);
+		}
+
+		// Saturate the ontology
+		if (repairVariant.equals(RepairVariant.IQ) && tboxExists) {
+			iqSaturate();
+		}
+
+
 //			if(!(args[i+2].equals("CQ") && m.checker.cyclic())) {
-				if(m.isCompliant(m.ontology, m.repairRequest)) {
-					System.out.println("\nThe ontology is compliant!");
-				}
-				else {
-					System.out.println("\nThe ontology is not compliant!");
-					
-					m.seedFunctionConstruction(m.repairRequest);
-					Set<OWLNamedIndividual> setIndividuals = m.seedFunction.keySet();
-					Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
-					System.out.println("\nSeed Function");
-					while(iteSetIndividuals.hasNext()) {
-						OWLNamedIndividual oni = iteSetIndividuals.next();
-						System.out.println("- " + oni);
-						RepairType type = m.seedFunction.get(oni);
-						System.out.println(type.getClassExpressions());
-						System.out.println();
-					}
-					
-					m.cleanOntology();
-					
-					if(args[i+2] instanceof String && args[i+2].equals("IQ")) {
-						m.IQRepair();
-						
-						System.out.println("Size of the IQ-repair:" + m.ontology.getIndividualsInSignature().size());
-					}
-					else {
-						m.CQRepair();
-						
-						System.out.println("Size of the CQ-repair:" + m.ontology.getIndividualsInSignature().size());
-					}
-				
-		
-					m.reasonerFacadeInitialisation();
-					
+		if (isCompliant(ontology, repairRequest)) {
+			System.out.println("\nThe ontology is compliant!");
+		} else {
+			System.out.println("\nThe ontology is not compliant!");
+
+			seedFunctionConstruction(repairRequest);
+			Set<OWLNamedIndividual> setIndividuals = seedFunction.keySet();
+			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
+			System.out.println("\nSeed Function");
+			while (iteSetIndividuals.hasNext()) {
+				OWLNamedIndividual oni = iteSetIndividuals.next();
+				System.out.println("- " + oni);
+				RepairType type = seedFunction.get(oni);
+				System.out.println(type.getClassExpressions());
+				System.out.println();
+			}
+
+			cleanOntology();
+
+			if (repairVariant.equals(RepairVariant.IQ)) {
+				IQRepair();
+
+				System.out.println("Individuals in the IQ-repair:" + ontology.getIndividualsInSignature().size());
+			} else {
+				CQRepair();
+
+				System.out.println("Individuals in the CQ-repair:" + ontology.getIndividualsInSignature().size());
+			}
+
+
+			initReasonerFacade();
+
 //					if(args[i+2] instanceof String && args[i+2].equals("IQ") && tboxExists) {
 //						m.iqSaturate();
 //					}
 //					else if(args[i+2] instanceof String && args[i+2].equals("CQ") && tboxExists) {
 //						m.cqSaturate();
 //					}
-					
-					if(m.isCompliant(m.ontology, m.repairRequest)) {
-						System.out.println("The ontology is now compliant");
-					}
-					else {
-						System.out.println("The ontology is still not compliant");
-					}
-				}
-				i+=3;
-				if(i < args.length) System.out.println("\n" + "=================================================");
-//			}
-		}		
+
+			if (isCompliant(ontology, repairRequest)) {
+				System.out.println("The ontology is now compliant");
+			} else {
+				System.out.println("The ontology is still not compliant");
+			}
+		}
 	}
 	
-	private void ontologyInitialisation(String input[], int i) throws OWLOntologyCreationException, FileNotFoundException {
+	/*private void ontologyInitialisation(String input[], int i) throws OWLOntologyCreationException, FileNotFoundException {
 		manager = OWLManager.createOWLOntologyManager();
-		ontology = manager.loadOntologyFromOntologyDocument(new File(input[i]));
-		
+
+		setOntology(manager.loadOntologyFromOntologyDocument(new File(input[i])));
+	}*/
+
+	public void setOntology(OWLOntology ontology) {
+		this.ontology=ontology;
 		ELRestrictor.restrictToEL(ontology);
 //		checker = new CycleChecker(ontology);
 	}
 	
 
 
-	private void reasonerFacadeInitialisation() throws OWLOntologyCreationException {
+	private void initReasonerFacade() throws OWLOntologyCreationException {
 		List<OWLClassExpression> additionalExpressions = new LinkedList<>();
 
 		for(Collection<OWLClassExpression> exps:repairRequest.values()){
@@ -188,43 +207,8 @@ public class Main {
 //		System.out.println("split");
 		reasonerWithoutTBox = ReasonerFacade.newReasonerFacadeWithoutTBox(ontology, additionalExpressions);
 	}
-	
-	private void parserInitialisation() {
-		importsClosure = ontology.getImportsClosure();
-		entityChecker = new ShortFormEntityChecker(
-		        new BidirectionalShortFormProviderAdapter(manager, importsClosure, 
-		            new SimpleShortFormProvider()));
-		
-		parser = OWLManager.createManchesterParser();
-		parser.setDefaultOntology(ontology);
-	    parser.setOWLEntityChecker(entityChecker);
-	}
 
-	private void repairRequestScanning(String input[], int i) throws FileNotFoundException {
-		
-		reader = new Scanner(new File(input[i+1]));
-		repairRequest = new HashMap<>();
-		while(reader.hasNextLine()) {
-			String policy = reader.nextLine();
-		    parser.setStringToParse(policy.trim());
-			
-		    OWLClassAssertionAxiom axiom = (OWLClassAssertionAxiom) parser.parseAxiom();
-		    
-		    OWLNamedIndividual assertedIndividual = (OWLNamedIndividual) axiom.getIndividual();
-		    
-		    if(repairRequest.containsKey(assertedIndividual)) {
-		    	Set<OWLClassExpression> setOfClasses = repairRequest.get(assertedIndividual);
-		    	setOfClasses.add(axiom.getClassExpression());
-		    	repairRequest.put(assertedIndividual, setOfClasses);
-		    }
-		    else {
-		    	Set<OWLClassExpression> setOfClasses = new HashSet<OWLClassExpression>();
-		    	setOfClasses.add(axiom.getClassExpression());
-		    	repairRequest.put(assertedIndividual, setOfClasses);
-		    }
-		}
-	}
-	
+
 	private void cqSaturate() throws SaturationException {
 		System.out.println("\nCQ-saturation");
 		ChaseGenerator chase = new ChaseGenerator();
