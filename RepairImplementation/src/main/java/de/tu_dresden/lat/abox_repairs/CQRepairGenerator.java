@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -22,6 +23,7 @@ import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 import com.google.common.base.Objects;
 //import com.sun.tools.javac.util.Pair;
@@ -91,9 +93,10 @@ public class CQRepairGenerator {
 		
 		System.out.println("After generating necessary variables");
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-			System.out.println(ind);
+			System.out.println("- " + ind);
 			if(seedFunction.get(ind)!= null) {
 				System.out.println(seedFunction.get(ind).getClassExpressions());
+				System.out.println();
 			}
 			
 		}
@@ -101,7 +104,7 @@ public class CQRepairGenerator {
 		
 		cqMatrixGenerator();
 		System.out.println("\nAfter building the matrix");
-		newOntology.axioms().forEach(ax -> System.out.println(ax.toString()));
+		newOntology.axioms().forEach(ax -> System.out.println("- " + ax.toString()));
 		
 		ontology = newOntology;
 	}
@@ -114,7 +117,7 @@ public class CQRepairGenerator {
 			if(seedFunction.get(individual) != null) {
 				individualCounter.put(individual, individualCounter.get(individual) + 1);
 				OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
-						iri + "#" + individual.getIRI().getFragment() + (individualCounter.get(individual)));
+						individual.getIRI().getFragment() + (individualCounter.get(individual)));
 				
 				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
 				seedFunction.put(freshIndividual, type);
@@ -165,9 +168,10 @@ public class CQRepairGenerator {
 					RepairType type2 = seedFunction.get(ind2);
 					Set<OWLClassExpression> successorSet = computeSuccessorSet(
 							type1,role, originalInd2);
-					if(!reasonerWithTBox.isCovered(successorSet, type2.getClassExpressions())) {
+					if(type2 != null & !reasonerWithTBox.isCovered(successorSet, type2.getClassExpressions())) {
 //						System.out.println("Successor " + successorSet);
-						Set<RepairType> setOfRepairTypes = typeHandler.premiseSaturate(type2, successorSet);
+//						Set<RepairType> setOfRepairTypes = typeHandler.premiseSaturate(type2, successorSet);
+						Set<RepairType> setOfRepairTypes = typeHandler.findCoveringRepairTypes(type2, successorSet);
 						if(!setOfRepairTypes.isEmpty()) {
 //							System.out.println("SetRepairType " +setOfRepairTypes.size());
 							
@@ -182,7 +186,7 @@ public class CQRepairGenerator {
 								if(!individualAlreadyExists) {
 									individualCounter.put(originalInd2, individualCounter.get(originalInd2) + 1);
 									OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
-											iri + "#" + originalInd2.getIRI().getFragment() + 
+											originalInd2.getIRI().getFragment() + 
 											individualCounter.get(originalInd2));
 									seedFunction.put(freshIndividual, newType);
 									copyToOriginal.put(freshIndividual, originalInd2);
@@ -213,7 +217,12 @@ public class CQRepairGenerator {
 		IRI 	newIRI =  IRI.create(new File("TestOntologies/Repair.owl"));
 		
 		newOntology = man.loadOntology(newIRI);
+		for(OWLAxiom ax : ontology.getTBoxAxioms(Imports.INCLUDED)) {
+			System.out.println("axiom " + ax);
+		}
 		
+		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
+		System.out.println("\nWhen building the matrix of CQ repair");
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
 			OWLNamedIndividual originalInd = copyToOriginal.get(ind);
 			for(OWLClassAssertionAxiom ax : ontology.getClassAssertionAxioms(originalInd)) {
@@ -221,15 +230,17 @@ public class CQRepairGenerator {
 					
 					OWLClassAssertionAxiom newAxiom = factory.getOWLClassAssertionAxiom(ax.getClassExpression(), ind);
 					newOntology.add(newAxiom);
-//					System.out.println("New " + newAxiom);
+					System.out.println("New " + newAxiom);
 				}
 			}
 		}
 		
 		for(OWLNamedIndividual ind1 : setOfCollectedIndividuals) {
 			OWLNamedIndividual originalInd1 = copyToOriginal.get(ind1);
+			
 			for(OWLNamedIndividual ind2 : setOfCollectedIndividuals) {
 				OWLNamedIndividual originalInd2 = copyToOriginal.get(ind2);
+				
 				for(OWLObjectProperty role : ontology.getObjectPropertiesInSignature()) {
 					OWLObjectPropertyAssertionAxiom roleAssertion = factory
 							.getOWLObjectPropertyAssertionAxiom(role, originalInd1, originalInd2);

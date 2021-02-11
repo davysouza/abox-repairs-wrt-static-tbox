@@ -39,19 +39,19 @@ public class ChaseGenerator implements ABoxSaturator {
 		final OwlToRulesConverter owlToRulesConverter = new OwlToRulesConverter();
 		owlToRulesConverter.addOntology(ontology);
 
-		
-		System.out.println("TBox axioms as rules:");
+		  
+//		System.out.println("TBox axioms as rules:");
 		final Set<Rule> rules = owlToRulesConverter.getRules();
-		for (final Rule rule : rules) {
-			System.out.println(" - rule: " + rule);
-		}
-		System.out.println();
-		System.out.println("Facts:");
+//		for (final Rule rule : rules) {
+//			System.out.println(" - rule: " + rule);
+//		}
+//		System.out.println();
+//		System.out.println("Facts:");
 		final Set<Fact> facts = owlToRulesConverter.getFacts();
-		for (final PositiveLiteral fact : facts) {
-			System.out.println(" - fact: " + fact);
-		}
-		System.out.println();
+//		for (final PositiveLiteral fact : facts) {
+//			System.out.println(" - fact: " + fact);
+//		}
+//		System.out.println();
 		
 		final KnowledgeBase kb = new KnowledgeBase();
 		kb.addStatements(new ArrayList<>(owlToRulesConverter.getRules()));
@@ -61,7 +61,7 @@ public class ChaseGenerator implements ABoxSaturator {
 
 			reasoner.setAlgorithm(Algorithm.RESTRICTED_CHASE);
 
-			System.out.println("Reasoning default algorithm: " + reasoner.getAlgorithm());
+//			System.out.println("Reasoning default algorithm: " + reasoner.getAlgorithm());
 			try {
 				reasoner.reason();
 			} catch (IOException e) {

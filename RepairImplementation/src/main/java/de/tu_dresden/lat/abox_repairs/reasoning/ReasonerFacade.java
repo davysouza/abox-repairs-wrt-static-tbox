@@ -65,7 +65,9 @@ public class ReasonerFacade {
     public static ReasonerFacade newReasonerFacadeWithTBox(
             OWLOntology ontology, Collection<OWLClassExpression> additionalExpressions) {
         Set<OWLClassExpression> expressions = ontology.getNestedClassExpressions();
+//        System.out.println("additionalExpressions " + additionalExpressions);
         expressions.addAll(additionalExpressions); 
+//        System.out.println("expressions " + expressions);
         return new ReasonerFacade(ontology, expressions);
     }
 
@@ -90,6 +92,7 @@ public class ReasonerFacade {
             } else {
                 name = freshName(exps);
                 OWLAxiom axiom = factory.getOWLEquivalentClassesAxiom(exp,name);
+//                System.out.println("Halo axiom " + axiom);
                 ontology.addAxiom(axiom);
                 addedAxioms.add(axiom);
             }
@@ -177,7 +180,6 @@ public class ReasonerFacade {
 
     public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
-
         return reasoner.subClasses(expression2Name.get(exp), false)
             .filter(c -> !c.isOWLThing())
             .map(name -> expression2Name.inverse().get(name))
@@ -237,5 +239,7 @@ public class ReasonerFacade {
 		
 		return null;
 	}
+    
+ 
 
 }

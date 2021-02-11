@@ -23,6 +23,7 @@ import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 import com.google.common.base.Objects;
 
@@ -89,16 +90,17 @@ public class IQRepairGenerator {
 		iqVariablesGenerator();
 		System.out.println("After generating necessary variables");
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-			System.out.println(ind);
+			System.out.println("- " + ind);
 			if(seedFunction.get(ind)!= null) {
 				System.out.println(seedFunction.get(ind).getClassExpressions());
+				System.out.println();
 			}
 			
 		}
 		
 		iqMatrixGenerator();
 		System.out.println("\nAfter building the matrix");
-		newOntology.axioms().forEach(ax -> System.out.println(ax.toString()));
+		newOntology.axioms().forEach(ax -> System.out.println("- " + ax.toString()));
 		
 		ontology = newOntology;
 	}
@@ -122,25 +124,23 @@ public class IQRepairGenerator {
 							type,(OWLObjectProperty) roleAssertion.getProperty(), 
 							originalObject);
 			
-					RepairType initType = typeHandler.newMinimisedRepairType(new HashSet<>());
+					RepairType emptyType = typeHandler.newMinimisedRepairType(new HashSet<>());
 					if(successorSet.isEmpty()) {
 						boolean individualAlreadyExists = false;
 						for(OWLNamedIndividual copy : originalToCopy.get(originalObject)) {
-							if(seedFunction.get(copy) != null) {
-								if(seedFunction.get(copy).equals(initType)) {
+							if (seedFunction.get(copy) == null || 
+								(seedFunction.get(copy) != null && seedFunction.get(copy).equals(emptyType))) {
 									individualAlreadyExists = true;
 									break;
-								}
 							}
-							
 						}
 						
 						if(!individualAlreadyExists) {
-							makeCopy(originalObject, initType);
+							makeCopy(originalObject, emptyType);
 						}
 					}
 					else {
-						Set<RepairType> setOfRepairTypes = typeHandler.premiseSaturate(initType, successorSet);
+						Set<RepairType> setOfRepairTypes = typeHandler.findCoveringRepairTypes(emptyType, successorSet);
 						if(!setOfRepairTypes.isEmpty()) {
 							
 							for(RepairType newType : setOfRepairTypes) {
@@ -174,12 +174,15 @@ public class IQRepairGenerator {
 		IRI 	newIRI =  IRI.create(new File("TestOntologies/Repair.owl"));
 		
 		newOntology = man.loadOntology(newIRI);
+		System.out.println("When building the matrix of IQ repair");
+		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
 			OWLNamedIndividual originalInd = copyToOriginal.get(ind);
 			for(OWLClassAssertionAxiom ax : ontology.getClassAssertionAxioms(originalInd)) {
 				if(seedFunction.get(ind) == null || !seedFunction.get(ind).getClassExpressions().contains(ax.getClassExpression())) {
 					OWLClassAssertionAxiom newAxiom = factory.getOWLClassAssertionAxiom(ax.getClassExpression(), ind);
 					newOntology.add(newAxiom);
+					System.out.println("New " + newAxiom);
 				}
 			}
 		}
@@ -227,11 +230,10 @@ public class IQRepairGenerator {
 	private Set<OWLClassExpression> computeSuccessorSet(RepairType inputType, OWLObjectProperty inputRole, OWLNamedIndividual ind) {
 		Set<OWLClassExpression> set = new HashSet<>();
 		for(OWLClassExpression concept : inputType.getClassExpressions()) {
-			if(concept instanceof OWLObjectSomeValuesFrom) {
-				if(((OWLObjectSomeValuesFrom) concept).getProperty().equals(inputRole) && 
-						reasonerWithTBox.instanceOf(ind, ((OWLObjectSomeValuesFrom) concept).getFiller())) {
+			if(concept instanceof OWLObjectSomeValuesFrom &&
+				((OWLObjectSomeValuesFrom) concept).getProperty().equals(inputRole) && 
+				reasonerWithTBox.instanceOf(ind, ((OWLObjectSomeValuesFrom) concept).getFiller())) {
 					set.add(((OWLObjectSomeValuesFrom) concept).getFiller());
-				}
 			}
 		}
 		
@@ -241,7 +243,7 @@ public class IQRepairGenerator {
 	private void makeCopy(OWLNamedIndividual ind, RepairType typ) {
 		individualCounter.put(ind, individualCounter.get(ind) + 1);
 		OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
-				iri + "#" + ind.getIRI().getFragment() + 
+				 ind.getIRI().getFragment() + 
 				individualCounter.get(ind));
 		seedFunction.put(freshIndividual, typ);
 		copyToOriginal.put(freshIndividual, ind);

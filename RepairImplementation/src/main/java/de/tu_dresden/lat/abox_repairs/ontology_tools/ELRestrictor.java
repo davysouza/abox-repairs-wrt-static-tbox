@@ -62,7 +62,7 @@ public class ELRestrictor {
         toAdd.stream().forEach(a -> System.out.println("Adding (converted): "+a));
         
         
-        System.out.println("Removed "+(toRemove.size()-toAdd.size())+" axioms and converted "+toAdd.size()+" axioms.");
+        //System.out.println("Removed "+(toRemove.size()-toAdd.size())+" axioms and converted "+toAdd.size()+" axioms.");
 
         toRemove.stream().forEach(ontology::removeAxiom);
         toAdd.stream().forEach(ontology::addAxiom);

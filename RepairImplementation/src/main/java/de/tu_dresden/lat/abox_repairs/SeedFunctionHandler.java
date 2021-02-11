@@ -2,17 +2,13 @@ package de.tu_dresden.lat.abox_repairs;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
@@ -46,7 +42,7 @@ public class SeedFunctionHandler {
 		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
-			RepairType type = typeHandler.newMinimisedRepairType(seedFunctionCollector.get(individual));
+			RepairType type = typeHandler.convertToRepairType(seedFunctionCollector.get(individual));
 			seedFunction.put(individual, type);
 		}
 		return seedFunction;
@@ -63,7 +59,7 @@ public class SeedFunctionHandler {
 			System.out.println("Repair Request " + individual + " " + setOfConcepts);
 			for(OWLClassExpression concept : setOfConcepts) {
 
-				if(reasonerWithTBox.instanceOf(individual, concept)) {
+				if(reasonerWithTBox.instanceOf(individual, concept) ) {
 
 					if(concept instanceof OWLObjectIntersectionOf) {
 
