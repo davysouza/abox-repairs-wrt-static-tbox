@@ -53,7 +53,11 @@ public class RunExperiment1 {
             long seed = Long.parseLong(args[3]);
             experiment.setSeed(seed);
         }
-        experiment.startExperiment(ontologyFileName, repairVariant, proportion);
+        try {
+            experiment.startExperiment(ontologyFileName, repairVariant, proportion);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("Used seed: "+experiment.getSeed());
     }
 
