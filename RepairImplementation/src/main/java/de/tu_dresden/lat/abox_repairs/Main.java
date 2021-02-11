@@ -38,7 +38,6 @@ public class Main {
 	 * In this case: check whether they are really needed to be outside the main method,
 	 * and otherwise, add them. 
 	 */
-	private OWLOntologyManager manager;
 	private OWLOntology ontology;
 	
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
@@ -50,7 +49,7 @@ public class Main {
 	
 	//private CycleChecker checker;
 
-	public enum RepairVariant {IQ, CQ, INVALID};
+	public enum RepairVariant {IQ, CQ};
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException, SaturationException {
 		
@@ -77,7 +76,7 @@ public class Main {
 
 			File file = new File(args[i+1]);
 			RepairRequestParser rrParser = new RepairRequestParser(m.ontology);
-			Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest = rrParser.repairRequestScanning(file);
+			RepairRequest repairRequest = rrParser.repairRequestScanning(file);
 
 
 			RepairVariant variant;
@@ -85,7 +84,10 @@ public class Main {
 			switch(args[i+2]){
 				case "IQ": variant = RepairVariant.IQ; break;
 				case "CQ": variant = RepairVariant.CQ; break;
-				default: variant = RepairVariant.INVALID;
+				default:
+					System.out.println("Unknown repairVariant: "+args[i+2]);
+					System.exit(1);
+					variant = RepairVariant.CQ;
 			}
 
 			m.performRepair(ontology, repairRequest, variant);
@@ -97,7 +99,7 @@ public class Main {
 	}
 
 	public void performRepair(OWLOntology ontology,
-							  Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest,
+							  RepairRequest repairRequest,
 							  RepairVariant repairVariant) throws OWLOntologyCreationException, SaturationException {
 
 		setOntology(ontology);

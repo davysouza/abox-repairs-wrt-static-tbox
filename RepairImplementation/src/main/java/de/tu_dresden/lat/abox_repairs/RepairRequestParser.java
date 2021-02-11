@@ -39,10 +39,10 @@ public class RepairRequestParser {
     }
 
 
-    public Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequestScanning(File file) throws FileNotFoundException {
+    public RepairRequest repairRequestScanning(File file) throws FileNotFoundException {
 
         Scanner reader = new Scanner(file);
-        Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest = new HashMap<>();
+        RepairRequest repairRequest = new RepairRequest();
         while(reader.hasNextLine()) {
             String policy = reader.nextLine();
             parser.setStringToParse(policy.trim());
