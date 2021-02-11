@@ -19,13 +19,14 @@ import java.util.stream.Collectors;
 public class RunExperiment1 {
 
     public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
-        if(args.length!=3) {
+        if(args.length<3) {
             System.out.println("Usage: ");
-            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE [IQ|CQ] PROPORTION");
+            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE IQ|CQ PROPORTION [SEED]");
             System.out.println();
             System.out.println("Generates a repair of ONTOLOGY_FILE with a randomly generated repair request that");
             System.out.println("randomly assigns concept names to each individual name so that a proportion of ");
-            System.out.println("PROPORTION of the entire set of concept names is selected");
+            System.out.println("PROPORTION of the entire set of concept names is selected. You may optionally provide");
+            System.out.println("a seed value for the random number generator used.");
             System.out.println();
             System.out.println("Example: ");
             System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+" ore_ont_3453.owl IQ 0.2");
@@ -46,10 +47,35 @@ public class RunExperiment1 {
 
         double proportion = Double.parseDouble(args[2]);
 
-        startExperiment(ontologyFileName, repairVariant, proportion);
+        RunExperiment1 experiment = new RunExperiment1();
+
+        if(args.length>3){
+            long seed = Long.parseLong(args[3]);
+            experiment.setSeed(seed);
+        }
+        experiment.startExperiment(ontologyFileName, repairVariant, proportion);
+        System.out.println("Used seed: "+experiment.getSeed());
     }
 
-    private static void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, double proportion)
+    private final Random random;
+    private long seed;
+
+    private RunExperiment1(){
+        random = new Random();
+        seed = random.nextLong();
+        random.setSeed(seed);
+    }
+
+    private long getSeed(){
+        return seed;
+    }
+
+    private void setSeed(long seed) {
+        this.seed=seed;
+        random.setSeed(seed);
+    }
+
+    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, double proportion)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
@@ -62,7 +88,7 @@ public class RunExperiment1 {
         main.performRepair(ontology, repairRequest, repairVariant);
     }
 
-    private static RepairRequest generateRepairRequest(OWLOntology ontology, double proportion) {
+    private RepairRequest generateRepairRequest(OWLOntology ontology, double proportion) {
         RepairRequest request = new RepairRequest();
 
         List<OWLClass> classList = ontology.classesInSignature().collect(Collectors.toList());
@@ -74,9 +100,8 @@ public class RunExperiment1 {
         return request;
     }
 
-    private static Set<OWLClassExpression> randomClasses(List<OWLClass> classList, double proportion) {
+    private Set<OWLClassExpression> randomClasses(List<OWLClass> classList, double proportion) {
         Set<OWLClassExpression> result = new HashSet<>();
-        Random random = new Random();
 
         for(int i=0; i<proportion*classList.size(); i++) {
             OWLClass cl = classList.get(random.nextInt(classList.size()));
