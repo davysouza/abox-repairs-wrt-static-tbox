@@ -28,7 +28,7 @@ public class RunExperiment1 {
             System.out.println("PROPORTION of the entire set of concept names is selected");
             System.out.println();
             System.out.println("Example: ");
-            System.out.println("java -cp ... "+RunExperiment1.class.getClass().getCanonicalName()+" ore_ont_3453.owl IQ 0.2");
+            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+" ore_ont_3453.owl IQ 0.2");
             System.exit(0);
         }
 
@@ -77,9 +77,10 @@ public class RunExperiment1 {
     private static Set<OWLClassExpression> randomClasses(List<OWLClass> classList, double proportion) {
         Set<OWLClassExpression> result = new HashSet<>();
         Random random = new Random();
+
         for(int i=0; i<proportion*classList.size(); i++) {
             OWLClass cl = classList.get(random.nextInt(classList.size()));
-            while(!result.contains(cl)){
+            while(result.contains(cl)){
                 cl = classList.get(random.nextInt(classList.size()));
             }
             result.add(cl);
