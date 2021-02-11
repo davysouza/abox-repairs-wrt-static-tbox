@@ -112,7 +112,7 @@ public class RunExperiment1 {
 
         List<OWLNamedIndividual> individuals = ontology.individualsInSignature().collect(Collectors.toList());
 
-        System.out.println("Requests for "+((int)proportion*individuals.size())+" individual names.");
+        System.out.println("Requests for "+((int)(proportion*individuals.size()))+" individual names.");
 
         for(int i=0; i<proportion*individuals.size(); i++) {
             OWLNamedIndividual ind = individuals.get(random.nextInt(individuals.size()));
