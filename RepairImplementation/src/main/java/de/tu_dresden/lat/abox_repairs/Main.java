@@ -125,6 +125,10 @@ public class Main {
 			System.out.println("tbox axiom " + ax);
 		}
 
+		if(!RepairRequest.checkValid(repairRequest, reasonerWithTBox)) {
+			throw new IllegalArgumentException("Invalid repair request.");
+		}
+
 		// Saturate the ontology
 		if (repairVariant.equals(RepairVariant.IQ) && tboxExists) {
 			iqSaturate();

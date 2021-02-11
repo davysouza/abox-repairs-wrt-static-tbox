@@ -144,6 +144,12 @@ public class ReasonerFacade {
             .collect(Collectors.toSet());
     }
 
+    public boolean equivalentToOWLThing(OWLClassExpression exp) {
+        verifyKnows(exp);
+
+        return reasoner.topClassNode().anyMatch(cl -> expression2Name.equals(cl));
+    }
+
     public Set<OWLClassExpression> directSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
@@ -237,9 +243,7 @@ public class ReasonerFacade {
 			}
 		}
 		
-		return null;
+		return null; // TODO: null should never be returned by a method. Have you considered using an Optional
+                     // TODO: or throwing an Exception?
 	}
-    
- 
-
 }
