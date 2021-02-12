@@ -24,6 +24,10 @@ public class RepairRequest extends HashMap<OWLNamedIndividual, Set<OWLClassExpre
     public static boolean checkValid(RepairRequest rr, ReasonerFacade reasonerWithTBox) {
         for(OWLNamedIndividual ind: rr.individuals()){
             for(OWLClassExpression exp: rr.get(ind)){
+//            	if(exp.isOWLThing()) {
+//            		System.out.println("Top!! for " + ind );
+//            		return false;
+//            	}
                 if(reasonerWithTBox.equivalentToOWLThing(exp)) {
                     System.out.println("Repair request contains "+exp+" for "+ind);
                     System.out.println(exp+" is equivalent to owl:Thing");

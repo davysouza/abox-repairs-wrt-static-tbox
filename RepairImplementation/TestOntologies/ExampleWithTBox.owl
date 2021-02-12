@@ -84,14 +84,14 @@
     <!-- urn:absolute:TBox#a -->
 
     <owl:NamedIndividual rdf:about="urn:absolute:TBox#a">
-        <TBox:r rdf:resource="urn:absolute:TBox#b"/>
+        <TBox:r rdf:resource="urn:absolute:TBox#x"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- urn:absolute:TBox#b -->
+    <!-- urn:absolute:TBox#x -->
 
-    <owl:NamedIndividual rdf:about="urn:absolute:TBox#b">
+    <owl:NamedIndividual rdf:about="urn:absolute:TBox#x">
         <rdf:type rdf:resource="urn:absolute:TBox#B1"/>
         <rdf:type rdf:resource="urn:absolute:TBox#B2"/>
     </owl:NamedIndividual>

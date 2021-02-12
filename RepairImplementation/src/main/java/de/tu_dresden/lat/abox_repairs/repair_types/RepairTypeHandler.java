@@ -67,25 +67,28 @@ public class RepairTypeHandler {
     
     public RepairType convertToRepairType(Set<OWLClassExpression> expSet) {
     	Random rand = new Random();
-    	for(OWLClassExpression exp : expSet) {
+    	System.out.println("ExpSet " + expSet);
+    	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
+    		for(OWLClassExpression exp : expSet) {
     			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.subsumees(exp));
-    			System.out.println("set of subsumees wrt TBox of " + exp + " is " + reasonerWithTBox.subsumees(exp));
-    			System.out.println("set of subsumees not wrt TBox of " + exp + " is " + reasonerWithoutTBox.subsumees(exp));
-    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
-    			System.out.println("set of subsumees of " + exp + " is " + setOfSubsumees);
+
+//    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
+
     			for (OWLClassExpression subConcept : setOfSubsumees) {
-//    				System.out.println("subsumess " + subConcept);
+
     				if(subConcept != null) {
     					if (!expSet.stream().anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
             				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
             				int index = rand.nextInt(listOfConcept.size());
-            				expSet.add(listOfConcept.get(index));
+            				resultingSet.add(listOfConcept.get(index));
             			}
     				}
         		}
-    	}
+    		}
+    
     	
-    	return newMinimisedRepairType(expSet);
+    	
+    	return newMinimisedRepairType(resultingSet);
     	
     }
     
