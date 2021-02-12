@@ -1,15 +1,7 @@
 package de.tu_dresden.lat.abox_repairs;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
@@ -100,6 +92,11 @@ public class Main {
 		setOntology(ontology);
 		this.repairRequest=repairRequest;
 
+		long startTime = System.nanoTime();
+
+		int oldIndividuals = ontology.getIndividualsInSignature().size();
+		long oldAssertions = ontology.aboxAxioms(Imports.INCLUDED).count();
+
 		boolean tboxExists = true;
 		if (ontology.getTBoxAxioms(Imports.INCLUDED).isEmpty()) {
 			tboxExists = false;
@@ -154,9 +151,13 @@ public class Main {
 				CQRepair();
 			}
 
+			double timeRepairing = (double)(System.nanoTime() - startTime)/1_000_000_000;
 
-			System.out.println("Individuals in the IQ-repair:" + ontology.getIndividualsInSignature().size());
-			System.out.println("Assertions in the IQ-repair:" + ontology.aboxAxioms(Imports.EXCLUDED).count());
+			System.out.print("#Individuals (repair/orig): "
+					+ ontology.getIndividualsInSignature().size()+"/"+oldIndividuals);
+			System.out.print(" #Assertions (repair/orig): " +
+					ontology.aboxAxioms(Imports.EXCLUDED).count()+"/"+oldAssertions);
+			System.out.println(" Duration (sec.): "+timeRepairing );
 
 			initReasonerFacade();
 
