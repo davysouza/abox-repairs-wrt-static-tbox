@@ -172,11 +172,13 @@ public class IQRepairGenerator {
 	}
 	
 	private void iqMatrixGenerator() throws OWLOntologyCreationException {
-		OWLOntologyManager man = OWLManager.createOWLOntologyManager();
+		/*OWLOntologyManager man = OWLManager.createOWLOntologyManager();
 		IRI 	newIRI =  IRI.create(new File("TestOntologies/Repair.owl"));
-		
-		newOntology = man.loadOntology(newIRI);
+
+		newOntology = man.loadOntology(newIRI);*/
 //		System.out.println("When building the matrix of IQ repair");
+		newOntology = ontology.getOWLOntologyManager().createOntology();
+
 		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
 			OWLNamedIndividual originalInd = copyToOriginal.get(ind);

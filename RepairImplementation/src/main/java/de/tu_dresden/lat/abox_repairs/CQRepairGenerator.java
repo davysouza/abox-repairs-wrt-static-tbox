@@ -214,9 +214,12 @@ public class CQRepairGenerator {
 	
 	private void cqMatrixGenerator() throws OWLOntologyCreationException {
 		OWLOntologyManager man = OWLManager.createOWLOntologyManager();
-		IRI 	newIRI =  IRI.create(new File("TestOntologies/Repair.owl"));
+		//IRI 	newIRI =  IRI.create(new File("TestOntologies/Repair.owl"));
 		
-		newOntology = man.loadOntology(newIRI);
+		//newOntology = man.loadOntology(newIRI);
+
+		newOntology = man.createOntology();
+
 		for(OWLAxiom ax : ontology.getTBoxAxioms(Imports.INCLUDED)) {
 			System.out.println("axiom " + ax);
 		}

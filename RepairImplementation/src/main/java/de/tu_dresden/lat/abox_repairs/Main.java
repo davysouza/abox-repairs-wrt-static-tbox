@@ -229,7 +229,6 @@ public class Main {
 		return compliant;
 	}
 	
-	
 	private void CQRepair() throws OWLOntologyCreationException {
 		CQRepairGenerator generator = new CQRepairGenerator(ontology, seedFunction);
 		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
