@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import de.tu_dresden.lat.abox_repairs.ontology_tools.FreshNameProducer;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -39,7 +40,8 @@ public class ReasonerFacade {
     private final OWLDataFactory factory;
 
     private final OWLReasoner reasoner;
-    private int freshNameCounter = 0;
+
+    private final FreshNameProducer freshNameProducer;
 
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology)
             throws OWLOntologyCreationException {
@@ -79,6 +81,7 @@ public class ReasonerFacade {
         this.ontology = ontology;
         this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
+        freshNameProducer = FreshNameProducer.newFromClassExpressions(factory,expressions);
         addExpressions(expressions);
 
         reasoner = new ElkReasonerFactory().createReasoner(ontology);
@@ -91,7 +94,7 @@ public class ReasonerFacade {
             if(exp instanceof OWLClass) {
                 name = (OWLClass) exp;
             } else {
-                name = freshName(exps);
+                name = freshNameProducer.freshName();
                 OWLAxiom axiom = factory.getOWLEquivalentClassesAxiom(exp,name);
 //                System.out.println("Halo axiom " + axiom);
                 ontology.addAxiom(axiom);
@@ -208,19 +211,6 @@ public class ReasonerFacade {
     }
 
 
-    private OWLClass freshName(Set<OWLClassExpression> expressions) {
-        OWLClass name = factory.getOWLClass(IRI.create(""+freshNameCounter));
-
-        freshNameCounter++;
-
-        while(expressions.contains(name)) {
-            name = factory.getOWLClass(IRI.create(""+freshNameCounter));
-            freshNameCounter++;
-        }
-
-        return name;
-    }
-    
     public boolean isCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
 
     

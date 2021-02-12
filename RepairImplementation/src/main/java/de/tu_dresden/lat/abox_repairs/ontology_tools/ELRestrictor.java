@@ -35,11 +35,6 @@ public class ELRestrictor {
 
     private final OWLDataFactory dataFactory;
 
-    public static void restrictToEL(OWLOntology ontology) {
-        ELRestrictor restrictor = new ELRestrictor(ontology.getOWLOntologyManager().getOWLDataFactory());
-        restrictor.restrict(ontology);
-    }
-
     public ELRestrictor(OWLDataFactory dataFactory) {
         this.dataFactory=dataFactory;
     }

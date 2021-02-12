@@ -3,6 +3,7 @@ package de.tu_dresden.lat.abox_repairs;
 import java.io.*;
 import java.util.*;
 
+import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
@@ -173,7 +174,7 @@ public class Main {
 
 	public void setOntology(OWLOntology ontology) {
 		this.ontology=ontology;
-		ELRestrictor.restrictToEL(ontology);
+		OntologyPreparations.prepare(ontology);
 	}
 	
 
@@ -228,7 +229,7 @@ public class Main {
 		
 		return compliant;
 	}
-	
+
 	private void CQRepair() throws OWLOntologyCreationException {
 		CQRepairGenerator generator = new CQRepairGenerator(ontology, seedFunction);
 		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);

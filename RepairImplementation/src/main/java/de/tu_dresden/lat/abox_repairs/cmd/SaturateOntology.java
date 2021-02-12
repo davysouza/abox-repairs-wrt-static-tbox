@@ -2,6 +2,7 @@ package de.tu_dresden.lat.abox_repairs.cmd;
 
 import java.io.File;
 
+import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -37,8 +38,8 @@ public class SaturateOntology {
         System.out.println("TBox: "+ontology.getTBoxAxioms(Imports.INCLUDED).size()
             +" ABox: "+ontology.getABoxAxioms(Imports.INCLUDED).size());
 
-        System.out.println("Restricting to pure EL...");
-        ELRestrictor.restrictToEL(ontology);
+        System.out.println("Restricting to pure EL and flattening ABox...");
+        OntologyPreparations.prepare(ontology);
 
         System.out.println("TBox: "+ontology.getTBoxAxioms(Imports.INCLUDED).size()
             +" ABox: "+ontology.getABoxAxioms(Imports.INCLUDED).size());
