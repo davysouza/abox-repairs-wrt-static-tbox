@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
@@ -42,6 +43,7 @@ public class SeedFunctionHandler {
 		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
+			System.out.println("individual " + individual);
 			RepairType type = typeHandler.convertToRepairType(seedFunctionCollector.get(individual));
 			seedFunction.put(individual, type);
 		}
@@ -65,10 +67,10 @@ public class SeedFunctionHandler {
 
 						if(seedFunctionCollector.containsKey(individual)) {
 							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-							OWLClassExpression tempConcept = reasonerWithoutTBox.atLeastOneCovered(
+							Optional<OWLClassExpression> opt = reasonerWithoutTBox.atLeastOneCovered(
 									seedFunctionCollector.get(individual), topLevelConjuncts);
-							if(tempConcept != null) {
-								seedFunctionCollector.get(individual).add(tempConcept);
+							if(opt.isPresent()) {
+								seedFunctionCollector.get(individual).add(opt.get());
 								seedFunctionCollector.put(individual, seedFunctionCollector.get(individual));
 							}
 							else {

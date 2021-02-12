@@ -106,7 +106,7 @@ public class CQRepairGenerator {
 		System.out.println("\nAfter building the matrix");
 		newOntology.axioms().forEach(ax -> System.out.println("- " + ax.toString()));
 		
-		ontology = newOntology;
+//		ontology = newOntology;
 	}
 	
 	private void initialisation() {
@@ -273,8 +273,8 @@ public class CQRepairGenerator {
 		
 	}
 	
-	public OWLOntology getOntology() {
-		return ontology;
+	public OWLOntology getRepair() {
+		return newOntology;
 	}
 	
 	private Set<OWLClassExpression> computeSuccessorSet(RepairType inputType, OWLObjectProperty inputRole, OWLNamedIndividual ind) {

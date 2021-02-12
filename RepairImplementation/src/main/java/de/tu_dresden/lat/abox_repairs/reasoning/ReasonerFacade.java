@@ -3,6 +3,7 @@ package de.tu_dresden.lat.abox_repairs.reasoning;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -146,7 +147,6 @@ public class ReasonerFacade {
 
     public boolean equivalentToOWLThing(OWLClassExpression exp) {
         verifyKnows(exp);
-
         return reasoner.topClassNode().anyMatch(cl -> expression2Name.get(exp).equals(cl));
     }
 
@@ -213,37 +213,53 @@ public class ReasonerFacade {
 
         freshNameCounter++;
 
-        if(!expressions.contains(name))
-            return name;
-        else
-            return freshName(expressions);
+        while(expressions.contains(name)) {
+            name = factory.getOWLClass(IRI.create(""+freshNameCounter));
+            freshNameCounter++;
+        }
+
+        return name;
     }
     
     public boolean isCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
-//    	System.out.println("Sets " + set1 + " " + set2);
-    	for(OWLClassExpression atom1 : set1) {
-    		Set<OWLClassExpression> singleton = new HashSet<>();
-    		singleton.add(atom1);
-    		OWLClassExpression tempConcept = atLeastOneCovered(singleton, set2);
-    		if(tempConcept == null) {
-    			return false;
-    		}
-    		
-    	}
-    	return true;
+
+    
+    	return set1.parallelStream()
+    			.allMatch(atom1 -> set2.parallelStream()
+    					.anyMatch(atom2 -> subsumedBy(atom1, atom2)));
+    	
+//    	for(OWLClassExpression atom1 : set1) {
+//    		Set<OWLClassExpression> singleton = new HashSet<>();
+//    		singleton.add(atom1);
+//    		OWLClassExpression tempConcept = atLeastOneCovered(singleton, set2);
+//    		if(tempConcept == null) {
+//    			return false;
+//    		}
+//    		
+//    	}
+//    	return true;
     }
     
-    public OWLClassExpression atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
+    public Optional<OWLClassExpression> atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
 		
-		for(OWLClassExpression atom1 : set1) {
-			for(OWLClassExpression atom2 : set2) {
-				if(subsumedBy(atom1, atom2)) {
-					return atom2;
-				}
-			}
-		}
-		
-		return null; // TODO: null should never be returned by a method. Have you considered using an Optional
-                     // TODO: or throwing an Exception?
+    	for(OWLClassExpression atom1 : set1) {
+    		Set<OWLClassExpression> tempSet = new HashSet<>();
+    		tempSet.add(atom1);
+    		if(isCovered(tempSet, set2)) return Optional.of(atom1);
+    	}
+    	return Optional.empty();
+    	
+//    	
+//    	
+//		for(OWLClassExpression atom1 : set1) {
+//			for(OWLClassExpression atom2 : set2) {
+//				if(subsumedBy(atom1, atom2)) {
+//					return atom2;
+//				}
+//			}
+//		}
+//		
+//		return null; // TODO: null should never be returned by a method. Have you considered using an Optional
+//                     // TODO: or throwing an Exception?
 	}
 }

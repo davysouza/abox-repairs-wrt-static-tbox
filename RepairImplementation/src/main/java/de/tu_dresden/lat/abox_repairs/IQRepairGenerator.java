@@ -88,21 +88,23 @@ public class IQRepairGenerator {
 	public void IQRepair() throws OWLOntologyCreationException {
 		
 		iqVariablesGenerator();
-		System.out.println("After generating necessary variables");
-		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-			System.out.println("- " + ind);
-			if(seedFunction.get(ind)!= null) {
-				System.out.println(seedFunction.get(ind).getClassExpressions());
-				System.out.println();
-			}
-			
-		}
+//		System.out.println("After generating necessary variables");
+//		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
+//			System.out.println("- " + ind);
+//			if(seedFunction.get(ind)!= null) {
+//				System.out.println(seedFunction.get(ind).getClassExpressions());
+//				System.out.println();
+//			}
+//			
+//		}
 		
 		iqMatrixGenerator();
-		System.out.println("\nAfter building the matrix");
-		newOntology.axioms().forEach(ax -> System.out.println("- " + ax.toString()));
+//		System.out.println("\nAfter building the matrix");
+//		newOntology.axioms().forEach(ax -> System.out.println("- " + ax.toString()));
 		
-		ontology = newOntology;
+		
+//		ontology = newOntology;
+		
 	}
 	
 	
@@ -174,7 +176,7 @@ public class IQRepairGenerator {
 		IRI 	newIRI =  IRI.create(new File("TestOntologies/Repair.owl"));
 		
 		newOntology = man.loadOntology(newIRI);
-		System.out.println("When building the matrix of IQ repair");
+//		System.out.println("When building the matrix of IQ repair");
 		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
 			OWLNamedIndividual originalInd = copyToOriginal.get(ind);
@@ -182,7 +184,7 @@ public class IQRepairGenerator {
 				if(seedFunction.get(ind) == null || !seedFunction.get(ind).getClassExpressions().contains(ax.getClassExpression())) {
 					OWLClassAssertionAxiom newAxiom = factory.getOWLClassAssertionAxiom(ax.getClassExpression(), ind);
 					newOntology.add(newAxiom);
-					System.out.println("New " + newAxiom);
+//					System.out.println("New " + newAxiom);
 				}
 			}
 		}
@@ -223,8 +225,8 @@ public class IQRepairGenerator {
 		
 	}
 	
-	public OWLOntology getOntology() {
-		return ontology;
+	public OWLOntology getRepair() {
+		return newOntology;
 	}
 	
 	private Set<OWLClassExpression> computeSuccessorSet(RepairType inputType, OWLObjectProperty inputRole, OWLNamedIndividual ind) {

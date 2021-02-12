@@ -129,7 +129,8 @@ public class RunExperiment1 {
 
         for(int i=0; i<proportion*classList.size(); i++) {
             OWLClass cl = classList.get(random.nextInt(classList.size()));
-            while(result.contains(cl)){
+          
+            while(cl.isOWLThing() || result.contains(cl)){
                 cl = classList.get(random.nextInt(classList.size()));
             }
             result.add(cl);
