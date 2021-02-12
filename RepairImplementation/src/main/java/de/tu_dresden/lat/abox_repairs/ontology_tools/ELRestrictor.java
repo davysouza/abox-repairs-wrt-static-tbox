@@ -16,7 +16,7 @@ import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
 import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLObjectPropertyRangeAxiom;
+import org.semanticweb.owlapi.model.OWLObjectPropertyDomainAxiom;
 import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
@@ -75,7 +75,7 @@ public class ELRestrictor {
                (axiom instanceof OWLObjectPropertyAssertionAxiom) ||
                (axiom instanceof OWLSubClassOfAxiom) ||
                (axiom instanceof OWLEquivalentClassesAxiom) ||
-               (axiom instanceof OWLObjectPropertyRangeAxiom) ||
+               (axiom instanceof OWLObjectPropertyDomainAxiom) ||
                (axiom instanceof OWLDeclarationAxiom);
     }
 
@@ -87,13 +87,13 @@ public class ELRestrictor {
     }
 
     public Optional<OWLAxiom> convertIfNeeded(OWLAxiom axiom) {
-        if(axiom instanceof OWLObjectPropertyRangeAxiom) {
-            OWLObjectPropertyRangeAxiom rangeAxiom = (OWLObjectPropertyRangeAxiom) axiom;
+        if(axiom instanceof OWLObjectPropertyDomainAxiom) {
+            OWLObjectPropertyDomainAxiom domainAxiom = (OWLObjectPropertyDomainAxiom) axiom;
             return Optional.of(dataFactory.getOWLSubClassOfAxiom(
               dataFactory.getOWLObjectSomeValuesFrom(
-                  rangeAxiom.getProperty(), 
+                  domainAxiom.getProperty(),
                   dataFactory.getOWLThing()), 
-              rangeAxiom.getRange()));
+              domainAxiom.getDomain()));
         } else
             return Optional.absent();
     }
