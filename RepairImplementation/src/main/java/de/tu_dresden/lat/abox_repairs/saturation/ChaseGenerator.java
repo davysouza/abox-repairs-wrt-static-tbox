@@ -73,7 +73,7 @@ public class ChaseGenerator implements ABoxSaturator {
 			//	System.out.println("Abox: "+fact2Axiom(fact));
 				OWLAxiom axiom = fact2Axiom(fact);
 				if(!false){//ontology.containsAxiom(axiom)){
-					System.out.println("Newly derived: "+axiom);
+					//System.out.println("Newly derived: "+axiom);
 					ontology.add(axiom);
 				}
 			});
