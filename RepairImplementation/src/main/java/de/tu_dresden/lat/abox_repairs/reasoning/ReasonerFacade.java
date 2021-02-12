@@ -147,7 +147,7 @@ public class ReasonerFacade {
     public boolean equivalentToOWLThing(OWLClassExpression exp) {
         verifyKnows(exp);
 
-        return reasoner.topClassNode().anyMatch(cl -> expression2Name.equals(cl));
+        return reasoner.topClassNode().anyMatch(cl -> expression2Name.get(exp).equals(cl));
     }
 
     public Set<OWLClassExpression> directSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
