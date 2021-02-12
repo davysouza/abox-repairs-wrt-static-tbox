@@ -43,7 +43,7 @@ public class SeedFunctionHandler {
 		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
-			System.out.println("individual " + individual);
+			
 			RepairType type = typeHandler.convertToRepairType(seedFunctionCollector.get(individual));
 			seedFunction.put(individual, type);
 		}

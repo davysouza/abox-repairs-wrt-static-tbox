@@ -67,7 +67,7 @@ public class RepairTypeHandler {
     
     public RepairType convertToRepairType(Set<OWLClassExpression> expSet) {
     	Random rand = new Random();
-    	System.out.println("ExpSet " + expSet);
+    	
     	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
     		for(OWLClassExpression exp : expSet) {
     			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.subsumees(exp));
@@ -94,7 +94,13 @@ public class RepairTypeHandler {
     
     
     public Set<RepairType> findCoveringRepairTypes(RepairType type, Set<OWLClassExpression> expSet) {
-    	Set<Set<OWLClassExpression>> setOfCandidates = repairTypeCandidates(new HashSet<>(type.getClassExpressions()), expSet);
+    	
+    	
+    	Set<Set<OWLClassExpression>> setOfCandidates = 
+    			type != null? 
+    					repairTypeCandidates(new HashSet<>(type.getClassExpressions()), expSet) :
+    					repairTypeCandidates(new HashSet<>(), expSet);
+    	
     	Set<RepairType> resultingSet = new HashSet<>();
     	
     	LinkedList<Set<OWLClassExpression>> queueOfCandidates = new LinkedList<>(setOfCandidates);

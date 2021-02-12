@@ -53,11 +53,11 @@ public class Main {
 			// Initialize ontology
 			// m.ontologyInitialisation(args, i);
 
-			OWLOntology ontology =
+			m.ontology =
 					OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(args[i]));
 
 			System.out.println("after loading ontology: ");
-			for(OWLAxiom ax : ontology.getTBoxAxioms(Imports.INCLUDED)) {
+			for(OWLAxiom ax : m.ontology.getTBoxAxioms(Imports.INCLUDED)) {
 				System.out.println("tbox axiom " + ax);
 			}
 
@@ -78,7 +78,7 @@ public class Main {
 					variant = RepairVariant.CQ;
 			}
 
-			m.performRepair(ontology, repairRequest, variant);
+			m.performRepair(m.ontology, repairRequest, variant);
 
 				i+=3;
 				if(i < args.length) System.out.println("\n" + "=================================================");
@@ -86,11 +86,11 @@ public class Main {
 		}		
 	}
 
-	public void performRepair(OWLOntology ontology,
+	public void performRepair(OWLOntology inputOntology,
 							  RepairRequest repairRequest,
 							  RepairVariant repairVariant) throws OWLOntologyCreationException, SaturationException {
 
-		setOntology(ontology);
+		setOntology(inputOntology);
 		this.repairRequest=repairRequest;
 
 		long startTime = System.nanoTime();
@@ -233,14 +233,14 @@ public class Main {
 	private void CQRepair() throws OWLOntologyCreationException {
 		CQRepairGenerator generator = new CQRepairGenerator(ontology, seedFunction);
 		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
-		generator.CQRepair();
+		generator.repair();
 		ontology = generator.getRepair();
 	}
 	
 	private void IQRepair() throws OWLOntologyCreationException {
 		IQRepairGenerator generator = new IQRepairGenerator(ontology, seedFunction);
 		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
-		generator.IQRepair();
+		generator.repair();
 		ontology = generator.getRepair();
 	}
 	
