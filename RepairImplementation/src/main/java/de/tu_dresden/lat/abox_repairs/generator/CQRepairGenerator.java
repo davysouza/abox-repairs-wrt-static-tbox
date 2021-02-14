@@ -1,4 +1,4 @@
-package de.tu_dresden.lat.abox_repairs;
+package de.tu_dresden.lat.abox_repairs.generator;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -53,7 +53,13 @@ public class CQRepairGenerator extends RepairGenerator {
 			
 		}
 		
+		long startTimeVariables = System.nanoTime();
+		
 		generatingVariables();
+		
+		double timeVariables = (double)(System.nanoTime() - startTimeVariables)/1_000_000_000;
+		
+		System.out.println("Time for generating variables: " + timeVariables);
 		
 		System.out.println("\nAfter generating necessary variables");
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
@@ -65,7 +71,13 @@ public class CQRepairGenerator extends RepairGenerator {
 			
 		}
 		
+		long startTimeMatrix = System.nanoTime();
+		
 		generatingMatrix();
+		
+		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
+		
+		System.out.println("Time for generating Matrix: " + timeMatrix);
 		
 		System.out.println("\nAfter generating matrix");
 		newOntology.axioms().forEach(ax -> System.out.println(ax));

@@ -1,4 +1,4 @@
-package de.tu_dresden.lat.abox_repairs;
+package de.tu_dresden.lat.abox_repairs.generator;
 
 import java.io.File;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
 
-abstract class RepairGenerator {
+abstract public class RepairGenerator {
 	protected OWLOntology ontology;
 	protected OWLDataFactory factory;
 	protected IRI iri;
@@ -86,6 +86,7 @@ abstract class RepairGenerator {
 	
 	protected abstract void generatingVariables();
 	
+	public abstract void repair() throws OWLOntologyCreationException;
 	
 	protected void generatingMatrix() throws OWLOntologyCreationException {
 		OWLOntologyManager man = OWLManager.createOWLOntologyManager();

@@ -13,6 +13,9 @@ import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
+import de.tu_dresden.lat.abox_repairs.generator.CQRepairGenerator;
+import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
+import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.CycleChecker;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
@@ -231,14 +234,14 @@ public class Main {
 	}
 
 	private void CQRepair() throws OWLOntologyCreationException {
-		CQRepairGenerator generator = new CQRepairGenerator(ontology, seedFunction);
+		RepairGenerator generator = new CQRepairGenerator(ontology, seedFunction);
 		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
 		generator.repair();
 		ontology = generator.getRepair();
 	}
 	
 	private void IQRepair() throws OWLOntologyCreationException {
-		IQRepairGenerator generator = new IQRepairGenerator(ontology, seedFunction);
+		RepairGenerator generator = new IQRepairGenerator(ontology, seedFunction);
 		generator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
 		generator.repair();
 		ontology = generator.getRepair();
