@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*;
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
+import de.tu_dresden.lat.abox_repairs.ontology_tools.RelevantSubOntologyExtractor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
@@ -28,7 +31,9 @@ import javax.print.attribute.standard.RequestingUserName;
 
 
 public class Main {
-	
+
+	private static Logger logger = LogManager.getLogger(Main.class);
+
 	/**
 	 * Check: usually, static fields (variables) should be avoided where possible.
 	 * In this case: check whether they are really needed to be outside the main method,
@@ -59,9 +64,9 @@ public class Main {
 			m.ontology =
 					OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(args[i]));
 
-			System.out.println("after loading ontology: ");
+			logger.debug("after loading ontology: ");
 			for(OWLAxiom ax : m.ontology.getTBoxAxioms(Imports.INCLUDED)) {
-				System.out.println("tbox axiom " + ax);
+				logger.debug("tbox axiom " + ax);
 			}
 
 
@@ -93,6 +98,10 @@ public class Main {
 							  RepairRequest repairRequest,
 							  RepairVariant repairVariant) throws OWLOntologyCreationException, SaturationException {
 
+		//OWLOntology module = new RelevantSubOntologyExtractor(inputOntology)
+		//		.relevantSubOntology(repairRequest);
+
+		//setOntology(module);
 		setOntology(inputOntology);
 		this.repairRequest=repairRequest;
 
@@ -114,7 +123,8 @@ public class Main {
 		// Initialize reasoner
 		initReasonerFacade();
 
-		System.out.println("after initializing reasoners: ");
+
+		logger.debug("after initializing reasoners: ");
 
 
 		if(!RepairRequest.checkValid(repairRequest, reasonerWithTBox)) {
@@ -137,16 +147,15 @@ public class Main {
 			
 			Set<OWLNamedIndividual> setIndividuals = seedFunction.keySet();
 			Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
-			System.out.println("\nSeed Function");
+			logger.debug("\nSeed Function");
 			while (iteSetIndividuals.hasNext()) {
 				OWLNamedIndividual oni = iteSetIndividuals.next();
-				System.out.println("- " + oni);
+				logger.debug("- " + oni);
 				RepairType type = seedFunction.get(oni);
-				System.out.println(type.getClassExpressions());
-				System.out.println();
+				logger.debug(type.getClassExpressions());
+				logger.debug("");
 			}
 
-			cleanOntology();
 
 			if (repairVariant.equals(RepairVariant.IQ)) {
 				IQRepair();
@@ -154,6 +163,8 @@ public class Main {
 			} else {
 				CQRepair();
 			}
+
+			cleanOntology(); // <-- this should not be done if the reasoner facades is still used!
 
 			double timeRepairing = (double)(System.nanoTime() - startTime)/1_000_000_000;
 
@@ -178,11 +189,17 @@ public class Main {
 	public void setOntology(OWLOntology ontology) {
 		this.ontology=ontology;
 		OntologyPreparations.prepare(ontology);
+
+		logger.debug("Ontology:");
+		ontology.axioms().forEach(ax -> logger.debug(ax));
+
 	}
 	
 
 
 	private void initReasonerFacade() throws OWLOntologyCreationException {
+		long start = System.nanoTime();
+
 		List<OWLClassExpression> additionalExpressions = new LinkedList<>();
 
 		for(Collection<OWLClassExpression> exps:repairRequest.values()){
@@ -195,6 +212,9 @@ public class Main {
 		reasonerWithTBox = ReasonerFacade.newReasonerFacadeWithTBox(ontology, additionalExpressions);
 
 		reasonerWithoutTBox = ReasonerFacade.newReasonerFacadeWithoutTBox(ontology, additionalExpressions);
+
+		logger.info("Initialising reasoner facades took "+((double)System.nanoTime()-start)/1_000_000_000);
+
 	}
 
 
@@ -211,9 +231,13 @@ public class Main {
 	}
 	
 	private void seedFunctionConstruction(Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {
+		long time = System.nanoTime();
+
 		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasonerWithTBox, reasonerWithoutTBox);
 		seedFunctionHandler.constructSeedFunction(inputRepairRequest);
 		seedFunction = seedFunctionHandler.getSeedFunction();
+
+		logger.info("Seed function construction took: "+(((double)System.nanoTime()-time)/1_000_000_000));
 	}
 	
 	private boolean isCompliant(OWLOntology inputOntology, Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {

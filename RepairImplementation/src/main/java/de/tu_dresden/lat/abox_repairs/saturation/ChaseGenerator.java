@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 
+import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -28,11 +31,15 @@ import org.semanticweb.rulewerk.reasoner.vlog.VLogReasoner;
  */
 public class ChaseGenerator implements ABoxSaturator {
 
+	private static Logger logger = LogManager.getLogger(ChaseGenerator.class);
+
 	private OWLDataFactory factory;
 	private OWLOntology ontology;
 
 	public void saturate(OWLOntology ontology) throws SaturationException {
-		
+
+		long start = System.nanoTime();
+
 		this.ontology = ontology;
 		factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
@@ -78,6 +85,9 @@ public class ChaseGenerator implements ABoxSaturator {
 				}
 			});
 		}
+
+		logger.info("Saturation took "+((double)(System.nanoTime() - start)/1_000_000_000));
+
 	}
 
 	private OWLAxiom fact2Axiom(Fact fact) {

@@ -3,6 +3,9 @@ package de.tu_dresden.lat.abox_repairs.saturation;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
@@ -18,11 +21,13 @@ import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 /**
  * @author Patrick Koopmann
  */
 public class CanonicalModelGenerator implements ABoxSaturator {
+	private static Logger logger = LogManager.getLogger(CanonicalModelGenerator.class);
 
 	private final ReasonerFacade reasoner;
 
@@ -38,9 +43,13 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 	}
 
 	public void saturate(OWLOntology ontology) {
-		
+
+		long start = System.nanoTime();
+
 		this.ontology = ontology;
 		factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+
+		long sizeOld = ontology.getABoxAxioms(Imports.INCLUDED).size();
 
 		class2ind = new HashMap<>();
 
@@ -48,6 +57,12 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 
 		ontology.individualsInSignature()
 			.forEach(i -> process(i,ontology));
+
+		long sizeNew = ontology.getABoxAxioms(Imports.INCLUDED).size();
+
+		logger.info("Saturation added "+(sizeNew-sizeOld)+" axioms.");
+
+		logger.info("Saturation took "+((double)(System.nanoTime() - start)/1_000_000_000));
 	}
 
 	private void process(OWLNamedIndividual ind, OWLOntology ontology) {
@@ -55,7 +70,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 		for(OWLClassExpression exp:reasoner.instanceOf(ind)){
 			if(exp instanceof OWLClass){
 				OWLAxiom assertion = factory.getOWLClassAssertionAxiom(exp, ind);
-				System.out.println("Newly added 0: "+assertion);
+				logger.debug("Newly added 0: "+assertion);
 				if(!ontology.containsAxiom(assertion))
 					ontology.addAxiom(assertion);
 			}else if(exp instanceof OWLObjectSomeValuesFrom){
@@ -66,7 +81,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 						some.getProperty(), 
 						ind, 
 						getIndividual(some.getFiller(), ontology));
-						System.out.println("Newly added 1: "+assertion);
+						logger.debug("Newly added 1: "+assertion);
 					if(!ontology.containsAxiom(assertion))
 						ontology.addAxiom(assertion);
 				} 
@@ -116,7 +131,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 						some.getProperty(), 
 						individual, 
 						getIndividual(some.getFiller(), ontology));
-					System.out.println("Newly added 2: "+assertion);
+					logger.debug("Newly added 2: "+assertion);
 					ontology.addAxiom(assertion);
 				}
 			}

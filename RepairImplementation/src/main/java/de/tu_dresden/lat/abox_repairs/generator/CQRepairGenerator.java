@@ -7,6 +7,8 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
@@ -17,7 +19,9 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 
 public class CQRepairGenerator extends RepairGenerator {
-	
+
+	private static Logger logger = LogManager.getLogger(IQRepairGenerator.class);
+
 	private Queue<Pair<OWLNamedIndividual, OWLNamedIndividual>> queueOfPairs;
 	
 	public CQRepairGenerator(OWLOntology inputOntology,
@@ -59,14 +63,14 @@ public class CQRepairGenerator extends RepairGenerator {
 		
 		double timeVariables = (double)(System.nanoTime() - startTimeVariables)/1_000_000_000;
 		
-		System.out.println("Time for generating variables: " + timeVariables);
+		logger.info("Time for generating variables: " + timeVariables);
 		
-		System.out.println("\nAfter generating necessary variables");
+		logger.debug("\nAfter generating necessary variables");
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-			System.out.println("- " + ind);
+			logger.debug("- " + ind);
 			if(seedFunction.get(ind)!= null) {
-				System.out.println(seedFunction.get(ind).getClassExpressions());
-				System.out.println();
+				logger.debug(seedFunction.get(ind).getClassExpressions());
+				logger.debug("");
 			}
 			
 		}
@@ -77,10 +81,10 @@ public class CQRepairGenerator extends RepairGenerator {
 		
 		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
 		
-		System.out.println("Time for generating Matrix: " + timeMatrix);
+		logger.info("Time for generating Matrix: " + timeMatrix);
 		
-		System.out.println("\nAfter generating matrix");
-		newOntology.axioms().forEach(ax -> System.out.println(ax));
+		logger.debug("\nAfter generating matrix");
+		newOntology.axioms().forEach(ax -> logger.debug(ax));
 	}
 	
 	protected void generatingVariables() {

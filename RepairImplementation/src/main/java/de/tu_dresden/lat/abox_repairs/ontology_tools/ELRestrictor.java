@@ -80,6 +80,8 @@ public class ELRestrictor {
     }
 
     public boolean classExpressionAllowed(OWLClassExpression exp) {
+        if(exp.isOWLNothing())
+            return false;
         return (exp.isOWLThing()) ||
                (exp instanceof OWLClass) ||
                (exp instanceof OWLObjectIntersectionOf) ||
