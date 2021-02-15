@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -28,6 +30,10 @@ import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
 
 abstract public class RepairGenerator {
+
+
+	private static Logger logger = LogManager.getLogger(IQRepairGenerator.class);
+
 	protected OWLOntology ontology;
 	protected OWLDataFactory factory;
 	protected IRI iri;
@@ -88,11 +94,11 @@ abstract public class RepairGenerator {
 		
 		newOntology = man.createOntology();
 		for(OWLAxiom ax : ontology.getTBoxAxioms(Imports.INCLUDED)) {
-			System.out.println("axiom " + ax);
+			logger.debug("axiom " + ax);
 		}
 		
 		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
-		System.out.println("\nWhen building the matrix of the repair");
+		logger.debug("\nWhen building the matrix of the repair");
 		
 		for(OWLAxiom ax: ontology.axioms().collect(Collectors.toSet())) {
 			
@@ -106,7 +112,7 @@ abstract public class RepairGenerator {
 						OWLClassAssertionAxiom newAxiom = factory
 									.getOWLClassAssertionAxiom(classAssertion.getClassExpression(), copyInd);
 						newOntology.add(newAxiom);
-						System.out.println("New Class Assertion " + newAxiom);
+						logger.debug("New Class Assertion " + newAxiom);
 					}
 				}
 			}
@@ -125,7 +131,7 @@ abstract public class RepairGenerator {
 									.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
 							newOntology.add(newAxiom);
 							
-							System.out.println("New Role Assertion" + newAxiom);
+							logger.debug("New Role Assertion" + newAxiom);
 						}
 						else {
 							RepairType type1 = seedFunction.get(copySubject);
@@ -136,7 +142,7 @@ abstract public class RepairGenerator {
 										.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
 								newOntology.add(newAxiom);
 								
-								System.out.println("New Role Assertion " + newAxiom);
+								logger.debug("New Role Assertion " + newAxiom);
 							} 
 							else {
 								RepairType type2 = seedFunction.get(copyObject);
@@ -145,7 +151,7 @@ abstract public class RepairGenerator {
 											.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
 									newOntology.add(newAxiom);
 									
-									System.out.println("New Role Assertion " + newAxiom);
+									logger.debug("New Role Assertion " + newAxiom);
 								}
 							}
 						}

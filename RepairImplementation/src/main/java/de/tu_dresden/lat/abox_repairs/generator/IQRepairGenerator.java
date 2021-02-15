@@ -7,6 +7,9 @@ import java.util.Queue;
 import java.util.Set;
 
 
+import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
@@ -17,7 +20,9 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 
 public class IQRepairGenerator extends RepairGenerator {
-	
+
+	private static Logger logger = LogManager.getLogger(IQRepairGenerator.class);
+
 	private Queue<OWLNamedIndividual> queueOfIndividuals;
 	
 	public IQRepairGenerator(OWLOntology inputOntology,
@@ -36,14 +41,14 @@ public class IQRepairGenerator extends RepairGenerator {
 		
 		double timeVariables = (double)(System.nanoTime() - startTimeVariables)/1_000_000_000;
 		
-		System.out.println("Time for generating variables: " + timeVariables);
+		logger.info("Time for generating variables: " + timeVariables);
 		
-		System.out.println("After generating necessary variables");
+		logger.debug("After generating necessary variables");
 		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-			System.out.println("- " + ind);
+			logger.debug("- " + ind);
 			if(seedFunction.get(ind)!= null) {
-				System.out.println(seedFunction.get(ind).getClassExpressions());
-				System.out.println();
+				logger.debug(seedFunction.get(ind).getClassExpressions());
+				logger.debug("");
 			}
 			
 		}
@@ -55,10 +60,10 @@ public class IQRepairGenerator extends RepairGenerator {
 		
 		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
 		
-		System.out.println("Time for generating Matrix: " + timeMatrix);
+		logger.info("Time for generating Matrix: " + timeMatrix);
 		
-		System.out.println("\nAfter building the matrix");
-		newOntology.axioms().forEach(ax -> System.out.println("- " + ax.toString()));
+		logger.debug("\nAfter building the matrix");
+		newOntology.axioms().forEach(ax -> logger.debug("- " + ax.toString()));
 	
 	}
 	

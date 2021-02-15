@@ -1,5 +1,6 @@
 package de.tu_dresden.lat.abox_repairs.reasoning;
 
+import java.awt.desktop.UserSessionEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,7 +11,10 @@ import java.util.stream.Collectors;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.FreshNameProducer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -33,6 +37,9 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
  * @author Patrick Koopmann
  */
 public class ReasonerFacade {
+
+    private static Logger logger = LogManager.getLogger(ReasonerFacade.class);
+
     private final BiMap<OWLClassExpression, OWLClass> expression2Name;
 
     private final OWLOntology ontology;
@@ -69,7 +76,10 @@ public class ReasonerFacade {
             OWLOntology ontology, Collection<OWLClassExpression> additionalExpressions) {
         Set<OWLClassExpression> expressions = ontology.getNestedClassExpressions();
 //        System.out.println("additionalExpressions " + additionalExpressions);
-        expressions.addAll(additionalExpressions); 
+        expressions.addAll(additionalExpressions);
+
+        logger.info("used expressions: "+additionalExpressions.size());
+
 //        System.out.println("expressions " + expressions);
         return new ReasonerFacade(ontology, expressions);
     }
@@ -85,6 +95,10 @@ public class ReasonerFacade {
         addExpressions(expressions);
 
         reasoner = new ElkReasonerFactory().createReasoner(ontology);
+
+        long start = System.nanoTime();
+        reasoner.precomputeInferences();
+        logger.info("classification took "+(((double)System.nanoTime()-start)/1_000_000_000));
     }
 
 

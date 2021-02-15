@@ -13,6 +13,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Generates a random instances of the repair problem by randomly selecting a fixed proportion of individuals and randomly
+ * assigning a fixed proportion of the concept names in the signature.
+ */
 public class RunExperiment1 {
 
 
