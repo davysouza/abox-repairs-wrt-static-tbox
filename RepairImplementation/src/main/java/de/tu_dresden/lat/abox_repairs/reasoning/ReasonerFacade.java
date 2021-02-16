@@ -203,8 +203,13 @@ public class ReasonerFacade {
 
     public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
+        System.out.println("exp " + exp);
+        System.out.println("Find all subsumees " + reasoner.subClasses(expression2Name.get(exp), false)
+        		.filter(c -> (!c.isOWLThing() && !c.isOWLNothing())).collect(Collectors.toSet()));
+        
+        
         return reasoner.subClasses(expression2Name.get(exp), false)
-            .filter(c -> !c.isOWLThing())
+            .filter(c -> (!c.isOWLThing() && !c.isOWLNothing()))
             .map(name -> expression2Name.inverse().get(name))
             .collect(Collectors.toSet());
     }
@@ -253,17 +258,5 @@ public class ReasonerFacade {
     	}
     	return Optional.empty();
     	
-//    	
-//    	
-//		for(OWLClassExpression atom1 : set1) {
-//			for(OWLClassExpression atom2 : set2) {
-//				if(subsumedBy(atom1, atom2)) {
-//					return atom2;
-//				}
-//			}
-//		}
-//		
-//		return null; // TODO: null should never be returned by a method. Have you considered using an Optional
-//                     // TODO: or throwing an Exception?
-	}
+
 }

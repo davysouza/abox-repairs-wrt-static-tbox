@@ -20,7 +20,7 @@ import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 
 public class CQRepairGenerator extends RepairGenerator {
 
-	private static Logger logger = LogManager.getLogger(IQRepairGenerator.class);
+	private static Logger logger = LogManager.getLogger(CQRepairGenerator.class);
 
 	private Queue<Pair<OWLNamedIndividual, OWLNamedIndividual>> queueOfPairs;
 	
