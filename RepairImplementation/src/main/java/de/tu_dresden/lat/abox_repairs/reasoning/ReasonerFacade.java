@@ -78,7 +78,7 @@ public class ReasonerFacade {
 //        System.out.println("additionalExpressions " + additionalExpressions);
         expressions.addAll(additionalExpressions);
 
-        logger.info("used expressions: "+additionalExpressions.size());
+        logger.info("used expressions: "+additionalExpressions);
 
 //        System.out.println("expressions " + expressions);
         return new ReasonerFacade(ontology, expressions);
@@ -197,16 +197,24 @@ public class ReasonerFacade {
         verifyKnows(exp);
 
         return reasoner.subClasses(expression2Name.get(exp), true)
-            .filter(c -> !c.isOWLThing())
+            .filter(c -> !c.isOWLNothing())
             .map(name -> expression2Name.inverse().get(name)).collect(Collectors.toSet());
     }
 
     public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
-        return reasoner.subClasses(expression2Name.get(exp), false)
-            .filter(c -> !c.isOWLThing())
+        Set<OWLClassExpression> result = reasoner.subClasses(expression2Name.get(exp), false)
+            .filter(c -> !c.isOWLNothing())
             .map(name -> expression2Name.inverse().get(name))
             .collect(Collectors.toSet());
+
+        if(result.contains(null)){
+            System.out.println("Unexpected null caused by:");
+            reasoner.subClasses(expression2Name.get(exp), false)
+                    .filter(c -> !c.isOWLThing()).forEach(x -> System.out.println(x));
+            System.exit(1);
+        }
+        return result;
     }
 
 
