@@ -205,7 +205,7 @@ public class ReasonerFacade {
     public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
-        logger.info("TBox size: "+ontology.tboxAxioms(Imports.INCLUDED).count());
+//        logger.info("TBox size: "+ontology.tboxAxioms(Imports.INCLUDED).count());
 
         Set<OWLClassExpression> result = reasoner.subClasses(expression2Name.get(exp), false)
             .filter(c -> (!c.isOWLThing() && !c.isOWLNothing()))
@@ -241,31 +241,20 @@ public class ReasonerFacade {
 
 
     public boolean isCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
-
-    
     	return set1.parallelStream()
     			.allMatch(atom1 -> set2.parallelStream()
     					.anyMatch(atom2 -> subsumedBy(atom1, atom2)));
-    	
-//    	for(OWLClassExpression atom1 : set1) {
-//    		Set<OWLClassExpression> singleton = new HashSet<>();
-//    		singleton.add(atom1);
-//    		OWLClassExpression tempConcept = atLeastOneCovered(singleton, set2);
-//    		if(tempConcept == null) {
-//    			return false;
-//    		}
-//    		
-//    	}
-//    	return true;
     }
     
-    public Optional<OWLClassExpression> atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
+    public Optional<OWLClassExpression> findCoveringConcept(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
 
-        for (OWLClassExpression atom1 : set1) {
-            Set<OWLClassExpression> tempSet = new HashSet<>();
-            tempSet.add(atom1);
-            if (isCovered(tempSet, set2)) return Optional.of(atom1);
-        }
+    	for (OWLClassExpression atom1 : set1) {
+    		for(OWLClassExpression atom2 : set2) {
+    			if(subsumedBy(atom1, atom2)) {
+    				return Optional.of(atom2);
+    			}
+    		}
+    	}
         return Optional.empty();
     }
 

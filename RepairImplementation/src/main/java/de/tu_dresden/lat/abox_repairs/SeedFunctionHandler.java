@@ -65,7 +65,7 @@ public class SeedFunctionHandler {
 
 						if(seedFunctionCollector.containsKey(individual)) {
 							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-							Optional<OWLClassExpression> opt = reasonerWithoutTBox.atLeastOneCovered(
+							Optional<OWLClassExpression> opt = reasonerWithoutTBox.findCoveringConcept(
 									seedFunctionCollector.get(individual), topLevelConjuncts);
 							if(opt.isPresent()) {
 								seedFunctionCollector.get(individual).add(opt.get());

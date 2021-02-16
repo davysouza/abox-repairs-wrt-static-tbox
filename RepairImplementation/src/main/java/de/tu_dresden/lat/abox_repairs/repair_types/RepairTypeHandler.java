@@ -119,8 +119,8 @@ public class RepairTypeHandler {
     	
     	Set<Set<OWLClassExpression>> setOfCandidates = 
     			type != null? 
-    					repairTypeCandidates(new HashSet<>(type.getClassExpressions()), expSet) :
-    					repairTypeCandidates(new HashSet<>(), expSet);
+    					findRepairTypeCandidates(new HashSet<>(type.getClassExpressions()), expSet) :
+    					findRepairTypeCandidates(new HashSet<>(), expSet);
     	
     	Set<RepairType> resultingSet = new HashSet<>();
     	
@@ -131,7 +131,7 @@ public class RepairTypeHandler {
 
     		boolean alreadySaturated = true;
     		for(OWLClassExpression concept : candidate) {
-    			for(OWLClassExpression subsumee : reasonerWithTBox.subsumees(concept)) {   				
+    			for(OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {   				
 					if(subsumee != null && !candidate.stream().anyMatch(otherConcept -> 
 						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
     						alreadySaturated = false;
@@ -148,15 +148,15 @@ public class RepairTypeHandler {
     			resultingSet.add(newMinimisedRepairType(candidate));
     		}
     	}   
-//    	resultingSet.stream().forEach(res -> System.out.println("res " + res.getClassExpressions()));
+
     	return resultingSet;
   	
     }
     
-    public Set<RepairType> computeManyRepairTypes(RepairType candidate) {
-    	
-    	return null;
-    }
+//    public Set<RepairType> computeManyRepairTypes(RepairType candidate) {
+//    	
+//    	return null;
+//    }
 
     /**
      * Return all types that are obtained from the given repair type by applying 
@@ -166,7 +166,7 @@ public class RepairTypeHandler {
      * the repair type contains some class expression D s.t. the ontology entails 
      * exp SubClassOf D
      */
-    private Set<Set<OWLClassExpression>> repairTypeCandidates(Set<OWLClassExpression> type, OWLClassExpression exp) {
+    private Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
     	Set<Set<OWLClassExpression>> result = new HashSet<>();
 
@@ -181,7 +181,7 @@ public class RepairTypeHandler {
         return result;
     }
     
-    public Set<Set<OWLClassExpression>> repairTypeCandidates(Set<OWLClassExpression> type, Set<OWLClassExpression> expSet) {
+    public Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, Set<OWLClassExpression> expSet) {
     	
     	assert expSet.size()>0;
     	
@@ -189,16 +189,16 @@ public class RepairTypeHandler {
     	
     	if(expSet.size() == 1) {
     		Iterator<OWLClassExpression> ite = expSet.iterator();
-    		return repairTypeCandidates(type, ite.next());
+    		return findRepairTypeCandidates(type, ite.next());
     	} else {
     		Iterator<OWLClassExpression> ite = expSet.iterator();
     		OWLClassExpression concept = ite.next();
-    		Set<Set<OWLClassExpression>> resultSet = repairTypeCandidates(type, concept);
+    		Set<Set<OWLClassExpression>> resultSet = findRepairTypeCandidates(type, concept);
     		expSet.remove(concept);
     	
     		for(Set<OWLClassExpression> currentType : resultSet) {
     		
-    			candidates.addAll(repairTypeCandidates(currentType, expSet));
+    			candidates.addAll(findRepairTypeCandidates(currentType, expSet));
     		}
     	}
     	return candidates;
