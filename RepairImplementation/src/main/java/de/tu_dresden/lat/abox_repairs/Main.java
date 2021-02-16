@@ -264,7 +264,7 @@ public class Main {
 		cmg.saturate(ontology); 
 	}
 	
-	private void seedFunctionConstruction(Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {
+	private void seedFunctionConstruction(RepairRequest inputRepairRequest) {
 		long time = System.nanoTime();
 
 		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasonerWithTBox, reasonerWithoutTBox);
@@ -274,7 +274,7 @@ public class Main {
 		logger.info("Seed function construction took: "+(((double)System.nanoTime()-time)/1_000_000_000));
 	}
 	
-	private boolean isCompliantWith(Map<OWLNamedIndividual, Set<OWLClassExpression>> inputRepairRequest) {
+	private boolean isCompliantWith(RepairRequest inputRepairRequest) {
 		boolean compliant = true;
 
 		for(OWLNamedIndividual individual : inputRepairRequest.keySet()) {

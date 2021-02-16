@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.semanticweb.HermiT.Reasoner;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 /**
@@ -203,6 +204,8 @@ public class ReasonerFacade {
 
     public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
+
+        logger.info("TBox size: "+ontology.tboxAxioms(Imports.INCLUDED).count());
 
         Set<OWLClassExpression> result = reasoner.subClasses(expression2Name.get(exp), false)
             .filter(c -> (!c.isOWLThing() && !c.isOWLNothing()))

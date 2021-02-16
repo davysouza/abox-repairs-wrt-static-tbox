@@ -78,14 +78,19 @@ public class RepairTypeHandler {
     	
     	return true;
     }
-    
-    public RepairType convertToRepairType(Set<OWLClassExpression> expSet) {
+
+	/**
+	 * Returns some repair type that contains the given set of class expressions.
+	 *
+	 * Non-determinism is resolved using a random number generator.
+	 */
+	public RepairType convertToRandomRepairType(Set<OWLClassExpression> expSet) {
     	System.out.println(expSet);
     	Random rand = new Random();
     	
     	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
     		for(OWLClassExpression exp : expSet) {
-    			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.subsumees(exp));
+    			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsuming(exp));
 
 //    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
     			System.out.println("Size " + setOfSubsumees.size());
