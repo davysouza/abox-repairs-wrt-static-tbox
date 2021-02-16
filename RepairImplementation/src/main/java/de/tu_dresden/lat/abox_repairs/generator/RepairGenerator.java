@@ -101,8 +101,8 @@ abstract public class RepairGenerator {
 		
 		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
 //		logger.debug("\nWhen building the matrix of the repair");
-		
-		for(OWLAxiom ax: ontology.axioms().collect(Collectors.toSet())) {
+
+		for(OWLAxiom ax: ontology.getABoxAxioms(Imports.INCLUDED)) {
 			
 			if(ax instanceof OWLClassAssertionAxiom) {
 				OWLClassAssertionAxiom classAssertion = (OWLClassAssertionAxiom) ax;
@@ -138,7 +138,7 @@ abstract public class RepairGenerator {
 						else {
 							RepairType type1 = seedFunction.get(copySubject);
 							Set<OWLClassExpression> successorSet = computeSuccessorSet(
-									type1,role,originalObject);
+									type1, role, originalObject);
 							if(successorSet.isEmpty()) {
 								OWLObjectPropertyAssertionAxiom newAxiom = factory
 										.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);

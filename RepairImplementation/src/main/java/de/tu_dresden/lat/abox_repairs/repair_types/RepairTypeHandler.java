@@ -9,6 +9,9 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 
+import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 
@@ -21,8 +24,11 @@ import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
  * @author Patrick Koopmann
  */
 public class RepairTypeHandler {
- 
-    private final ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
+
+	private static Logger logger = LogManager.getLogger(RepairTypeHandler.class);
+
+
+	private final ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 
     public RepairTypeHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
         this.reasonerWithTBox=reasonerWithTBox;
@@ -85,7 +91,7 @@ public class RepairTypeHandler {
 	 * Non-determinism is resolved using a random number generator.
 	 */
 	public RepairType convertToRandomRepairType(Set<OWLClassExpression> expSet) {
-    	System.out.println(expSet);
+    	logger.debug(expSet);
     	Random rand = new Random();
     	
     	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
@@ -93,14 +99,14 @@ public class RepairTypeHandler {
     			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(exp));
 
 //    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
-    			System.out.println("Size " + setOfSubsumees.size());
-    			System.out.println("Set of subsumees " + setOfSubsumees);
+    			logger.debug("Size " + setOfSubsumees.size());
+    			logger.debug("Set of subsumees " + setOfSubsumees);
     			for (OWLClassExpression subConcept : setOfSubsumees) {
-    				System.out.println("subconcept " + subConcept);
+    				logger.debug("subconcept " + subConcept);
 					if (subConcept != null && !expSet.stream().anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
 	    				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
 	    				int index = rand.nextInt(listOfConcept.size());
-	    				System.out.println("chosen Concept " + listOfConcept.get(index));
+	    				logger.debug("chosen Concept " + listOfConcept.get(index));
 	    				resultingSet.add(listOfConcept.get(index));
 	    			}
     				

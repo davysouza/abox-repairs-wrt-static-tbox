@@ -13,6 +13,7 @@ import com.google.common.collect.HashBiMap;
 
 import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.FreshNameProducer;
+import de.tu_dresden.lat.abox_repairs.tools.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.HermiT.Reasoner;
@@ -43,6 +44,8 @@ public class ReasonerFacade {
     private final OWLReasoner reasoner;
 
     private final FreshNameProducer freshNameProducer;
+
+    //private Timer timer;
 
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology)
             throws OWLOntologyCreationException {
@@ -79,7 +82,7 @@ public class ReasonerFacade {
 //        System.out.println("additionalExpressions " + additionalExpressions);
         expressions.addAll(additionalExpressions);
 
-        logger.info("used expressions: "+additionalExpressions);
+        logger.info("used expressions: "+additionalExpressions.size());
 
 //        System.out.println("expressions " + expressions);
         return new ReasonerFacade(ontology, expressions);
@@ -134,37 +137,65 @@ public class ReasonerFacade {
     public boolean instanceOf(OWLNamedIndividual ind, OWLClassExpression exp) {
         verifyKnows(exp);
 
-        return reasoner.getTypes(ind).containsEntity(expression2Name.get(exp));
+        //timer.continueTimer();
+
+        boolean result = reasoner.getTypes(ind).containsEntity(expression2Name.get(exp));
+
+        //timer.pause();
+
+        return result;
     }
 
     public boolean subsumedBy(OWLClassExpression subsumee, OWLClassExpression subsumer) {
         verifyKnows(subsumee);
         verifyKnows(subsumer);
 
+        //timer.continueTimer();
+
         OWLClass subsumeeName = expression2Name.get(subsumee);
         OWLClass subsumerName = expression2Name.get(subsumer);
 
-        return reasoner.getEquivalentClasses(subsumeeName).contains(subsumerName)
+        boolean result =  reasoner.getEquivalentClasses(subsumeeName).contains(subsumerName)
         || reasoner.getSuperClasses(subsumeeName).containsEntity(subsumerName);
+
+        //timer.pause();
+
+        return result;
     }
 
     public Set<OWLClassExpression> instanceOf(OWLNamedIndividual ind) {
-        return reasoner.types(ind)
+
+        //timer.continueTimer();
+
+        Set<OWLClassExpression> result = reasoner.types(ind)
             .filter(c -> !c.isOWLThing())
             .map(name -> expression2Name.inverse().get(name))
                 .collect(Collectors.toSet());
+
+        //timer.pause();
+
+        return result;
     }
 
     public Set<OWLClassExpression> equivalentClasses(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
-        return reasoner.equivalentClasses(expression2Name.get(exp))
+        //timer.continueTimer();
+
+        Set<OWLClassExpression> result = reasoner.equivalentClasses(expression2Name.get(exp))
             .map(name -> expression2Name.inverse().get(name))
             .collect(Collectors.toSet());
+
+        //timer.pause();
+
+        return result;
     }
 
     public boolean equivalentToOWLThing(OWLClassExpression exp) {
         verifyKnows(exp);
+
+       // timer.continueTimer();
+
         return reasoner.topClassNode().anyMatch(cl -> expression2Name.get(exp).equals(cl));
     }
 
@@ -212,8 +243,8 @@ public class ReasonerFacade {
             .map(name -> expression2Name.inverse().get(name))
             .collect(Collectors.toSet());
 
-        logger.info("Subsumees of "+exp+":");
-        result.stream().forEach(logger::info);
+       // logger.info("Subsumees of "+exp+":");
+       // result.stream().forEach(logger::info);
 
         if(result.contains(null)){
             System.out.println("Unexpected null caused by:");
@@ -241,6 +272,11 @@ public class ReasonerFacade {
 
 
     public boolean isCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
+
+        // cheap test first
+        if(set2.containsAll(set1))
+            return true;
+
     	return set1.parallelStream()
     			.allMatch(atom1 -> set2.parallelStream()
     					.anyMatch(atom2 -> subsumedBy(atom1, atom2)));
