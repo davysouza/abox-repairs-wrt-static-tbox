@@ -11,10 +11,8 @@ import java.util.Random;
 import java.util.Set;
 
 import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
@@ -44,13 +42,13 @@ public class SeedFunctionHandler {
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
 			
-			RepairType type = typeHandler.convertToRepairType(seedFunctionCollector.get(individual));
+			RepairType type = typeHandler.convertToRandomRepairType(seedFunctionCollector.get(individual));
 			seedFunction.put(individual, type);
 		}
 		return seedFunction;
 	}
 
-	public void constructSeedFunction(Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest) {
+	public void constructSeedFunction(RepairRequest repairRequest) {
 		
 		Random rand = new Random();
 
@@ -67,7 +65,7 @@ public class SeedFunctionHandler {
 
 						if(seedFunctionCollector.containsKey(individual)) {
 							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-							Optional<OWLClassExpression> opt = reasonerWithoutTBox.atLeastOneCovered(
+							Optional<OWLClassExpression> opt = reasonerWithoutTBox.findCoveringConcept(
 									seedFunctionCollector.get(individual), topLevelConjuncts);
 							if(opt.isPresent()) {
 								seedFunctionCollector.get(individual).add(opt.get());

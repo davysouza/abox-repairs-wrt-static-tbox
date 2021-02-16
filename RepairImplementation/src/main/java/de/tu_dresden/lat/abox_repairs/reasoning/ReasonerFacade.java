@@ -15,16 +15,10 @@ import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.FreshNameProducer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.semanticweb.HermiT.Reasoner;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 /**
@@ -55,6 +49,13 @@ public class ReasonerFacade {
         return newReasonerFacadeWithoutTBox(ontology, Collections.emptyList());
     }
 
+    public static ReasonerFacade newReasonerFacadeWithoutTBox(
+            Collection<OWLClassExpression> expressions, OWLOntologyManager manager) throws OWLOntologyCreationException {
+        OWLOntology emptyTBox = manager.createOntology();
+
+        return newReasonerFacadeWithTBox(emptyTBox, expressions);
+    }
+
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology,
             Collection<OWLClassExpression> additionalExpressions) throws OWLOntologyCreationException 
         {
@@ -78,7 +79,7 @@ public class ReasonerFacade {
 //        System.out.println("additionalExpressions " + additionalExpressions);
         expressions.addAll(additionalExpressions);
 
-        logger.info("used expressions: "+additionalExpressions.size());
+        logger.info("used expressions: "+additionalExpressions);
 
 //        System.out.println("expressions " + expressions);
         return new ReasonerFacade(ontology, expressions);
@@ -197,16 +198,30 @@ public class ReasonerFacade {
         verifyKnows(exp);
 
         return reasoner.subClasses(expression2Name.get(exp), true)
-            .filter(c -> !c.isOWLThing())
+            .filter(c -> !c.isOWLNothing())
             .map(name -> expression2Name.inverse().get(name)).collect(Collectors.toSet());
     }
 
     public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
-        return reasoner.subClasses(expression2Name.get(exp), false)
-            .filter(c -> !c.isOWLThing())
+
+//        logger.info("TBox size: "+ontology.tboxAxioms(Imports.INCLUDED).count());
+
+        Set<OWLClassExpression> result = reasoner.subClasses(expression2Name.get(exp), false)
+            .filter(c -> (!c.isOWLThing() && !c.isOWLNothing()))
             .map(name -> expression2Name.inverse().get(name))
             .collect(Collectors.toSet());
+
+        logger.info("Subsumees of "+exp+":");
+        result.stream().forEach(logger::info);
+
+        if(result.contains(null)){
+            System.out.println("Unexpected null caused by:");
+            reasoner.subClasses(expression2Name.get(exp), false)
+                    .filter(c -> !c.isOWLThing()).forEach(x -> System.out.println(x));
+            System.exit(1);
+        }
+        return result;
     }
 
 
@@ -226,44 +241,21 @@ public class ReasonerFacade {
 
 
     public boolean isCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
-
-    
     	return set1.parallelStream()
     			.allMatch(atom1 -> set2.parallelStream()
     					.anyMatch(atom2 -> subsumedBy(atom1, atom2)));
-    	
-//    	for(OWLClassExpression atom1 : set1) {
-//    		Set<OWLClassExpression> singleton = new HashSet<>();
-//    		singleton.add(atom1);
-//    		OWLClassExpression tempConcept = atLeastOneCovered(singleton, set2);
-//    		if(tempConcept == null) {
-//    			return false;
-//    		}
-//    		
-//    	}
-//    	return true;
     }
     
-    public Optional<OWLClassExpression> atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
-		
-    	for(OWLClassExpression atom1 : set1) {
-    		Set<OWLClassExpression> tempSet = new HashSet<>();
-    		tempSet.add(atom1);
-    		if(isCovered(tempSet, set2)) return Optional.of(atom1);
+    public Optional<OWLClassExpression> findCoveringConcept(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
+
+    	for (OWLClassExpression atom1 : set1) {
+    		for(OWLClassExpression atom2 : set2) {
+    			if(subsumedBy(atom1, atom2)) {
+    				return Optional.of(atom2);
+    			}
+    		}
     	}
-    	return Optional.empty();
-    	
-//    	
-//    	
-//		for(OWLClassExpression atom1 : set1) {
-//			for(OWLClassExpression atom2 : set2) {
-//				if(subsumedBy(atom1, atom2)) {
-//					return atom2;
-//				}
-//			}
-//		}
-//		
-//		return null; // TODO: null should never be returned by a method. Have you considered using an Optional
-//                     // TODO: or throwing an Exception?
-	}
+        return Optional.empty();
+    }
+
 }
