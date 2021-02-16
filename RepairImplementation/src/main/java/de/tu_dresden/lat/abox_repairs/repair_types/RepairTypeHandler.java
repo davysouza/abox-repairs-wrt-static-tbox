@@ -65,7 +65,22 @@ public class RepairTypeHandler {
         return false;
     }
     
+    public boolean isPremiseSaturated(Set<OWLClassExpression> expSet) {
+    	
+    	for(OWLClassExpression atom : expSet ) {
+    		Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.subsumees(atom));
+    		for (OWLClassExpression subsumee : setOfSubsumees) {
+    			if(subsumee != null && !expSet.stream().anyMatch(exp -> reasonerWithTBox.subsumedBy(subsumee, exp))) {
+    				return false;
+    			}
+    		}
+    	}
+    	
+    	return true;
+    }
+    
     public RepairType convertToRepairType(Set<OWLClassExpression> expSet) {
+    	System.out.println(expSet);
     	Random rand = new Random();
     	
     	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
@@ -73,16 +88,17 @@ public class RepairTypeHandler {
     			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.subsumees(exp));
 
 //    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
-
+    			System.out.println("Size " + setOfSubsumees.size());
+    			System.out.println("Set of subsumees " + setOfSubsumees);
     			for (OWLClassExpression subConcept : setOfSubsumees) {
-
-    				if(subConcept != null) {
-    					if (!expSet.stream().anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
-            				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
-            				int index = rand.nextInt(listOfConcept.size());
-            				resultingSet.add(listOfConcept.get(index));
-            			}
-    				}
+    				System.out.println("subconcept " + subConcept);
+					if (subConcept != null && !expSet.stream().anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
+	    				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
+	    				int index = rand.nextInt(listOfConcept.size());
+	    				System.out.println("chosen Concept " + listOfConcept.get(index));
+	    				resultingSet.add(listOfConcept.get(index));
+	    			}
+    				
         		}
     		}
     
@@ -104,27 +120,23 @@ public class RepairTypeHandler {
     	Set<RepairType> resultingSet = new HashSet<>();
     	
     	LinkedList<Set<OWLClassExpression>> queueOfCandidates = new LinkedList<>(setOfCandidates);
-//    	System.out.println("Queue " + queueOfCandidates);
+
     	while(!queueOfCandidates.isEmpty()) {
     		Set<OWLClassExpression> candidate = queueOfCandidates.poll();
-//    		System.out.println("candidate " + candidate);
+
     		boolean alreadySaturated = true;
     		for(OWLClassExpression concept : candidate) {
-    			for(OWLClassExpression subsumee : reasonerWithTBox.subsumees(concept)) {
-//    				System.out.println("subsumee for " + concept + " is " + subsumee);
-    				if(subsumee != null) {
-    					if(!candidate.stream().anyMatch(otherConcept -> 
-    						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
+    			for(OWLClassExpression subsumee : reasonerWithTBox.subsumees(concept)) {   				
+					if(subsumee != null && !candidate.stream().anyMatch(otherConcept -> 
+						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
     						alreadySaturated = false;
     						Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
     						for(OWLClassExpression conjunct : topLevelConjunct) {
     							Set<OWLClassExpression> tempCandidate = new HashSet<>(candidate);
     							tempCandidate.add(conjunct);
     							queueOfCandidates.add(tempCandidate);
-    						}
-    						
-    					}
-    				}
+    						}	
+					}
     			}	
     		}
     		if(alreadySaturated) {

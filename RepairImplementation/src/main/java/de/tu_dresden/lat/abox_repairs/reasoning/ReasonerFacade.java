@@ -15,16 +15,9 @@ import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.FreshNameProducer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.semanticweb.HermiT.Reasoner;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 /**
@@ -53,6 +46,13 @@ public class ReasonerFacade {
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology)
             throws OWLOntologyCreationException {
         return newReasonerFacadeWithoutTBox(ontology, Collections.emptyList());
+    }
+
+    public static ReasonerFacade newReasonerFacadeWithoutTBox(
+            Collection<OWLClassExpression> expressions, OWLOntologyManager manager) throws OWLOntologyCreationException {
+        OWLOntology emptyTBox = manager.createOntology();
+
+        return newReasonerFacadeWithTBox(emptyTBox, expressions);
     }
 
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology,
@@ -203,10 +203,14 @@ public class ReasonerFacade {
 
     public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
+
         Set<OWLClassExpression> result = reasoner.subClasses(expression2Name.get(exp), false)
-            .filter(c -> !c.isOWLNothing())
+            .filter(c -> (!c.isOWLThing() && !c.isOWLNothing()))
             .map(name -> expression2Name.inverse().get(name))
             .collect(Collectors.toSet());
+
+        logger.info("Subsumees of "+exp+":");
+        result.stream().forEach(logger::info);
 
         if(result.contains(null)){
             System.out.println("Unexpected null caused by:");
@@ -253,25 +257,13 @@ public class ReasonerFacade {
     }
     
     public Optional<OWLClassExpression> atLeastOneCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
-		
-    	for(OWLClassExpression atom1 : set1) {
-    		Set<OWLClassExpression> tempSet = new HashSet<>();
-    		tempSet.add(atom1);
-    		if(isCovered(tempSet, set2)) return Optional.of(atom1);
-    	}
-    	return Optional.empty();
-    	
-//    	
-//    	
-//		for(OWLClassExpression atom1 : set1) {
-//			for(OWLClassExpression atom2 : set2) {
-//				if(subsumedBy(atom1, atom2)) {
-//					return atom2;
-//				}
-//			}
-//		}
-//		
-//		return null; // TODO: null should never be returned by a method. Have you considered using an Optional
-//                     // TODO: or throwing an Exception?
-	}
+
+        for (OWLClassExpression atom1 : set1) {
+            Set<OWLClassExpression> tempSet = new HashSet<>();
+            tempSet.add(atom1);
+            if (isCovered(tempSet, set2)) return Optional.of(atom1);
+        }
+        return Optional.empty();
+    }
+
 }
