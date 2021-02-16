@@ -5,6 +5,7 @@ import java.util.*;
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.RelevantSubOntologyExtractor;
+import de.tu_dresden.lat.abox_repairs.saturation.ABoxSaturator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -52,6 +53,8 @@ public class Main {
 	//private CycleChecker checker;
 
 	public enum RepairVariant {IQ, CQ};
+
+	private ABoxSaturator saturator;
 	
 //	public enum RepairAlternative {Canonical, Optimized};
 	
@@ -189,11 +192,15 @@ public class Main {
 
 			double timeRepairing = (double)(System.nanoTime() - startTime)/1_000_000_000;
 
-			System.out.print("#Individuals (repair/orig): "
-					+ ontology.getIndividualsInSignature().size()+"/"+oldIndividuals);
-			System.out.print(" #Assertions (repair/orig): " +
-					ontology.aboxAxioms(Imports.EXCLUDED).count()+"/"+oldAssertions);
-			System.out.println(" Duration (sec.): "+timeRepairing );
+			System.out.print("#Individuals (orig/sat/repair): "
+					+ oldIndividuals+"/"
+					+ (oldIndividuals+saturator.addedIndividuals())+"/"+
+					ontology.getIndividualsInSignature().size());
+			System.out.print(" #Assertions (orig/sat/repair): "
+					+ oldAssertions+"/"
+					+ (oldAssertions+saturator.addedAssertions())+"/"+
+					ontology.aboxAxioms(Imports.EXCLUDED).count());
+			System.out.println(" Duration (sat/repair sec.): "+saturator.getDuration()+"/"+timeRepairing );
 
 			initReasonerFacade();
 
@@ -254,14 +261,14 @@ public class Main {
 
 	private void cqSaturate() throws SaturationException {
 		System.out.println("\nCQ-saturation");
-		ChaseGenerator chase = new ChaseGenerator();
-		chase.saturate(ontology); 
+		saturator = new ChaseGenerator();
+		saturator.saturate(ontology);
 	}
 	
 	private void iqSaturate() throws SaturationException {
 		System.out.println("\nIQ-saturation");
-		CanonicalModelGenerator cmg = new CanonicalModelGenerator(reasonerWithTBox);
-		cmg.saturate(ontology); 
+		saturator = new CanonicalModelGenerator(reasonerWithTBox);
+		saturator.saturate(ontology);
 	}
 	
 	private void seedFunctionConstruction(RepairRequest inputRepairRequest) {

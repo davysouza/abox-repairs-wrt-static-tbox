@@ -90,7 +90,7 @@ public class RepairTypeHandler {
     	
     	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
     		for(OWLClassExpression exp : expSet) {
-    			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsuming(exp));
+    			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(exp));
 
 //    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
     			System.out.println("Size " + setOfSubsumees.size());
