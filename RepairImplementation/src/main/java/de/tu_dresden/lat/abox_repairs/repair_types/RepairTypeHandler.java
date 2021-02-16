@@ -68,7 +68,7 @@ public class RepairTypeHandler {
     public boolean isPremiseSaturated(Set<OWLClassExpression> expSet) {
     	
     	for(OWLClassExpression atom : expSet ) {
-    		Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.subsumees(atom));
+    		Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
     		for (OWLClassExpression subsumee : setOfSubsumees) {
     			if(subsumee != null && !expSet.stream().anyMatch(exp -> reasonerWithTBox.subsumedBy(subsumee, exp))) {
     				return false;
@@ -124,53 +124,63 @@ public class RepairTypeHandler {
     	
     	Set<RepairType> resultingSet = new HashSet<>();
     	
-    	LinkedList<Set<OWLClassExpression>> queueOfCandidates = new LinkedList<>(setOfCandidates);
 
-    	while(!queueOfCandidates.isEmpty()) {
-    		Set<OWLClassExpression> candidate = queueOfCandidates.poll();
-
+//    	System.out.println("Set of Candidates " + setOfCandidates);
+    	while(setOfCandidates.iterator().hasNext()) {
+    		Set<OWLClassExpression> candidate = setOfCandidates.iterator().next();
+    		setOfCandidates.remove(candidate);
+//    		System.out.println("Candidate " + candidate);
     		boolean alreadySaturated = true;
+    		
+    		outerloop:
     		for(OWLClassExpression concept : candidate) {
-    			for(OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {   				
-					if(subsumee != null && !candidate.stream().anyMatch(otherConcept -> 
+    			System.out.println("find this " + reasonerWithTBox.equivalentOrSubsumedBy(concept));
+    			for(OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
+    				if(!candidate.stream().anyMatch(otherConcept -> 
 						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
-    						alreadySaturated = false;
-    						Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
-    						for(OWLClassExpression conjunct : topLevelConjunct) {
-    							Set<OWLClassExpression> tempCandidate = new HashSet<>(candidate);
-    							tempCandidate.add(conjunct);
-    							queueOfCandidates.add(tempCandidate);
-    						}	
-					}
-    			}	
+//    					System.out.println("got it");
+    					alreadySaturated = false;
+    					
+    					Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
+    					
+    					for(OWLClassExpression conjunct : topLevelConjunct) {
+							Set<OWLClassExpression> tempCandidate = new HashSet<>(candidate);
+							tempCandidate.add(conjunct);
+							setOfCandidates.add(tempCandidate);
+						}
+//    					System.out.println("setOfCandidates " + setOfCandidates);
+    					break outerloop;
+    				}
+    			}
     		}
     		if(alreadySaturated) {
-    			resultingSet.add(newMinimisedRepairType(candidate));
+    			RepairType newType = newMinimisedRepairType(candidate);
+    			if(!resultingSet.contains(newType)) resultingSet.add(newType);
     		}
-    	}   
-
+    		
+    		
+    	}
+    	
     	return resultingSet;
-  	
+    	
+    	  	
     }
     
-//    public Set<RepairType> computeManyRepairTypes(RepairType candidate) {
-//    	
-//    	return null;
-//    }
 
-    /**
-     * Return all types that are obtained from the given repair type by applying 
-     * premise saturation with respect to the given class expression.
-     * 
-     * Assumption: the individual assigned the repair type is an instance of exp, and 
-     * the repair type contains some class expression D s.t. the ontology entails 
-     * exp SubClassOf D
-     */
+
+//    /**
+//     * Return all types that are obtained from the given repair type by applying 
+//     * premise saturation with respect to the given class expression.
+//     * 
+//     * Assumption: the individual assigned the repair type is an instance of exp, and 
+//     * the repair type contains some class expression D s.t. the ontology entails 
+//     * exp SubClassOf D
+//     */
     private Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
     	Set<Set<OWLClassExpression>> result = new HashSet<>();
 
-        for(OWLClassExpression subsumer: reasonerWithoutTBox.subsumers(exp)){
+        for(OWLClassExpression subsumer: reasonerWithoutTBox.equivalentOrSubsuming(exp)){
             if(!(subsumer instanceof OWLObjectIntersectionOf)){
                 Set<OWLClassExpression> newType = new HashSet<>();
                 newType.add(subsumer);

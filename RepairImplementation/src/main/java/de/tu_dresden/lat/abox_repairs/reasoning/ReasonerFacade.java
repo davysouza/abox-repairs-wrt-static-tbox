@@ -212,8 +212,8 @@ public class ReasonerFacade {
             .map(name -> expression2Name.inverse().get(name))
             .collect(Collectors.toSet());
 
-        logger.info("Subsumees of "+exp+":");
-        result.stream().forEach(logger::info);
+//        logger.info("Subsumees of "+exp+":");
+//        result.stream().forEach(logger::info);
 
         if(result.contains(null)){
             System.out.println("Unexpected null caused by:");
