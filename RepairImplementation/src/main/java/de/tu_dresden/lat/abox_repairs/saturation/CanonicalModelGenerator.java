@@ -3,7 +3,6 @@ package de.tu_dresden.lat.abox_repairs.saturation;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.IRI;
@@ -11,11 +10,7 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -37,6 +32,9 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 	
 	private OWLOntology ontology;
 
+	private int addedAssertions = 0;
+	private int addedIndividuals = 0;
+	private double duration = 0.0;
 
 	public CanonicalModelGenerator(ReasonerFacade reasoner) {
 		this.reasoner = reasoner;
@@ -49,20 +47,42 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 		this.ontology = ontology;
 		factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
-		long sizeOld = ontology.getABoxAxioms(Imports.INCLUDED).size();
+		int sizeOld = ontology.getABoxAxioms(Imports.INCLUDED).size();
+		int indsOld = ontology.getIndividualsInSignature().size();
 
 		class2ind = new HashMap<>();
 
-		//System.out.println("Anonymus individuals: "+ontology.getAnonymousIndividuals());
+		//System.out.println("Anonymous individuals: "+ontology.getAnonymousIndividuals());
 
 		ontology.individualsInSignature()
 			.forEach(i -> process(i,ontology));
 
-		long sizeNew = ontology.getABoxAxioms(Imports.INCLUDED).size();
+		int sizeNew = ontology.getABoxAxioms(Imports.INCLUDED).size();
+		int indsNew = ontology.getIndividualsInSignature().size();
 
-		logger.info("Saturation added "+(sizeNew-sizeOld)+" axioms.");
+		addedAssertions = sizeNew-sizeOld;
+		addedIndividuals = indsNew-indsOld;
 
-		logger.info("Saturation took "+((double)(System.nanoTime() - start)/1_000_000_000));
+		logger.info("Saturation added "+addedAssertions+" axioms.");
+
+		duration = ((double)(System.nanoTime() - start)/1_000_000_000);
+
+		logger.info("Saturation took "+duration);
+	}
+
+	@Override
+	public int addedAssertions() {
+		return addedAssertions;
+	}
+
+	@Override
+	public int addedIndividuals() {
+		return addedIndividuals;
+	}
+
+	@Override
+	public double getDuration() {
+		return duration;
 	}
 
 	private void process(OWLNamedIndividual ind, OWLOntology ontology) {

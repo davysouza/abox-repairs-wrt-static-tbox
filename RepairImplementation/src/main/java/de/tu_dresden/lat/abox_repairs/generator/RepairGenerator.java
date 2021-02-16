@@ -101,8 +101,8 @@ abstract public class RepairGenerator {
 		
 		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
 //		logger.debug("\nWhen building the matrix of the repair");
-		
-		for(OWLAxiom ax: ontology.axioms().collect(Collectors.toSet())) {
+
+		for(OWLAxiom ax: ontology.getABoxAxioms(Imports.INCLUDED)) {
 			
 			if(ax instanceof OWLClassAssertionAxiom) {
 				OWLClassAssertionAxiom classAssertion = (OWLClassAssertionAxiom) ax;
@@ -138,7 +138,7 @@ abstract public class RepairGenerator {
 						else {
 							RepairType type1 = seedFunction.get(copySubject);
 							Set<OWLClassExpression> successorSet = computeSuccessorSet(
-									type1,role,originalObject);
+									type1, role, originalObject);
 							if(successorSet.isEmpty()) {
 								OWLObjectPropertyAssertionAxiom newAxiom = factory
 										.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
@@ -162,62 +162,7 @@ abstract public class RepairGenerator {
 			}
 		}
 		
-//		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-//			OWLNamedIndividual originalInd = copyToOriginal.get(ind);
-//			for(OWLClassAssertionAxiom ax : ontology.getClassAssertionAxioms(originalInd)) {
-//				if(seedFunction.get(ind) == null || !seedFunction.get(ind).getClassExpressions().contains(ax.getClassExpression())) {
-//					
-//					OWLClassAssertionAxiom newAxiom = factory.getOWLClassAssertionAxiom(ax.getClassExpression(), ind);
-//					newOntology.add(newAxiom);
-//					System.out.println("New Class Assertion " + newAxiom);
-//				}
-//			}
-//		}
-//		
-//		for(OWLNamedIndividual ind1 : setOfCollectedIndividuals) {
-//			OWLNamedIndividual originalInd1 = copyToOriginal.get(ind1);
-//			
-//			for(OWLNamedIndividual ind2 : setOfCollectedIndividuals) {
-//				OWLNamedIndividual originalInd2 = copyToOriginal.get(ind2);
-//				
-//				for(OWLObjectProperty role : ontology.getObjectPropertiesInSignature()) {
-//					OWLObjectPropertyAssertionAxiom roleAssertion = factory
-//							.getOWLObjectPropertyAssertionAxiom(role, originalInd1, originalInd2);
-//					if(ontology.containsAxiom(roleAssertion)) {
-//						if(seedFunction.get(ind1) == null || seedFunction.get(ind1).getClassExpressions().isEmpty()) {
-//							OWLObjectPropertyAssertionAxiom newAxiom = factory
-//									.getOWLObjectPropertyAssertionAxiom(role, ind1, ind2);
-//							newOntology.add(newAxiom);
-//							
-//							System.out.println("New Role Assertion" + newAxiom);
-//						}
-//						else {
-//							RepairType type1 = seedFunction.get(ind1);
-//							Set<OWLClassExpression> successorSet = computeSuccessorSet(
-//									type1,role,originalInd2);
-//							
-//							if(successorSet.isEmpty()) {
-//								OWLObjectPropertyAssertionAxiom newAxiom = factory.getOWLObjectPropertyAssertionAxiom(role, ind1, ind2);
-//								newOntology.add(newAxiom);
-//								
-//								System.out.println("New Role Assertion " + newAxiom);
-//							} 
-//							else {
-//								RepairType type2 = seedFunction.get(ind2);
-//								if(type2 != null && reasonerWithoutTBox.isCovered(successorSet, type2.getClassExpressions())) {
-//									OWLObjectPropertyAssertionAxiom newAxiom = factory
-//											.getOWLObjectPropertyAssertionAxiom(role, ind1, ind2);
-//									newOntology.add(newAxiom);
-//									
-//									System.out.println("New Role Assertion " + newAxiom);
-//								}
-//							}
-//							
-//						}
-//					}
-//				}
-//			}
-//		}
+
 	}
 	
 	protected Set<OWLClassExpression> computeSuccessorSet(RepairType inputType, OWLObjectProperty inputRole, OWLNamedIndividual ind) {

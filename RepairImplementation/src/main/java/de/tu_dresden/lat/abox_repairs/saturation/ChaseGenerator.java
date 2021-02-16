@@ -36,11 +36,18 @@ public class ChaseGenerator implements ABoxSaturator {
 	private OWLDataFactory factory;
 	private OWLOntology ontology;
 
+	private int addedAssertions = 0;
+	private int addedIndividuals = 0;
+	private double duration = 0.0;
+
 	public void saturate(OWLOntology ontology) throws SaturationException {
 
 		long start = System.nanoTime();
 
 		this.ontology = ontology;
+
+		int indsBefore = ontology.getIndividualsInSignature().size();
+
 		factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
 		final OwlToRulesConverter owlToRulesConverter = new OwlToRulesConverter();
@@ -75,19 +82,41 @@ public class ChaseGenerator implements ABoxSaturator {
 				throw new SaturationException("exception during vlog reasoning", e);
 			}
 
+			addedAssertions = 0;
 			reasoner.getInferences().forEach(fact -> {
 			//	System.out.println("Fact: "+fact);
 			//	System.out.println("Abox: "+fact2Axiom(fact));
 				OWLAxiom axiom = fact2Axiom(fact);
-				if(!false){//ontology.containsAxiom(axiom)){
+				if(!ontology.containsAxiom(axiom)){
 					//System.out.println("Newly derived: "+axiom);
 					ontology.add(axiom);
+					addedAssertions++;
 				}
 			});
 		}
 
-		logger.info("Saturation took "+((double)(System.nanoTime() - start)/1_000_000_000));
+		int indsAfter = ontology.getIndividualsInSignature().size();
 
+		addedIndividuals = indsAfter - indsBefore;
+
+		duration = ((double)(System.nanoTime() - start)/1_000_000_000);
+
+		logger.info("Saturation took "+duration);
+	}
+
+	@Override
+	public int addedAssertions() {
+		return addedAssertions;
+	}
+
+	@Override
+	public int addedIndividuals() {
+		return addedIndividuals;
+	}
+
+	@Override
+	public double getDuration() {
+		return duration;
 	}
 
 	private OWLAxiom fact2Axiom(Fact fact) {
