@@ -209,8 +209,8 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		logger.debug("Ontology:");
-		ontology.axioms().forEach(ax -> logger.debug(ax));
+//		logger.debug("Ontology:");
+//		ontology.axioms().forEach(ax -> logger.debug(ax));
 
 	}
 	
