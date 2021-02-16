@@ -45,15 +45,11 @@ public class Main {
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
 	
-	private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
-	
-	//private Scanner reader;
-	
-	//private CycleChecker checker;
+	private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;	
 
 	public enum RepairVariant {IQ, CQ};
 	
-//	public enum RepairAlternative {Canonical, Optimized};
+
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException, SaturationException {
 		
@@ -68,9 +64,7 @@ public class Main {
 					OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(args[i]));
 
 			logger.debug("after loading ontology: ");
-//			for(OWLAxiom ax : m.ontology.getTBoxAxioms(Imports.INCLUDED)) {
-//				logger.debug("tbox axiom " + ax);
-//			}
+
 
 
 			File file = new File(args[i+1]);
@@ -79,8 +73,7 @@ public class Main {
 
 
 			RepairVariant variant;
-			
-//			RepairAlternative alternative;
+		
 
 			switch(args[i+2]){
 				case "IQ": variant = RepairVariant.IQ; break;
@@ -90,18 +83,8 @@ public class Main {
 					System.exit(1);
 					variant = RepairVariant.CQ;
 			}
-			
-//			switch(args[i+3]) {
-//			case "Canonical": alternative = RepairAlternative.Canonical; break;
-//			case "Optimized": alternative = RepairAlternative.Optimized; break;
-//			default: 
-//				System.exit(1);
-//				alternative = RepairAlternative.Optimized;
-//			}
-			
-			
-			
-//			m.performRepair(m.ontology, repairRequest, variant, alternative);
+		
+		
 			m.performRepair(m.ontology, repairRequest, variant);
 
 				i+=3;
@@ -153,7 +136,7 @@ public class Main {
 		}
 
 
-//			if(!(args[i+2].equals("CQ") && m.checker.cyclic())) {
+
 		if (isCompliantWith(repairRequest)) {
 			System.out.println("\nThe ontology is compliant!");
 		} else {
