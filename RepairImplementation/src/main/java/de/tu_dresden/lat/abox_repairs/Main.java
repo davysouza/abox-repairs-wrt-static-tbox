@@ -5,7 +5,7 @@ import java.util.*;
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.RelevantSubOntologyExtractor;
-import de.tu_dresden.lat.abox_repairs.saturation.ABoxSaturator;
+import de.tu_dresden.lat.abox_repairs.saturation.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -25,9 +25,6 @@ import de.tu_dresden.lat.abox_repairs.ontology_tools.CycleChecker;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
-import de.tu_dresden.lat.abox_repairs.saturation.CanonicalModelGenerator;
-import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
-import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 
 import javax.print.attribute.standard.RequestingUserName;
 
@@ -53,8 +50,6 @@ public class Main {
 	public enum RepairVariant {IQ, CQ};
 
 	private ABoxSaturator saturator;
-	
-
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException, SaturationException {
 		
@@ -90,7 +85,7 @@ public class Main {
 			}
 		
 		
-			m.performRepair(m.ontology, repairRequest, variant);
+			m.performRepair(m.ontology, repairRequest, variant, true);
 
 				i+=3;
 				if(i < args.length) System.out.println("\n" + "=================================================");
@@ -100,7 +95,10 @@ public class Main {
 
 	public void performRepair(OWLOntology inputOntology,
 							  RepairRequest repairRequest,
-							  RepairVariant repairVariant) throws OWLOntologyCreationException, SaturationException {
+							  RepairVariant repairVariant,
+							  boolean saturationRequired
+							  ) throws OWLOntologyCreationException, SaturationException {
+
 
 		//OWLOntology module = new RelevantSubOntologyExtractor(inputOntology)
 		//		.relevantSubOntology(repairRequest);
@@ -114,12 +112,17 @@ public class Main {
 		int oldIndividuals = ontology.getIndividualsInSignature().size();
 		long oldAssertions = ontology.aboxAxioms(Imports.INCLUDED).count();
 
-		boolean tboxExists = true;
+		//boolean tboxExists = true;
 		if (ontology.getTBoxAxioms(Imports.INCLUDED).isEmpty()) {
-			tboxExists = false;
+			//tboxExists = false;
+			saturationRequired = false; // TODO bad style - should not reassign parameter variables!
 		}
+		//saturationRequirednoSaturation = !saturationRequired||!tboxExists;
 
-		if (repairVariant.equals(RepairVariant.CQ) && tboxExists) {
+		if(!saturationRequired)
+			saturator = new DummySaturator();
+
+		if (repairVariant.equals(RepairVariant.CQ) && saturationRequired) {
 			cqSaturate();
 
 		}
@@ -136,7 +139,7 @@ public class Main {
 		}
 
 		// Saturate the ontology
-		if (repairVariant.equals(RepairVariant.IQ) && tboxExists) {
+		if (repairVariant.equals(RepairVariant.IQ) && saturationRequired) {
 			iqSaturate();
 		}
 

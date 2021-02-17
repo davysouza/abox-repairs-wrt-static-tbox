@@ -21,24 +21,38 @@ public class RunExperiment1 {
 
 
     public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
-        if(args.length<4) {
+        if(args.length<5) {
             System.out.println("Usage: ");
-            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE IQ|CQ PROPORTION1 PROPORTION2 [SEED]");
+            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE SATURATED|NOT_SATURATED IQ|CQ PROPORTION1 PROPORTION2 [SEED]");
             System.out.println();
             System.out.println("Generates a repair of ONTOLOGY_FILE with a randomly generated repair request that");
             System.out.println("randomly assigns concept names to some individual name so that a proportion of ");
             System.out.println("PROPORTION2 of the entire set of concept names is selected, and a proportion of ");
             System.out.println("PROPORTION1 of the individuals gets a repair request. You may optionally provide");
             System.out.println("a seed value for the random number generator used.");
+            System.out.println("SATURATED should be used if the ontology is already saturated in the appropriate way");
+            System.out.println("otherwise, specify NOT_SATURATED");
+            System.out.println();
             System.out.println();
             System.out.println("Example: ");
-            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+" ore_ont_3453.owl IQ 0.1 0.2");
+            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+" ore_ont_3453.owl NOT_SATURATED IQ 0.1 0.2");
             System.exit(0);
         }
 
         String ontologyFileName = args[0];
-        Main.RepairVariant repairVariant;
+
+        boolean saturationRequired = false;
         switch(args[1]){
+            case "SATURATED": saturationRequired=false; break;
+            case "NOT_SATURATED": saturationRequired=true; break;
+            default:
+                System.out.println("Please specify whether the given ontology is already saturated.");
+                System.out.println("(Use no parameters to get help)");
+                System.exit(1);
+        }
+
+        Main.RepairVariant repairVariant;
+        switch(args[2]){
             case "IQ": repairVariant = Main.RepairVariant.IQ; break;
             case "CQ": repairVariant = Main.RepairVariant.CQ; break;
             default:
@@ -48,17 +62,17 @@ public class RunExperiment1 {
                 System.exit(1);
         }
 
-        double proportionIndividuals = Double.parseDouble(args[2]);
-        double proportionClassNames = Double.parseDouble(args[3]);
+        double proportionIndividuals = Double.parseDouble(args[3]);
+        double proportionClassNames = Double.parseDouble(args[4]);
 
         RunExperiment1 experiment = new RunExperiment1();
 
-        if(args.length>4){
-            long seed = Long.parseLong(args[4]);
+        if(args.length>5){
+            long seed = Long.parseLong(args[5]);
             experiment.setSeed(seed);
         }
         try {
-            experiment.startExperiment(ontologyFileName, repairVariant, proportionIndividuals, proportionClassNames);
+            experiment.startExperiment(ontologyFileName, repairVariant, proportionIndividuals, proportionClassNames, saturationRequired);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -83,7 +97,7 @@ public class RunExperiment1 {
         random.setSeed(seed);
     }
 
-    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, double proportionIndividuals, double proportionClassNames)
+    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, double proportionIndividuals, double proportionClassNames, boolean saturationRequired)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
@@ -93,7 +107,7 @@ public class RunExperiment1 {
         RepairRequest repairRequest = generateRepairRequest(ontology, proportionIndividuals, proportionClassNames);
 
         Main main = new Main();
-        main.performRepair(ontology, repairRequest, repairVariant);
+        main.performRepair(ontology, repairRequest, repairVariant, saturationRequired);
     }
 
     private RepairRequest generateRepairRequest(

@@ -21,31 +21,43 @@ public class RunExperiment2 {
 
 
     public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
-        if(args.length<2) {
+        if(args.length<3) {
             System.out.println("Usage: ");
-            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE IQ|CQ [SEED]");
+            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE SATURATED|NOT_SATURATED IQ|CQ [SEED]");
             System.out.println();
             System.out.println("Generates a repair of ONTOLOGY_FILE with a randomly generated repair request that");
             System.out.println("randomly selects an entailed concept assertion. You may optionally provide");
             System.out.println("a seed value for the random number generator used.");
+            System.out.println("SATURATED should be used if the ontology is already saturated in the appropriate way");
+            System.out.println("otherwise, specify NOT_SATURATED");
             System.out.println();
             System.out.println("Example: ");
-            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+" ore_ont_3453.owl IQ 0.1 0.2");
+            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+" ore_ont_3453.owl NOT_SATURATED IQ ");
             System.exit(0);
         }
 
         String ontologyFileName = args[0];
-        Main.RepairVariant repairVariant = pickVariant(args[1]);
+        Main.RepairVariant repairVariant = pickVariant(args[2]);
 
+
+        boolean saturationRequired = false;
+        switch(args[1]){
+            case "SATURATED": saturationRequired=false; break;
+            case "NOT_SATURATED": saturationRequired=true; break;
+            default:
+                System.out.println("Please specify whether the given ontology is already saturated.");
+                System.out.println("(Use no parameters to get help)");
+                System.exit(1);
+        }
 
         RunExperiment2 experiment = new RunExperiment2();
 
-        if(args.length>2){
-            long seed = Long.parseLong(args[2]);
+        if(args.length>3){
+            long seed = Long.parseLong(args[3]);
             experiment.setSeed(seed);
         }
         try {
-            experiment.startExperiment(ontologyFileName, repairVariant);
+            experiment.startExperiment(ontologyFileName, repairVariant, saturationRequired);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -85,7 +97,7 @@ public class RunExperiment2 {
         random.setSeed(seed);
     }
 
-    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant)
+    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, boolean saturationRequired)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
@@ -97,7 +109,7 @@ public class RunExperiment2 {
         RepairRequest repairRequest = generateRepairRequest(ontology);
 
         Main main = new Main();
-        main.performRepair(ontology, repairRequest, repairVariant);
+        main.performRepair(ontology, repairRequest, repairVariant,saturationRequired);
     }
 
     private RepairRequest generateRepairRequest(

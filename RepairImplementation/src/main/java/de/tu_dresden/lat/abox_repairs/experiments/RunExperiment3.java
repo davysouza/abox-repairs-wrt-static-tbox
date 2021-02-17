@@ -19,9 +19,9 @@ public class RunExperiment3 {
 
 
         public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
-            if(args.length<2) {
+            if(args.length<3) {
                 System.out.println("Usage: ");
-                System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE IQ|CQ ");
+                System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE SATURATED|NOT_SATURATED IQ|CQ ");
                 System.out.println();
                 System.out.println();
                 System.out.println("Example: ");
@@ -30,13 +30,25 @@ public class RunExperiment3 {
             }
 
             String ontologyFileName = args[0];
-            Main.RepairVariant repairVariant = pickVariant(args[1]);
+
+
+            boolean saturationRequired = false;
+            switch(args[1]){
+                case "SATURATED": saturationRequired=false; break;
+                case "NOT_SATURATED": saturationRequired=true; break;
+                default:
+                    System.out.println("Please specify whether the given ontology is already saturated.");
+                    System.out.println("(Use no parameters to get help)");
+                    System.exit(1);
+            }
+
+            Main.RepairVariant repairVariant = pickVariant(args[2]);
 
 
             RunExperiment3 experiment = new RunExperiment3();
 
             try {
-                experiment.startExperiment(ontologyFileName, repairVariant);
+                experiment.startExperiment(ontologyFileName, repairVariant,saturationRequired);
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -58,7 +70,7 @@ public class RunExperiment3 {
 
 
 
-        private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant)
+        private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, boolean saturationRequired)
                 throws OWLOntologyCreationException, SaturationException {
 
             OWLOntology ontology =
@@ -77,7 +89,7 @@ public class RunExperiment3 {
 
                         Main main = new Main();
                         try {
-                            main.performRepair(ontology, request, repairVariant);
+                            main.performRepair(ontology, request, repairVariant,saturationRequired);
                         } catch (OWLOntologyCreationException e) {
                             e.printStackTrace();
                         } catch (SaturationException e) {
