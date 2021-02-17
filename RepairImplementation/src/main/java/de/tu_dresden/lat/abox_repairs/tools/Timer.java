@@ -5,11 +5,11 @@ package de.tu_dresden.lat.abox_repairs.tools;
  */
 public class Timer {
 
-    public Timer newTimer(){
+    public static Timer newTimer(){
         return new Timer();
     }
 
-    public Timer dummyTimer(){
+    public static Timer dummyTimer(){
         return new Timer(){
             @Override
             public void reset() {

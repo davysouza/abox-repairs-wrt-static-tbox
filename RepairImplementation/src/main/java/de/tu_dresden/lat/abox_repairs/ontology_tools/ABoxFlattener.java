@@ -52,7 +52,8 @@ public class ABoxFlattener {
                         knownClasses.put(expression,name);
                     }
                     toAdd.add(factory.getOWLClassAssertionAxiom(name, assertion.getIndividual()));
-                    toAdd.add(factory.getOWLSubClassOfAxiom(name, expression));
+                    //toAdd.add(factory.getOWLSubClassOfAxiom(name, expression));
+                    toAdd.add(factory.getOWLEquivalentClassesAxiom(name,expression)); // produces names more useful for repairs
                 }
             }
         });

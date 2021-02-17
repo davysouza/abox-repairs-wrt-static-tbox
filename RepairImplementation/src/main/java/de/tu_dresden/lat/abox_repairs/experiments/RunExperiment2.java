@@ -6,6 +6,9 @@ import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
+import de.tu_dresden.lat.abox_repairs.tools.Timer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
  */
 public class RunExperiment2 {
 
+    private static Logger logger = LogManager.getLogger(RunExperiment2.class);
 
     public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
         if(args.length<3) {
@@ -111,8 +115,11 @@ public class RunExperiment2 {
 
         OntologyPreparations.prepare(ontology);
 
+        Timer timer = Timer.newTimer();
+        timer.continueTimer();
         RepairRequest repairRequest = generateRepairRequest(ontology);
-
+        timer.pause();
+        logger.info("Generating repair request took "+timer.getTime()+" seconds.");
         Main main = new Main(random);
         main.performRepair(ontology, repairRequest, repairVariant,saturationRequired);
     }
