@@ -219,7 +219,6 @@ public class Main {
 
 			initReasonerFacade();
 
-
 			if (isCompliantWith(repairRequest)) {
 				System.out.println("The ontology is now compliant");
 			} else {
@@ -252,7 +251,6 @@ public class Main {
 		long start = System.nanoTime();
 
 		List<OWLClassExpression> additionalExpressions = new LinkedList<>();
-
 		for(Collection<OWLClassExpression> exps:repairRequest.values()){
 			for(OWLClassExpression exp: exps){
 				additionalExpressions.add(exp);
@@ -291,8 +289,9 @@ public class Main {
 		long time = System.nanoTime();
 
 		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasonerWithTBox, reasonerWithoutTBox);
+		
 		seedFunctionHandler.constructSeedFunction(inputRepairRequest);
-		seedFunction = seedFunctionHandler.getSeedFunction(random);
+		seedFunction = seedFunctionHandler.getSeedFunction();
 
 		logger.info("Seed function construction took: "+(((double)System.nanoTime()-time)/1_000_000_000));
 	}

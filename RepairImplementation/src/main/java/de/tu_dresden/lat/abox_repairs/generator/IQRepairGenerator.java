@@ -53,6 +53,10 @@ public class IQRepairGenerator extends RepairGenerator {
 			
 		}
 		
+		
+		logger.debug("\nBefore building the matrix");
+		ontology.axioms().forEach(ax -> logger.debug("- " + ax.toString()));
+		
 		long startTimeMatrix = System.nanoTime();
 		
 		
