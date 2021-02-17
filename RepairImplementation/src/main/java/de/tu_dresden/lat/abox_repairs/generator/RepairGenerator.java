@@ -146,7 +146,7 @@ abstract public class RepairGenerator {
 								
 //								logger.debug("New Role Assertion " + newAxiom);
 							} 
-							else {
+							else if(!(successorSet.stream().anyMatch(e -> e.isOWLThing()))) {
 								RepairType type2 = seedFunction.get(copyObject);
 								if(type2 != null && reasonerWithoutTBox.isCovered(successorSet, type2.getClassExpressions())) {
 									OWLObjectPropertyAssertionAxiom newAxiom = factory

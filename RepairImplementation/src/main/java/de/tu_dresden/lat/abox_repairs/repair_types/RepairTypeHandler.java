@@ -83,32 +83,34 @@ public class RepairTypeHandler {
 	 *
 	 * Non-determinism is resolved using a random number generator.
 	 */
-	public RepairType convertToRandomRepairType(Set<OWLClassExpression> expSet, Random random) {
-    	logger.debug(expSet);
+public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Random random) {
     	
-    	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
-    		for(OWLClassExpression exp : expSet) {
-    			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(exp));
+    	Set<OWLClassExpression> resultingSet = new HashSet<>(preType);
+    		
+    		boolean isSaturated = false;
+    		while(!isSaturated) {
+    			Set<OWLClassExpression> tempSet = new HashSet<>(resultingSet);
+    			isSaturated = true;
+    			for(OWLClassExpression exp : tempSet) {
+        			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(exp));
+        			for (OWLClassExpression subConcept : setOfSubsumees) {
 
-//    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
-//    			logger.debug("Size " + setOfSubsumees.size());
-//    			logger.debug("Set of subsumees " + setOfSubsumees);
-    			for (OWLClassExpression subConcept : setOfSubsumees) {
-//    				logger.debug("subconcept " + subConcept);
-					if (subConcept != null && !expSet.stream().anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
-	    				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
+    					if (subConcept != null && !tempSet.stream()
+    							.anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
+    	    				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
+    	    				
+    	    				// bit dirty, but ensures experiment can be reproduced
+    						listOfConcept.sort(Comparator.comparing(a -> a.toString()));
 
-						listOfConcept.sort(Comparator.comparing(a -> a.toString()));// bit dirty, but ensures experiment can be reproduced
+    	    				int index = random.nextInt(listOfConcept.size());
 
-	    				int index = random.nextInt(listOfConcept.size());
-//	    				logger.debug("chosen Concept " + listOfConcept.get(index));
-	    				resultingSet.add(listOfConcept.get(index));
-	    			}
-    				
+    	    				resultingSet.add(listOfConcept.get(index));
+    	    				
+    	    				isSaturated = false;
+    	    			}
+            		}
         		}
     		}
-    
-    	
     	
     	return newMinimisedRepairType(resultingSet);
     	

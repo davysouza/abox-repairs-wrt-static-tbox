@@ -208,7 +208,6 @@ public class Main {
 
 			initReasonerFacade();
 
-
 			if (isCompliantWith(repairRequest)) {
 				System.out.println("The ontology is now compliant");
 			} else {

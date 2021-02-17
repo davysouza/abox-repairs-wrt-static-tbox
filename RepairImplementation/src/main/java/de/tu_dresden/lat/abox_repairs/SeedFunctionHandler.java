@@ -30,21 +30,15 @@ public class SeedFunctionHandler {
 	private final ReasonerFacade reasonerWithTBox;
 	private final ReasonerFacade reasonerWithoutTBox;
 	
+	private Random rand;
+	
 	public SeedFunctionHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
 		this.reasonerWithTBox = reasonerWithTBox;
 		this.reasonerWithoutTBox = reasonerWithoutTBox;
 	}
 	
 	public Map<OWLNamedIndividual, RepairType> getSeedFunction(Random random){
-		seedFunction = new HashMap<>();
-		Set<OWLNamedIndividual> setOfIndividuals = seedFunctionCollector.keySet();
-		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
-		for(OWLNamedIndividual individual : setOfIndividuals) {
-			
-			RepairType type = typeHandler.convertToRandomRepairType(seedFunctionCollector.get(individual), random);
-			seedFunction.put(individual, type);
-		}
 		return seedFunction;
 	}
 
@@ -55,8 +49,23 @@ public class SeedFunctionHandler {
 	 */
 	public void constructSeedFunction(RepairRequest repairRequest) {
 		
-		Random rand = new Random();
-
+		rand = new Random();
+		
+		constructHittingSet(repairRequest);
+		
+		seedFunction = new HashMap<>();
+		Set<OWLNamedIndividual> setOfIndividuals = seedFunctionCollector.keySet();
+		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
+		
+		for(OWLNamedIndividual individual : setOfIndividuals) {
+			
+			RepairType type = typeHandler.convertToRandomRepairType(seedFunctionCollector.get(individual), rand);
+			seedFunction.put(individual, type);
+		}
+		
+	}
+	
+	private void constructHittingSet(RepairRequest repairRequest) {
 		seedFunctionCollector = new HashMap<>();
 		Set<OWLNamedIndividual> setOfIndividuals = repairRequest.keySet();
 		for(OWLNamedIndividual individual : setOfIndividuals) {
@@ -110,6 +119,11 @@ public class SeedFunctionHandler {
 				}
 			}
 		}
+		
+	}
+	
+	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
+		return seedFunction;
 	}
 	
 	
