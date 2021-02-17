@@ -90,7 +90,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 		for(OWLClassExpression exp:reasoner.instanceOf(ind)){
 			if(exp instanceof OWLClass){
 				OWLAxiom assertion = factory.getOWLClassAssertionAxiom(exp, ind);
-//				logger.debug("Newly added 0: "+assertion);
+				logger.debug("Newly added 0: "+assertion);
 				if(!ontology.containsAxiom(assertion))
 					ontology.addAxiom(assertion);
 			}else if(exp instanceof OWLObjectSomeValuesFrom){
@@ -101,7 +101,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 						some.getProperty(), 
 						ind, 
 						getIndividual(some.getFiller(), ontology));
-//						logger.debug("Newly added 1: "+assertion);
+						logger.debug("Newly added 1: "+assertion);
 					if(!ontology.containsAxiom(assertion))
 						ontology.addAxiom(assertion);
 				} 
@@ -120,9 +120,9 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 			//System.out.println(" "+ass.getObject()+" satisfies "+reasoner.instanceOf((OWLNamedIndividual)ass.getObject()));
 			//System.out.println(" contains: "+reasoner.instanceOf((OWLNamedIndividual)ass.getObject())
 			//	.contains(filler));
-			return ass.getProperty().equals(property) 
-			&& reasoner.instanceOf((OWLNamedIndividual)ass.getObject())
-					.contains(filler);
+			return ass.getProperty().equals(property)  && (filler.isOWLThing() ||
+			 reasoner.instanceOf((OWLNamedIndividual)ass.getObject())
+					.contains(filler));
 		});
 	}
 
@@ -151,7 +151,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 						some.getProperty(), 
 						individual, 
 						getIndividual(some.getFiller(), ontology));
-//					logger.debug("Newly added 2: "+assertion);
+					logger.debug("Newly added 2: "+assertion);
 					ontology.addAxiom(assertion);
 				}
 			}

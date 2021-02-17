@@ -82,8 +82,6 @@ public class RepairTypeHandler {
 	 * Returns some repair type that contains the given set of class expressions.
 	 *
 	 * Non-determinism is resolved using a random number generator.
-	 *
-	 * @TODO use same random number generator as for the experiment (and thus make this reproducible by the seed function)
 	 */
 	public RepairType convertToRandomRepairType(Set<OWLClassExpression> expSet, Random random) {
     	logger.debug(expSet);
