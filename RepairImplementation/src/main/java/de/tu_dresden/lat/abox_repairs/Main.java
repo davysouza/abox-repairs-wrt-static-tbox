@@ -134,13 +134,24 @@ public class Main {
 		if(!saturationRequired)
 			saturator = new DummySaturator();
 
-		if (repairVariant.equals(RepairVariant.CQ) && saturationRequired) {
-			cqSaturate();
 
-		}
 
 		// Initialize reasoner
 		initReasonerFacade();
+
+		CycleChecker cycleChecker = new CycleChecker(reasonerWithTBox);
+		if(repairVariant.equals(RepairVariant.CQ) && cycleChecker.cyclic())
+		{
+			System.out.println("Cyclic!");
+			System.exit(0);
+		}
+
+		if (repairVariant.equals(RepairVariant.CQ) && saturationRequired)
+		{
+			cqSaturate();
+		}
+
+
 
 
 		logger.debug("after initializing reasoners: ");
@@ -265,6 +276,7 @@ public class Main {
 
 	private void cqSaturate() throws SaturationException {
 		System.out.println("\nCQ-saturation");
+
 		saturator = new ChaseGenerator();
 		saturator.saturate(ontology);
 	}
