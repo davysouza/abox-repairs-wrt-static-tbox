@@ -1,6 +1,5 @@
 package de.tu_dresden.lat.abox_repairs.reasoning;
 
-import java.awt.desktop.UserSessionEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
