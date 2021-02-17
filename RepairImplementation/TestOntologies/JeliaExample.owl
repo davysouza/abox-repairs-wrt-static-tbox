@@ -111,8 +111,12 @@
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#b">
         <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#P1"/>
         <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#P2"/>
+        <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#P3"/>
+        <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#P4"/>
         <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#Q1"/>
         <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#Q2"/>
+        <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#Q3"/>
+        <rdf:type rdf:resource="http://www.semanticweb.org/adrian/ontologies/2021/1/untitled-ontology-21#Q4"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 

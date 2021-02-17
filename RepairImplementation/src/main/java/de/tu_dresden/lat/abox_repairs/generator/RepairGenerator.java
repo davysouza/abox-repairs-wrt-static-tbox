@@ -146,14 +146,14 @@ abstract public class RepairGenerator {
 								
 //								logger.debug("New Role Assertion " + newAxiom);
 							} 
-							else if(!(successorSet.stream().anyMatch(e -> e.isOWLThing()))) {
+							else  {
 								RepairType type2 = seedFunction.get(copyObject);
 								if(type2 != null && reasonerWithoutTBox.isCovered(successorSet, type2.getClassExpressions())) {
 									OWLObjectPropertyAssertionAxiom newAxiom = factory
 											.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
 									newOntology.add(newAxiom);
 									
-//									logger.debug("New Role Assertion " + newAxiom);
+									logger.debug("New Role Assertion " + newAxiom);
 								}
 							}
 						}

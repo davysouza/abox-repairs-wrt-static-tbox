@@ -40,12 +40,13 @@ public class RepairTypeHandler {
         Set<OWLClassExpression> newClasses = new HashSet<>(type.getClassExpressions());
         
         for(OWLClassExpression exp:type.getClassExpressions()){
-            if(newClasses.contains(exp)){
-                newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
+            if(exp.isOWLThing()) 
+            	newClasses.remove(exp);
+            else if(newClasses.contains(exp)) {
+            	newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
                 newClasses.add(exp);
             }
         }
-
         return new RepairType(newClasses);
     }
 
