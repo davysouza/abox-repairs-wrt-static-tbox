@@ -93,17 +93,17 @@ public class RepairTypeHandler {
     			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(exp));
 
 //    			setOfSubsumees.addAll(reasonerWithoutTBox.subsumees(exp));
-    			logger.debug("Size " + setOfSubsumees.size());
-    			logger.debug("Set of subsumees " + setOfSubsumees);
+//    			logger.debug("Size " + setOfSubsumees.size());
+//    			logger.debug("Set of subsumees " + setOfSubsumees);
     			for (OWLClassExpression subConcept : setOfSubsumees) {
-    				logger.debug("subconcept " + subConcept);
+//    				logger.debug("subconcept " + subConcept);
 					if (subConcept != null && !expSet.stream().anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
 	    				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
 
 						listOfConcept.sort(Comparator.comparing(a -> a.toString()));// bit dirty, but ensures experiment can be reproduced
 
 	    				int index = random.nextInt(listOfConcept.size());
-	    				logger.debug("chosen Concept " + listOfConcept.get(index));
+//	    				logger.debug("chosen Concept " + listOfConcept.get(index));
 	    				resultingSet.add(listOfConcept.get(index));
 	    			}
     				
@@ -138,7 +138,7 @@ public class RepairTypeHandler {
     		
     		outerloop:
     		for(OWLClassExpression concept : candidate) {
-    			logger.debug("find this " + reasonerWithTBox.equivalentOrSubsumedBy(concept));
+//    			logger.debug("find this " + reasonerWithTBox.equivalentOrSubsumedBy(concept));
     			for(OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
     				if(!candidate.stream().anyMatch(otherConcept -> 
 						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
