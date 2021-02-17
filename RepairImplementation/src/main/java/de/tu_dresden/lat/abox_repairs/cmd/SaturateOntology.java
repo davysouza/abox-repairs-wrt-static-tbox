@@ -1,13 +1,12 @@
 package de.tu_dresden.lat.abox_repairs.cmd;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.AxiomType;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.Imports;
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.CycleChecker;
@@ -23,17 +22,21 @@ import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
  */
 public class SaturateOntology {
 
-    public static void main(String[] args) throws SaturationException, OWLOntologyCreationException {
-        String filename = args[0];
+    private enum Method {CHASE, CANONICAL};
+
+    public static void main(String[] args) throws SaturationException, OWLOntologyCreationException, FileNotFoundException, OWLOntologyStorageException {
+        String pathString = args[0];
         String method = args[1];
 
-        System.out.println("Saturate "+filename+" using method "+method);
+        System.out.println("Saturate "+pathString+" using method "+method);
         System.out.println("(Methods available: CHASE and CANONICAL)");
 
 
+        File inputFile = new File(pathString);
+
         System.out.println("Loading ontology...");
 		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File(filename));
+        OWLOntology ontology = manager.loadOntologyFromOntologyDocument(inputFile);
         
         System.out.println("TBox: "+ontology.getTBoxAxioms(Imports.INCLUDED).size()
             +" ABox: "+ontology.getABoxAxioms(Imports.INCLUDED).size());
@@ -56,14 +59,20 @@ public class SaturateOntology {
 			System.exit(0);
 		}
 
+		Method methodUsed = Method.CANONICAL;
+
         System.out.println("Saturating...");
         ABoxSaturator generator = null; 
         switch(method) {
             case "CHASE": 
                 reasoner.cleanOntology();
-                generator = new ChaseGenerator(); 
+                generator = new ChaseGenerator();
+                methodUsed=Method.CHASE;
                 break;
-            case "CANONICAL": generator = new CanonicalModelGenerator(reasoner); break;
+            case "CANONICAL":
+                generator = new CanonicalModelGenerator(reasoner);
+                methodUsed=Method.CANONICAL;
+                break;
             default: 
                 System.out.println("Unsupported method: "+method);
                 System.exit(1);
@@ -75,7 +84,16 @@ public class SaturateOntology {
         reasoner.cleanOntology();
 
         System.out.println("BEFORE: "+axiomsBefore+" AFTER: "+ontology.getAxiomCount());
-		//System.out.println("Axioms before: "+axiomsBefore);
-		//System.out.println("Axioms after: "+ontology.getAxiomCount());
+
+        String filename = inputFile.getName();
+
+        String baseName = filename.substring(0, filename.lastIndexOf("."));
+
+        String outputName = baseName+"-"+method+".owl";
+
+        System.out.println("saving...");
+
+        ontology.saveOntology(new FileOutputStream(new File(outputName)));
+
     }
 }

@@ -248,8 +248,14 @@ public class ReasonerFacade {
 
         if(result.contains(null)){
             System.out.println("Unexpected null caused by:");
+
+
             reasoner.subClasses(expression2Name.get(exp), false)
-                    .filter(c -> !c.isOWLThing()).forEach(x -> System.out.println(x));
+                    .filter(c -> !c.isOWLThing() && !c.isOWLNothing()).forEach(x -> {
+                        System.out.println(x);
+                        if(expression2Name.inverse().get(x)==null)
+                            System.out.println(" <- that one I did not know.");
+            });
             System.exit(1);
         }
         return result;
