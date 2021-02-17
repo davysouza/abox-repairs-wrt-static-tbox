@@ -185,10 +185,10 @@ public class RepairTypeHandler {
     private Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
     	Set<Set<OWLClassExpression>> result = new HashSet<>();
-
+    	
         for(OWLClassExpression subsumer: reasonerWithoutTBox.equivalentOrSubsuming(exp)){
             if(!(subsumer instanceof OWLObjectIntersectionOf)){
-                Set<OWLClassExpression> newType = new HashSet<>();
+                Set<OWLClassExpression> newType = new HashSet<>(type);
                 newType.add(subsumer);
                 result.add(newType);
             }
@@ -201,22 +201,55 @@ public class RepairTypeHandler {
     	
     	assert expSet.size()>0;
     	
-    	Set<Set<OWLClassExpression>> candidates = new HashSet<>();
+    	Set<Set<OWLClassExpression>> queue = new HashSet<>();
+    	queue.add(type);
+//    	Set<Set<OWLClassExpression>> candidates = new HashSet<>();
     	
-    	if(expSet.size() == 1) {
-    		Iterator<OWLClassExpression> ite = expSet.iterator();
-    		return findRepairTypeCandidates(type, ite.next());
-    	} else {
-    		Iterator<OWLClassExpression> ite = expSet.iterator();
-    		OWLClassExpression concept = ite.next();
-    		Set<Set<OWLClassExpression>> resultSet = findRepairTypeCandidates(type, concept);
-    		expSet.remove(concept);
-    	
-    		for(Set<OWLClassExpression> currentType : resultSet) {
-    		
-    			candidates.addAll(findRepairTypeCandidates(currentType, expSet));
+    	for(OWLClassExpression exp : expSet) {
+    		Set<Set<OWLClassExpression>> tempSet = new HashSet<>();
+    		for(Set<OWLClassExpression> currentSet : queue) {
+    			tempSet.addAll(findRepairTypeCandidates(currentSet, exp) );
     		}
+    		queue.removeAll(queue);
+    		queue.addAll(tempSet);
     	}
-    	return candidates;
+    	
+    	return queue;
+    	
+//    	
+//    	
+//    	if(expSet.size() == 1) {
+//    		return findRepairTypeCandidates(type, expSet.iterator().next());
+//    	}
+//    	else {
+//    		Set<OWLClassExpression> tempSet = new HashSet<>(expSet);
+//        	for(OWLClassExpression exp : expSet) {
+//        		Set<Set<OWLClassExpression>> resultSet = findRepairTypeCandidates(type, exp);
+//        		tempSet.remove(exp);
+//        		for(Set<OWLClassExpression> currentType : resultSet) {
+//        			candidates.addAll(findRepairTypeCandidates(currentType, tempSet));
+//        		}
+//        	}
+//    	}
+//    	
+//    	
+    	
+//    	if(expSet.size() == 1) {
+//    		Iterator<OWLClassExpression> ite = expSet.iterator();
+//    		return findRepairTypeCandidates(type, ite.next());
+//    	} else {
+//    		Iterator<OWLClassExpression> ite = expSet.iterator();
+//    		OWLClassExpression concept = ite.next();
+//    		Set<Set<OWLClassExpression>> resultSet = findRepairTypeCandidates(type, concept);
+//    		expSet.remove(concept);
+//    	
+//    		for(Set<OWLClassExpression> currentType : resultSet) {
+//    		
+//    			candidates.addAll(findRepairTypeCandidates(currentType, expSet));
+//    			expSet.add(concept);
+//    		}
+//    		
+//    	}
+//    	return candidates;
     }
 }

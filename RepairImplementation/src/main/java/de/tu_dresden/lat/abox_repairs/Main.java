@@ -175,15 +175,15 @@ public class Main {
 
 			double timeRepairing = (double)(System.nanoTime() - startTime)/1_000_000_000;
 
-			System.out.print("#Individuals (orig/sat/repair): "
-					+ oldIndividuals+"/"
-					+ (oldIndividuals+saturator.addedIndividuals())+"/"+
-					ontology.getIndividualsInSignature().size());
-			System.out.print(" #Assertions (orig/sat/repair): "
-					+ oldAssertions+"/"
-					+ (oldAssertions+saturator.addedAssertions())+"/"+
-					ontology.aboxAxioms(Imports.EXCLUDED).count());
-			System.out.println(" Duration (sat/repair sec.): "+saturator.getDuration()+"/"+timeRepairing );
+//			System.out.print("#Individuals (orig/sat/repair): "
+//					+ oldIndividuals+"/"
+//					+ (oldIndividuals+saturator.addedIndividuals())+"/"+
+//					ontology.getIndividualsInSignature().size());
+//			System.out.print(" #Assertions (orig/sat/repair): "
+//					+ oldAssertions+"/"
+//					+ (oldAssertions+saturator.addedAssertions())+"/"+
+//					ontology.aboxAxioms(Imports.EXCLUDED).count());
+//			System.out.println(" Duration (sat/repair sec.): "+saturator.getDuration()+"/"+timeRepairing );
 
 			initReasonerFacade();
 
