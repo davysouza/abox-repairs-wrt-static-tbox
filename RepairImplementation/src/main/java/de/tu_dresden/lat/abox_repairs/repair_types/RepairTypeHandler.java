@@ -89,6 +89,8 @@ public class RepairTypeHandler {
 	 * Returns some repair type that contains the given set of class expressions.
 	 *
 	 * Non-determinism is resolved using a random number generator.
+	 *
+	 * @TODO use same random number generator as for the experiment (and thus make this reproducible by the seed function)
 	 */
 	public RepairType convertToRandomRepairType(Set<OWLClassExpression> expSet) {
     	logger.debug(expSet);
@@ -118,11 +120,12 @@ public class RepairTypeHandler {
     	return newMinimisedRepairType(resultingSet);
     	
     }
-    
-    
-    public Set<RepairType> findCoveringRepairTypes(RepairType type, Set<OWLClassExpression> expSet) {
-    	
-    	
+
+	public Set<RepairType> findCoveringRepairTypes(RepairType type, Set<OWLClassExpression> expSet) {
+
+		// if type is null, we are computing IQ repairs, otherwise, we are computing CQ repairs
+		// see CQ/IQ construction rule in CADE-21 paper.
+
     	Set<Set<OWLClassExpression>> setOfCandidates = 
     			type != null? 
     					findRepairTypeCandidates(new HashSet<>(type.getClassExpressions()), expSet) :
@@ -140,7 +143,7 @@ public class RepairTypeHandler {
     		
     		outerloop:
     		for(OWLClassExpression concept : candidate) {
-    			System.out.println("find this " + reasonerWithTBox.equivalentOrSubsumedBy(concept));
+    			logger.debug("find this " + reasonerWithTBox.equivalentOrSubsumedBy(concept));
     			for(OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
     				if(!candidate.stream().anyMatch(otherConcept -> 
 						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
@@ -210,11 +213,13 @@ public class RepairTypeHandler {
     		Iterator<OWLClassExpression> ite = expSet.iterator();
     		OWLClassExpression concept = ite.next();
     		Set<Set<OWLClassExpression>> resultSet = findRepairTypeCandidates(type, concept);
-    		expSet.remove(concept);
-    	
+
+    		Set<OWLClassExpression> expSetCopy = new HashSet<>(expSet);
+    		expSetCopy.remove(concept);
+
     		for(Set<OWLClassExpression> currentType : resultSet) {
     		
-    			candidates.addAll(findRepairTypeCandidates(currentType, expSet));
+    			candidates.addAll(findRepairTypeCandidates(currentType, expSetCopy));
     		}
     	}
     	return candidates;

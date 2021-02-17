@@ -31,7 +31,9 @@ import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 
 import javax.print.attribute.standard.RequestingUserName;
 
-
+/**
+ * TODO: be able to handle the case where the given ontology is already saturated.
+ */
 public class Main {
 
 	private static Logger logger = LogManager.getLogger(Main.class);
