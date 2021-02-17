@@ -51,17 +51,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 			
 		}
 		
-		long startTimeMatrix = System.nanoTime();
 		
-		
-		generatingMatrix();
-		
-		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
-		
-		logger.info("Time for generating Matrix: " + timeMatrix);
-		
-		logger.debug("\nAfter building the matrix");
-		newOntology.axioms().forEach(ax -> logger.debug("- " + ax.toString()));
 	}
 
 	@Override

@@ -177,6 +177,10 @@ public class Main {
 
 			double timeRepairing = (double)(System.nanoTime() - startTime)/1_000_000_000;
 
+
+			/**
+			 * Please do not remove! This is not debugging output, but used for the evaluation of the experiments.
+			 */
 			System.out.print("#Individuals (orig/sat/repair): "
 					+ oldIndividuals+"/"
 					+ (oldIndividuals+saturator.addedIndividuals())+"/"+

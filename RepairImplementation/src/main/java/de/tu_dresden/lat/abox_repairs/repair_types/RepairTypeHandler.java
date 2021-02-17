@@ -188,10 +188,10 @@ public class RepairTypeHandler {
     private Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
     	Set<Set<OWLClassExpression>> result = new HashSet<>();
-
+    	
         for(OWLClassExpression subsumer: reasonerWithoutTBox.equivalentOrSubsuming(exp)){
             if(!(subsumer instanceof OWLObjectIntersectionOf)){
-                Set<OWLClassExpression> newType = new HashSet<>();
+                Set<OWLClassExpression> newType = new HashSet<>(type);
                 newType.add(subsumer);
                 result.add(newType);
             }
@@ -203,9 +203,34 @@ public class RepairTypeHandler {
     public Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, Set<OWLClassExpression> expSet) {
     	
     	assert expSet.size()>0;
+
+
+
+    	Set<Set<OWLClassExpression>> queue = new HashSet<>();
+    	queue.add(type);
+//    	Set<Set<OWLClassExpression>> candidates = new HashSet<>();
     	
-    	Set<Set<OWLClassExpression>> candidates = new HashSet<>();
+    	for(OWLClassExpression exp : expSet) {
+    		Set<Set<OWLClassExpression>> tempSet = new HashSet<>();
+    		for(Set<OWLClassExpression> currentSet : queue) {
+    			tempSet.addAll(findRepairTypeCandidates(currentSet, exp) );
+    		}
+    		queue.removeAll(queue);
+    		queue.addAll(tempSet);
+    	}
     	
+    	return queue;
+
+
+
+    	/*
+    		REMARK BY PATRICK: I noticed that the commented code fixed the problem we talked about in the wrong way
+    		but what I mean did not fix the problem at all. I fixed it in the way I would have solved it. I am currently
+    		not sure anymore what this method is supposed to do, and therefore I cannot check whether the above approach
+    		does the correct thing.
+
+
+		Set<Set<OWLClassExpression>> candidates = new HashSet<>();
     	if(expSet.size() == 1) {
     		Iterator<OWLClassExpression> ite = expSet.iterator();
     		return findRepairTypeCandidates(type, ite.next());
@@ -213,15 +238,17 @@ public class RepairTypeHandler {
     		Iterator<OWLClassExpression> ite = expSet.iterator();
     		OWLClassExpression concept = ite.next();
     		Set<Set<OWLClassExpression>> resultSet = findRepairTypeCandidates(type, concept);
-
     		Set<OWLClassExpression> expSetCopy = new HashSet<>(expSet);
     		expSetCopy.remove(concept);
 
     		for(Set<OWLClassExpression> currentType : resultSet) {
-    		
+
     			candidates.addAll(findRepairTypeCandidates(currentType, expSetCopy));
+    			expSet.add(concept);
     		}
+
     	}
     	return candidates;
+    	 */
     }
 }
