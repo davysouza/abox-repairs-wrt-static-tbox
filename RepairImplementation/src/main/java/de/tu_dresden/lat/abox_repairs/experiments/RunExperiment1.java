@@ -2,6 +2,7 @@ package de.tu_dresden.lat.abox_repairs.experiments;
 
 import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.RepairRequest;
+import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
@@ -97,6 +98,8 @@ public class RunExperiment1 {
         random.setSeed(seed);
     }
 
+    private AnonymousVariableDetector anonymousVariableDetector=null;
+
     private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, double proportionIndividuals, double proportionClassNames, boolean saturationRequired)
             throws OWLOntologyCreationException, SaturationException {
 
@@ -105,6 +108,8 @@ public class RunExperiment1 {
                         .loadOntologyFromOntologyDocument(new File(ontologyFileName));
 
         RepairRequest repairRequest = generateRepairRequest(ontology, proportionIndividuals, proportionClassNames);
+
+        anonymousVariableDetector=AnonymousVariableDetector.newInstance(!saturationRequired,repairVariant);
 
         Main main = new Main(random);
         main.performRepair(ontology, repairRequest, repairVariant, saturationRequired);
@@ -128,7 +133,7 @@ public class RunExperiment1 {
     private Set<OWLNamedIndividual> randomIndividuals(OWLOntology ontology, double proportion) {
         Set<OWLNamedIndividual> result = new HashSet<>();
 
-        List<OWLNamedIndividual> individuals = ontology.individualsInSignature().collect(Collectors.toList());
+        List<OWLNamedIndividual> individuals = anonymousVariableDetector.getNamedIndividuals(ontology);
 
         System.out.println("Requests for "+((int)(proportion*individuals.size()))+" individual names.");
 
