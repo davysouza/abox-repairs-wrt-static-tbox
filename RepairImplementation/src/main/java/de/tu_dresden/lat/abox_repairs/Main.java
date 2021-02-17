@@ -31,7 +31,9 @@ import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 
 import javax.print.attribute.standard.RequestingUserName;
 
-
+/**
+ * TODO: be able to handle the case where the given ontology is already saturated.
+ */
 public class Main {
 
 	private static Logger logger = LogManager.getLogger(Main.class);
@@ -175,15 +177,19 @@ public class Main {
 
 			double timeRepairing = (double)(System.nanoTime() - startTime)/1_000_000_000;
 
-//			System.out.print("#Individuals (orig/sat/repair): "
-//					+ oldIndividuals+"/"
-//					+ (oldIndividuals+saturator.addedIndividuals())+"/"+
-//					ontology.getIndividualsInSignature().size());
-//			System.out.print(" #Assertions (orig/sat/repair): "
-//					+ oldAssertions+"/"
-//					+ (oldAssertions+saturator.addedAssertions())+"/"+
-//					ontology.aboxAxioms(Imports.EXCLUDED).count());
-//			System.out.println(" Duration (sat/repair sec.): "+saturator.getDuration()+"/"+timeRepairing );
+
+			/**
+			 * Please do not remove! This is not debugging output, but used for the evaluation of the experiments.
+			 */
+			System.out.print("#Individuals (orig/sat/repair): "
+					+ oldIndividuals+"/"
+					+ (oldIndividuals+saturator.addedIndividuals())+"/"+
+					ontology.getIndividualsInSignature().size());
+			System.out.print(" #Assertions (orig/sat/repair): "
+					+ oldAssertions+"/"
+					+ (oldAssertions+saturator.addedAssertions())+"/"+
+					ontology.aboxAxioms(Imports.EXCLUDED).count());
+			System.out.println(" Duration (sat/repair sec.): "+saturator.getDuration()+"/"+timeRepairing );
 
 			initReasonerFacade();
 

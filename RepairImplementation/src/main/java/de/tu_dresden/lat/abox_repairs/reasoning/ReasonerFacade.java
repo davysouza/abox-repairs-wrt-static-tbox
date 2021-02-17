@@ -44,6 +44,8 @@ public class ReasonerFacade {
 
     private final FreshNameProducer freshNameProducer;
 
+    private final Set<OWLClassExpression> expressions; // TODO only for testing - remove afterwards!
+
     //private Timer timer;
 
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology)
@@ -61,6 +63,7 @@ public class ReasonerFacade {
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology,
             Collection<OWLClassExpression> additionalExpressions) throws OWLOntologyCreationException 
         {
+
         Set<OWLClassExpression> expressions = ontology.getNestedClassExpressions();
         expressions.addAll(additionalExpressions); 
         
@@ -96,6 +99,8 @@ public class ReasonerFacade {
 
         freshNameProducer = FreshNameProducer.newFromClassExpressions(factory,expressions);
         addExpressions(expressions);
+
+        this.expressions=expressions;
 
         reasoner = new ElkReasonerFactory().createReasoner(ontology);
 
@@ -253,7 +258,9 @@ public class ReasonerFacade {
                     .filter(c -> !c.isOWLThing() && !c.isOWLNothing()).forEach(x -> {
                         System.out.println(x);
                         if(expression2Name.inverse().get(x)==null)
-                            System.out.println(" <- that one I did not know.");
+                            System.out.println(" -- that one I did not know.");
+                        if(!expressions.contains(x))
+                            System.out.println(" -- and indeed, it was not provided.");
             });
             System.exit(1);
         }
