@@ -106,7 +106,7 @@ public class RunExperiment1 {
 
         RepairRequest repairRequest = generateRepairRequest(ontology, proportionIndividuals, proportionClassNames);
 
-        Main main = new Main();
+        Main main = new Main(random);
         main.performRepair(ontology, repairRequest, repairVariant, saturationRequired);
     }
 

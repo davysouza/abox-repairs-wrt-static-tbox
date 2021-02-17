@@ -108,7 +108,7 @@ public class RunExperiment2 {
 
         RepairRequest repairRequest = generateRepairRequest(ontology);
 
-        Main main = new Main();
+        Main main = new Main(random);
         main.performRepair(ontology, repairRequest, repairVariant,saturationRequired);
     }
 
@@ -119,6 +119,7 @@ public class RunExperiment2 {
 
         List<OWLNamedIndividual> individuals = ontology.individualsInSignature().collect(Collectors.toList());
 
+        individuals.sort(Comparator.comparing(a -> a.getIRI().toString()));
 
         while(!individuals.isEmpty()) {
             OWLNamedIndividual individual = individuals.get(random.nextInt(individuals.size()));
@@ -127,6 +128,7 @@ public class RunExperiment2 {
 
 
             List<OWLClass> classes = reasoner.types(individual, false).collect(Collectors.toList());
+            classes.sort(Comparator.comparing(a -> a.getIRI().toString()));
 
             while(!classes.isEmpty()) {
                 OWLClass clazz = classes.get(random.nextInt(classes.size()));

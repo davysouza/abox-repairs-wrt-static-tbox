@@ -50,6 +50,8 @@ public class Main {
 	public enum RepairVariant {IQ, CQ};
 
 	private ABoxSaturator saturator;
+
+	private final Random random;
 	
 	public static void main(String args[]) throws IOException, OWLOntologyCreationException, SaturationException {
 		
@@ -91,6 +93,14 @@ public class Main {
 				if(i < args.length) System.out.println("\n" + "=================================================");
 //			}
 		}		
+	}
+
+	public Main(){
+		this.random = new Random();
+	}
+
+	public Main(Random random){
+		this.random=random;
 	}
 
 	public void performRepair(OWLOntology inputOntology,
@@ -268,7 +278,7 @@ public class Main {
 
 		SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasonerWithTBox, reasonerWithoutTBox);
 		seedFunctionHandler.constructSeedFunction(inputRepairRequest);
-		seedFunction = seedFunctionHandler.getSeedFunction();
+		seedFunction = seedFunctionHandler.getSeedFunction(random);
 
 		logger.info("Seed function construction took: "+(((double)System.nanoTime()-time)/1_000_000_000));
 	}

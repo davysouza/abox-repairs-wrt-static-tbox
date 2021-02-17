@@ -69,6 +69,23 @@ public class RunExperiment3 {
         }
 
 
+    private final Random random;
+    private long seed;
+
+    private RunExperiment3(){
+        random = new Random();
+        seed = random.nextLong();
+        random.setSeed(seed);
+    }
+
+    private long getSeed(){
+        return seed;
+    }
+
+    private void setSeed(long seed) {
+        this.seed=seed;
+        random.setSeed(seed);
+    }
 
         private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, boolean saturationRequired)
                 throws OWLOntologyCreationException, SaturationException {
@@ -87,7 +104,7 @@ public class RunExperiment3 {
                         request.put(ind, Collections.singleton(cl));
                         System.out.println("Repair: " + cl + "(" + ind + ")");
 
-                        Main main = new Main();
+                        Main main = new Main(random);
                         try {
                             main.performRepair(ontology, request, repairVariant,saturationRequired);
                         } catch (OWLOntologyCreationException e) {

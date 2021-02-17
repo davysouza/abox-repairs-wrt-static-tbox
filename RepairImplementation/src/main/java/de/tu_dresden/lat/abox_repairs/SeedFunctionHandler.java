@@ -35,19 +35,24 @@ public class SeedFunctionHandler {
 		this.reasonerWithoutTBox = reasonerWithoutTBox;
 	}
 	
-	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
+	public Map<OWLNamedIndividual, RepairType> getSeedFunction(Random random){
 		seedFunction = new HashMap<>();
 		Set<OWLNamedIndividual> setOfIndividuals = seedFunctionCollector.keySet();
 		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
 			
-			RepairType type = typeHandler.convertToRandomRepairType(seedFunctionCollector.get(individual));
+			RepairType type = typeHandler.convertToRandomRepairType(seedFunctionCollector.get(individual), random);
 			seedFunction.put(individual, type);
 		}
 		return seedFunction;
 	}
 
+
+	/**
+	 * TODO: the naming is misleading - this method does not actually compute the seed function.
+	 * TODO: additional steps are performed by getSeedFunction()
+	 */
 	public void constructSeedFunction(RepairRequest repairRequest) {
 		
 		Random rand = new Random();

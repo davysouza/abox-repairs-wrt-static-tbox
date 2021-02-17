@@ -1,13 +1,6 @@
 package de.tu_dresden.lat.abox_repairs.repair_types;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
 import org.apache.logging.log4j.LogManager;
@@ -92,9 +85,8 @@ public class RepairTypeHandler {
 	 *
 	 * @TODO use same random number generator as for the experiment (and thus make this reproducible by the seed function)
 	 */
-	public RepairType convertToRandomRepairType(Set<OWLClassExpression> expSet) {
+	public RepairType convertToRandomRepairType(Set<OWLClassExpression> expSet, Random random) {
     	logger.debug(expSet);
-    	Random rand = new Random();
     	
     	Set<OWLClassExpression> resultingSet = new HashSet<>(expSet);
     		for(OWLClassExpression exp : expSet) {
@@ -107,7 +99,10 @@ public class RepairTypeHandler {
     				logger.debug("subconcept " + subConcept);
 					if (subConcept != null && !expSet.stream().anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
 	    				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
-	    				int index = rand.nextInt(listOfConcept.size());
+
+						listOfConcept.sort(Comparator.comparing(a -> a.toString()));// bit dirty, but ensures experiment can be reproduced
+
+	    				int index = random.nextInt(listOfConcept.size());
 	    				logger.debug("chosen Concept " + listOfConcept.get(index));
 	    				resultingSet.add(listOfConcept.get(index));
 	    			}
