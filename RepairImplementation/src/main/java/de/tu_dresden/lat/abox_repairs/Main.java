@@ -86,10 +86,12 @@ public class Main {
 					variant = RepairVariant.CQ;
 			}
 		
-		
-			m.performRepair(m.ontology, repairRequest, variant, true);
+			if(args[i+3].equals("true")) 
+				m.performRepair(m.ontology, repairRequest, variant, true);
+			else
+				m.performRepair(m.ontology, repairRequest, variant, false);
 
-				i+=3;
+				i+=4;
 				if(i < args.length) System.out.println("\n" + "=================================================");
 //			}
 		}		
