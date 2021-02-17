@@ -65,12 +65,20 @@ public class RepairTypeHandler {
         return false;
     }
     
-    public boolean isPremiseSaturated(Set<OWLClassExpression> expSet) {
+    /**
+     * Check whether the given repair pre-type is already premise-saturated
+     * 
+     * @param a repair pre-type
+     * @return
+     * true if the given repair pre-type is already premise-saturated
+     */
+    
+    public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType) {
     	
-    	for(OWLClassExpression atom : expSet ) {
+    	for(OWLClassExpression atom : repairPreType ) {
     		Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
     		for (OWLClassExpression subsumee : setOfSubsumees) {
-    			if(subsumee != null && !expSet.stream().anyMatch(exp -> reasonerWithTBox.subsumedBy(subsumee, exp))) {
+    			if(subsumee != null && !repairPreType.stream().anyMatch(exp -> reasonerWithTBox.subsumedBy(subsumee, exp))) {
     				return false;
     			}
     		}
@@ -79,11 +87,23 @@ public class RepairTypeHandler {
     	return true;
     }
 
-	/**
-	 * Returns some repair type that contains the given set of class expressions.
-	 *
-	 * Non-determinism is resolved using a random number generator.
-	 */
+//	/**
+//	 * Returns some repair type that contains the given set of class expressions.
+//	 *
+//	 * Non-determinism is resolved using a random number generator.
+//	 */
+    
+    /**
+     * 
+     * Given a repair pre-type and a random object, this method will this repair pre-type
+     * to a repair type that has been premise-saturated
+     * 
+     * @param a repair pre-type that may not be premise-saturated yet
+     * @param a random object that help choose a random repair type that will be returned
+     * @return
+     * a random repair type
+     */
+    
 public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Random random) {
     	
     	Set<OWLClassExpression> resultingSet = new HashSet<>(preType);
@@ -117,33 +137,43 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
     	
     }
 
-	public Set<RepairType> findCoveringRepairTypes(RepairType type, Set<OWLClassExpression> expSet) {
+	/**
+	 * The method receives a repair type that does not cover the given set Succ(K,r,u). 
+	 * This
+	 * @param repairType
+	 * @param successorSet
+	 * @return
+	 * the set that contains all minimal repair types that cover the union of 
+	 * the repair type and the set Succ(K,ru)
+	 */
+
+	public Set<RepairType> findCoveringRepairTypes(RepairType repairType, Set<OWLClassExpression> successorSet) {
 
 		// if type is null, we are computing IQ repairs, otherwise, we are computing CQ repairs
 		// see CQ/IQ construction rule in CADE-21 paper.
 
     	Set<Set<OWLClassExpression>> setOfCandidates = 
-    			type != null? 
-    					findRepairTypeCandidates(new HashSet<>(type.getClassExpressions()), expSet) :
-    					findRepairTypeCandidates(new HashSet<>(), expSet);
+    			repairType != null? 
+    					findCoveringPreTypes(new HashSet<>(repairType.getClassExpressions()), successorSet) :
+    					findCoveringPreTypes(new HashSet<>(), successorSet);
     	
     	Set<RepairType> resultingSet = new HashSet<>();
     	
 
-//    	System.out.println("Set of Candidates " + setOfCandidates);
+
     	while(setOfCandidates.iterator().hasNext()) {
     		Set<OWLClassExpression> candidate = setOfCandidates.iterator().next();
     		setOfCandidates.remove(candidate);
-//    		System.out.println("Candidate " + candidate);
+
     		boolean alreadySaturated = true;
     		
     		outerloop:
     		for(OWLClassExpression concept : candidate) {
-//    			logger.debug("find this " + reasonerWithTBox.equivalentOrSubsumedBy(concept));
+
     			for(OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
     				if(!candidate.stream().anyMatch(otherConcept -> 
 						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
-//    					System.out.println("got it");
+
     					alreadySaturated = false;
     					
     					Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
@@ -153,7 +183,7 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
 							tempCandidate.add(conjunct);
 							setOfCandidates.add(tempCandidate);
 						}
-//    					System.out.println("setOfCandidates " + setOfCandidates);
+
     					break outerloop;
     				}
     			}
@@ -173,15 +203,17 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
     
 
 
-//    /**
-//     * Return all types that are obtained from the given repair type by applying 
-//     * premise saturation with respect to the given class expression.
-//     * 
-//     * Assumption: the individual assigned the repair type is an instance of exp, and 
-//     * the repair type contains some class expression D s.t. the ontology entails 
-//     * exp SubClassOf D
-//     */
-    private Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, OWLClassExpression exp) {
+	/**
+	 * 
+	 * @param a repair type
+	 * 
+	 * @param a class expression
+	 * 
+	 * @return
+	 * the set that contains minimal repair pre-types that cover the union of 
+	 * the given repair type and the class expression
+	 */
+    private Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
     	Set<Set<OWLClassExpression>> result = new HashSet<>();
     	
@@ -196,7 +228,14 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
         return result;
     }
     
-    public Set<Set<OWLClassExpression>> findRepairTypeCandidates(Set<OWLClassExpression> type, Set<OWLClassExpression> expSet) {
+    /**
+     * 
+     * @param a repair type
+     * @param a set of class expressions
+     * @return
+     * the set that contains minimal repair pre-types that cover the union of the two input sets
+     */
+    public Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, Set<OWLClassExpression> expSet) {
     	
     	assert expSet.size()>0;
 
@@ -209,7 +248,7 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
     	for(OWLClassExpression exp : expSet) {
     		Set<Set<OWLClassExpression>> tempSet = new HashSet<>();
     		for(Set<OWLClassExpression> currentSet : queue) {
-    			tempSet.addAll(findRepairTypeCandidates(currentSet, exp) );
+    			tempSet.addAll(findCoveringPreTypes(currentSet, exp) );
     		}
     		queue.removeAll(queue);
     		queue.addAll(tempSet);
