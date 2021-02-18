@@ -71,6 +71,13 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 					RepairType type = typeHandler.newMinimisedRepairType(repairTypeCandidate);
 					makeCopy(individual, type);
 				}
+				else {
+					RepairType initType = typeHandler.newMinimisedRepairType(new HashSet<>());
+					Set<RepairType> setOfTypes = typeHandler.findCoveringRepairTypes(initType, repairTypeCandidate);
+					for(RepairType type : setOfTypes) {
+						makeCopy(individual, type);
+					}
+				}
 			}
 		}
 	}
