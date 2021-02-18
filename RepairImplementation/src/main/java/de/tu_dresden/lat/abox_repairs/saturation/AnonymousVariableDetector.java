@@ -1,10 +1,14 @@
 package de.tu_dresden.lat.abox_repairs.saturation;
 
 import de.tu_dresden.lat.abox_repairs.Main;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 import org.semanticweb.owlapi.model.OWLOntology;
 import uk.ac.manchester.cs.owl.owlapi.AnonymousIndividualCollector;
 
@@ -38,9 +42,11 @@ public abstract class AnonymousVariableDetector {
      */
     public static class CQVersion extends AnonymousVariableDetector {
 
+        private Pattern pattern = Pattern.compile("[0-9_]+");
+
         @Override
         public boolean isAnonymous(OWLNamedIndividual individual){
-            throw new AssertionError("NOT IMPLEMENTED!");
+            return pattern.matcher(individual.getIRI().toString()).matches();
         }
     }
 
