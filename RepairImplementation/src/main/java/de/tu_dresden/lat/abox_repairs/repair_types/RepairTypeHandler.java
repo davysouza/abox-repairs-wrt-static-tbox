@@ -40,9 +40,8 @@ public class RepairTypeHandler {
         Set<OWLClassExpression> newClasses = new HashSet<>(type.getClassExpressions());
         
         for(OWLClassExpression exp:type.getClassExpressions()){
-            if(exp.isOWLThing()) 
-            	newClasses.remove(exp);
-            else if(newClasses.contains(exp)) {
+        	assert(!exp.isOWLThing());
+            if(newClasses.contains(exp)) {
             	newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
                 newClasses.add(exp);
             }
@@ -68,7 +67,7 @@ public class RepairTypeHandler {
     /**
      * Check whether the given repair pre-type is already premise-saturated
      * 
-     * @param a repair pre-type
+     * @param repairPreType (a repair pre-type)
      * @return
      * true if the given repair pre-type is already premise-saturated
      */
@@ -98,8 +97,8 @@ public class RepairTypeHandler {
      * Given a repair pre-type and a random object, this method will this repair pre-type
      * to a repair type that has been premise-saturated
      * 
-     * @param a repair pre-type that may not be premise-saturated yet
-     * @param a random object that help choose a random repair type that will be returned
+     * @param preType (a repair pre-type that may not be premise-saturated yet)
+     * @param random (a random object that help choose a random repair type that will be returned)
      * @return
      * a random repair type
      */
@@ -205,9 +204,9 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
 
 	/**
 	 * 
-	 * @param a repair type
+	 * @param type (a repair type)
 	 * 
-	 * @param a class expression
+	 * @param exp (a class expression)
 	 * 
 	 * @return
 	 * the set that contains minimal repair pre-types that cover the union of 
@@ -230,8 +229,8 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
     
     /**
      * 
-     * @param a repair type
-     * @param a set of class expressions
+     * @param type (a repair type)
+     * @param expSet (a set of class expressions)
      * @return
      * the set that contains minimal repair pre-types that cover the union of the two input sets
      */
