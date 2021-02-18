@@ -293,7 +293,13 @@ public class ReasonerFacade {
     			.allMatch(atom1 -> set2.parallelStream()
     					.anyMatch(atom2 -> subsumedBy(atom1, atom2)));
     }
-    
+
+    /**
+     * Find a concept in set2 that is subsumed by some concept in set1
+     * @param set1
+     * @param set2
+     * @return
+     */
     public Optional<OWLClassExpression> findCoveringConcept(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
 
     	for (OWLClassExpression atom1 : set1) {

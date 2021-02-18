@@ -13,19 +13,19 @@ import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 
 /**
  * Factory for repair types, including also functionality to modify repair types.
- * 
+ *
  * @author Patrick Koopmann
  */
 public class RepairTypeHandler {
 
-	private static Logger logger = LogManager.getLogger(RepairTypeHandler.class);
+    private static Logger logger = LogManager.getLogger(RepairTypeHandler.class);
 
 
-	private final ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
+    private final ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 
     public RepairTypeHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
-        this.reasonerWithTBox=reasonerWithTBox;
-        this.reasonerWithoutTBox=reasonerWithoutTBox;
+        this.reasonerWithTBox = reasonerWithTBox;
+        this.reasonerWithoutTBox = reasonerWithoutTBox;
     }
 
     public RepairType newMinimisedRepairType(Set<OWLClassExpression> classExpressions) {
@@ -33,17 +33,17 @@ public class RepairTypeHandler {
     }
 
     /**
-     * Keeps only the subsumption-maximal classes in the repair type, that is: there is no class 
+     * Keeps only the subsumption-maximal classes in the repair type, that is: there is no class
      * in the resulting repair type that is subsumed by another one.
      */
-    public RepairType minimise(RepairType type){
+    public RepairType minimise(RepairType type) {
         Set<OWLClassExpression> newClasses = new HashSet<>(type.getClassExpressions());
-        
-        for(OWLClassExpression exp:type.getClassExpressions()){
-            if(exp.isOWLThing()) 
-            	newClasses.remove(exp);
-            else if(newClasses.contains(exp)) {
-            	newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
+
+        for (OWLClassExpression exp : type.getClassExpressions()) {
+            if (exp.isOWLThing())
+                newClasses.remove(exp);
+            else if (newClasses.contains(exp)) {
+                newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
                 newClasses.add(exp);
             }
         }
@@ -51,174 +51,168 @@ public class RepairTypeHandler {
     }
 
     /**
-     * Check whether the precondition for the premise saturation rule is satisfied from the 
+     * Check whether the precondition for the premise saturation rule is satisfied from the
      * perspective of the repair type. Specifically, check whether there exists a class
-     * expression D in the repair type s.t. the ontology entails exp SubClassOf D.  
-     * 
+     * expression D in the repair type s.t. the ontology entails exp SubClassOf D.
      */
     public boolean premiseSaturationApplies(RepairType type, OWLClassExpression exp) {
-        for(OWLClassExpression toRepair:type.getClassExpressions()){
-            if(reasonerWithTBox.subsumees(toRepair).contains(exp))
+        for (OWLClassExpression toRepair : type.getClassExpressions()) {
+            if (reasonerWithTBox.subsumees(toRepair).contains(exp))
                 return true;
         }
 
         return false;
     }
-    
+
     /**
      * Check whether the given repair pre-type is already premise-saturated
-     * 
-     * @param a repair pre-type
-     * @return
-     * true if the given repair pre-type is already premise-saturated
+     *
+     * @param repairPreType a repair pre-type
+     * @return true if the given repair pre-type is already premise-saturated
      */
-    
+
     public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType) {
-    	
-    	for(OWLClassExpression atom : repairPreType ) {
-    		Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
-    		for (OWLClassExpression subsumee : setOfSubsumees) {
-    			if(subsumee != null && !repairPreType.stream().anyMatch(exp -> reasonerWithTBox.subsumedBy(subsumee, exp))) {
-    				return false;
-    			}
-    		}
-    	}
-    	
-    	return true;
+
+        for (OWLClassExpression atom : repairPreType) {
+            Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
+            for (OWLClassExpression subsumee : setOfSubsumees) {
+                if (subsumee != null && !repairPreType.stream().anyMatch(exp -> reasonerWithTBox.subsumedBy(subsumee, exp))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
-//	/**
-//	 * Returns some repair type that contains the given set of class expressions.
-//	 *
-//	 * Non-determinism is resolved using a random number generator.
-//	 */
-    
     /**
-     * 
      * Given a repair pre-type and a random object, this method will this repair pre-type
      * to a repair type that has been premise-saturated
-     * 
-     * @param a repair pre-type that may not be premise-saturated yet
-     * @param a random object that help choose a random repair type that will be returned
-     * @return
-     * a random repair type
+     *
+     * @param preType a repair pre-type that may not be premise-saturated yet
+     * @param random  a random object that help choose a random repair type that will be returned
+     * @return a random repair type
      */
-    
-public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Random random) {
-    	
-    	Set<OWLClassExpression> resultingSet = new HashSet<>(preType);
-    		
-    		boolean isSaturated = false;
-    		while(!isSaturated) {
-    			Set<OWLClassExpression> tempSet = new HashSet<>(resultingSet);
-    			isSaturated = true;
-    			for(OWLClassExpression exp : tempSet) {
-        			Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(exp));
-        			for (OWLClassExpression subConcept : setOfSubsumees) {
 
-    					if (subConcept != null && !tempSet.stream()
-    							.anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(subConcept, otherExp))) {
-    	    				List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
-    	    				
-    	    				// bit dirty, but ensures experiment can be reproduced
-    						listOfConcept.sort(Comparator.comparing(a -> a.toString()));
+    public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Random random) {
 
-    	    				int index = random.nextInt(listOfConcept.size());
+        Set<OWLClassExpression> resultingSet = new HashSet<>(preType);
 
-    	    				resultingSet.add(listOfConcept.get(index));
-    	    				
-    	    				isSaturated = false;
-    	    			}
-            		}
-        		}
-    		}
-    	
-    	return newMinimisedRepairType(resultingSet);
-    	
+        boolean isSaturated = false;
+        while (!isSaturated) {
+            Set<OWLClassExpression> tempSet = new HashSet<>(resultingSet);
+            isSaturated = true;
+            for (OWLClassExpression exp : tempSet) {
+                Set<OWLClassExpression> setOfSubsumees = reasonerWithTBox.equivalentOrSubsumedBy(exp);
+                for (OWLClassExpression subConcept : setOfSubsumees) {
+
+                    if (!anySubsumes(subConcept, tempSet)) {
+                        List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
+
+                        // bit dirty, but ensures experiment can be reproduced
+						// remark: expensive, but only used once when the seed functions are selected
+                        listOfConcept.sort(Comparator.comparing(a -> a.toString()));
+
+                        int index = random.nextInt(listOfConcept.size());
+
+                        resultingSet.add(listOfConcept.get(index));
+
+                        isSaturated = false;
+                    }
+                }
+            }
+        }
+
+        return newMinimisedRepairType(resultingSet);
     }
 
 	/**
-	 * The method receives a repair type that does not cover the given set Succ(K,r,u). 
-	 * This
-	 * @param repairType
-	 * @param successorSet
-	 * @return
-	 * the set that contains all minimal repair types that cover the union of 
-	 * the repair type and the set Succ(K,ru)
+	 * Checks whether any element in set is subsumes exp
 	 */
+	private boolean anySubsumes(OWLClassExpression exp, Set<OWLClassExpression> set2) {
+		if(set2.contains(exp)) // cheap test first
+			return true;
+    	else
+    		return set2.stream()
+				.anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(exp, otherExp));
+	}
 
-	public Set<RepairType> findCoveringRepairTypes(RepairType repairType, Set<OWLClassExpression> successorSet) {
+    /**
+     * The method receives a repair type that does not cover the given set Succ(K,r,u).
+     * This
+     *
+     * @param repairType
+     * @param successorSet
+     * @return the set that contains all minimal repair types that cover the union of
+     * the repair type and the set Succ(K,ru)
+     */
 
-		// if type is null, we are computing IQ repairs, otherwise, we are computing CQ repairs
-		// see CQ/IQ construction rule in CADE-21 paper.
+    public Set<RepairType> findCoveringRepairTypes(RepairType repairType, Set<OWLClassExpression> successorSet) {
 
-    	Set<Set<OWLClassExpression>> setOfCandidates = 
-    			repairType != null? 
-    					findCoveringPreTypes(new HashSet<>(repairType.getClassExpressions()), successorSet) :
-    					findCoveringPreTypes(new HashSet<>(), successorSet);
-    	
-    	Set<RepairType> resultingSet = new HashSet<>();
-    	
+        // if type is null, we are computing IQ repairs, otherwise, we are computing CQ repairs
+        // see CQ/IQ construction rule in CADE-21 paper.
+
+        Set<Set<OWLClassExpression>> setOfCandidates =
+                repairType != null ?
+                        findCoveringPreTypes(new HashSet<>(repairType.getClassExpressions()), successorSet) :
+                        findCoveringPreTypes(new HashSet<>(), successorSet);
+
+        Set<RepairType> resultingSet = new HashSet<>();
 
 
-    	while(setOfCandidates.iterator().hasNext()) {
-    		Set<OWLClassExpression> candidate = setOfCandidates.iterator().next();
-    		setOfCandidates.remove(candidate);
+        while (setOfCandidates.iterator().hasNext()) {
+            Set<OWLClassExpression> candidate = setOfCandidates.iterator().next();
+            setOfCandidates.remove(candidate);
 
-    		boolean alreadySaturated = true;
-    		
-    		outerloop:
-    		for(OWLClassExpression concept : candidate) {
+            boolean alreadySaturated = true;
 
-    			for(OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
-    				if(!candidate.stream().anyMatch(otherConcept -> 
-						reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
+            outerloop:
+            for (OWLClassExpression concept : candidate) {
 
-    					alreadySaturated = false;
-    					
-    					Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
-    					
-    					for(OWLClassExpression conjunct : topLevelConjunct) {
-							Set<OWLClassExpression> tempCandidate = new HashSet<>(candidate);
-							tempCandidate.add(conjunct);
-							setOfCandidates.add(tempCandidate);
-						}
+                for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
+                    if (!candidate.stream().anyMatch(otherConcept ->
+                            reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
 
-    					break outerloop;
-    				}
-    			}
-    		}
-    		if(alreadySaturated) {
-    			RepairType newType = newMinimisedRepairType(candidate);
-    			if(!resultingSet.contains(newType)) resultingSet.add(newType);
-    		}
-    		
-    		
-    	}
-    	
-    	return resultingSet;
-    	
-    	  	
+                        alreadySaturated = false;
+
+                        Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
+
+                        for (OWLClassExpression conjunct : topLevelConjunct) {
+                            Set<OWLClassExpression> tempCandidate = new HashSet<>(candidate);
+                            tempCandidate.add(conjunct);
+                            setOfCandidates.add(tempCandidate);
+                        }
+
+                        break outerloop;
+                    }
+                }
+            }
+            if (alreadySaturated) {
+                RepairType newType = newMinimisedRepairType(candidate);
+                if (!resultingSet.contains(newType)) resultingSet.add(newType);
+            }
+
+
+        }
+
+        return resultingSet;
+
+
     }
-    
 
 
-	/**
-	 * 
-	 * @param a repair type
-	 * 
-	 * @param a class expression
-	 * 
-	 * @return
-	 * the set that contains minimal repair pre-types that cover the union of 
-	 * the given repair type and the class expression
-	 */
+    /**
+     * @param type a repair type
+     * @param exp  a class expression
+     * @return the set that contains minimal repair pre-types that cover the union of
+     * the given repair type and the class expression
+     */
     private Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
-    	Set<Set<OWLClassExpression>> result = new HashSet<>();
-    	
-        for(OWLClassExpression subsumer: reasonerWithoutTBox.equivalentOrSubsuming(exp)){
-            if(!(subsumer instanceof OWLObjectIntersectionOf)){
+        Set<Set<OWLClassExpression>> result = new HashSet<>();
+
+        for (OWLClassExpression subsumer : reasonerWithoutTBox.equivalentOrSubsuming(exp)) {
+            if (!(subsumer instanceof OWLObjectIntersectionOf)) {
                 Set<OWLClassExpression> newType = new HashSet<>(type);
                 newType.add(subsumer);
                 result.add(newType);
@@ -227,34 +221,31 @@ public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Ran
 
         return result;
     }
-    
+
     /**
-     * 
-     * @param a repair type
-     * @param a set of class expressions
-     * @return
-     * the set that contains minimal repair pre-types that cover the union of the two input sets
+     * @param type   a repair type
+     * @param expSet a set of class expressions
+     * @return the set that contains minimal repair pre-types that cover the union of the two input sets
      */
     public Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, Set<OWLClassExpression> expSet) {
-    	
-    	assert expSet.size()>0;
+
+        assert expSet.size() > 0;
 
 
-
-    	Set<Set<OWLClassExpression>> queue = new HashSet<>();
-    	queue.add(type);
+        Set<Set<OWLClassExpression>> queue = new HashSet<>();
+        queue.add(type);
 //    	Set<Set<OWLClassExpression>> candidates = new HashSet<>();
-    	
-    	for(OWLClassExpression exp : expSet) {
-    		Set<Set<OWLClassExpression>> tempSet = new HashSet<>();
-    		for(Set<OWLClassExpression> currentSet : queue) {
-    			tempSet.addAll(findCoveringPreTypes(currentSet, exp) );
-    		}
-    		queue.removeAll(queue);
-    		queue.addAll(tempSet);
-    	}
-    	
-    	return queue;
+
+        for (OWLClassExpression exp : expSet) {
+            Set<Set<OWLClassExpression>> tempSet = new HashSet<>();
+            for (Set<OWLClassExpression> currentSet : queue) {
+                tempSet.addAll(findCoveringPreTypes(currentSet, exp));
+            }
+            queue.removeAll(queue);
+            queue.addAll(tempSet);
+        }
+
+        return queue;
 
 
 
