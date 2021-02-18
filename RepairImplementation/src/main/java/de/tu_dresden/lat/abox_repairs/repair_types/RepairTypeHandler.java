@@ -188,9 +188,18 @@ public class RepairTypeHandler {
 
         }
 
-        return resultingSet;
+        final Set<RepairType> minimalRepairTypes = new HashSet<>();
+        for (RepairType type : resultingSet) {
+            if (minimalRepairTypes.stream().noneMatch(otherType ->
+                    reasonerWithoutTBox.isCovered(otherType.getClassExpressions(), type.getClassExpressions()))) {
+                minimalRepairTypes.removeIf(otherType ->
+                        reasonerWithoutTBox.isCovered(type.getClassExpressions(), otherType.getClassExpressions()));
+                minimalRepairTypes.add(type);
+            }
+        }
 
-
+        return minimalRepairTypes;
+        
     }
 
 
