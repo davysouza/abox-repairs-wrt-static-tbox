@@ -86,11 +86,11 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 				 ind.getIRI().getFragment() + 
 				individualCounter.get(ind));
 		seedFunction.put(freshIndividual, typ);
-		copyToOriginal.put(freshIndividual, ind);
+//		copyToOriginal.put(freshIndividual, ind);
 		
-		Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(ind);
-		setOfCopies.add(freshIndividual);
-		originalToCopy.put(ind, setOfCopies);
+//		Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(ind);
+//		setOfCopies.add(freshIndividual);
+//		originalToCopy.put(ind, setOfCopies);
 		
 		setOfCollectedIndividuals.add(freshIndividual);
 		
