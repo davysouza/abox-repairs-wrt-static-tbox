@@ -152,7 +152,6 @@ public class Main {
 		}
 
 
-		reasonerWithTBox.update();
 
 		logger.debug("after initializing reasoners: ");
 
@@ -167,6 +166,7 @@ public class Main {
 		}
 
 
+		reasonerWithTBox.update();
 
 		if (isCompliantWith(repairRequest)) {
 			System.out.println("\nThe ontology is compliant!");
