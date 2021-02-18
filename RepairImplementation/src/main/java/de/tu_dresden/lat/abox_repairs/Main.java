@@ -47,7 +47,10 @@ public class Main {
 	
 	private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;	
 
-	public enum RepairVariant {IQ, CQ};
+	public static enum RepairVariant {IQ, CQ, CANONICAL_IQ, CANONICAL_CQ};
+
+	public static EnumSet<RepairVariant> IQ_ANY = EnumSet.of(RepairVariant.IQ, RepairVariant.CANONICAL_IQ);
+	public static EnumSet<RepairVariant> CQ_ANY = EnumSet.of(RepairVariant.CQ, RepairVariant.CANONICAL_CQ);
 
 	private ABoxSaturator saturator;
 
@@ -140,13 +143,13 @@ public class Main {
 		initReasonerFacade();
 
 		CycleChecker cycleChecker = new CycleChecker(reasonerWithTBox);
-		if(repairVariant.equals(RepairVariant.CQ) && cycleChecker.cyclic())
+		if(CQ_ANY.contains(repairVariant) && cycleChecker.cyclic())
 		{
 			System.out.println("Cyclic!");
 			System.exit(0);
 		}
 
-		if (repairVariant.equals(RepairVariant.CQ) && saturationRequired)
+		if (CQ_ANY.contains(repairVariant)  && saturationRequired)
 		{
 			cqSaturate();
 		}
@@ -161,7 +164,7 @@ public class Main {
 		}
 
 		// Saturate the ontology
-		if (repairVariant.equals(RepairVariant.IQ) && saturationRequired) {
+		if (IQ_ANY.contains(repairVariant) && saturationRequired) {
 			iqSaturate();
 		}
 
