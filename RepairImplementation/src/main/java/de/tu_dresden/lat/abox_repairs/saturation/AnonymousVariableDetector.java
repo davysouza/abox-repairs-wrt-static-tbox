@@ -42,7 +42,7 @@ public abstract class AnonymousVariableDetector {
      */
     private static class CQVersion extends AnonymousVariableDetector {
 
-        private Pattern pattern = Pattern.compile("[0-9_]+");
+        private Pattern pattern = Pattern.compile("[0-9_:]*(null)?[0-9_:]*");
 
         @Override
         public boolean isAnonymous(OWLNamedIndividual individual){

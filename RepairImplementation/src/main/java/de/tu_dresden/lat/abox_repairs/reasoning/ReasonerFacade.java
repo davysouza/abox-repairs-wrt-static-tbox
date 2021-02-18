@@ -48,11 +48,20 @@ public class ReasonerFacade {
 
     //private Timer timer;
 
+    /**
+     * Uses no TBox for reasoning, however, supports the expressions found in the ontology (subsumption relations without TBox).
+     * @param ontology
+     * @return
+     * @throws OWLOntologyCreationException
+     */
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology)
             throws OWLOntologyCreationException {
         return newReasonerFacadeWithoutTBox(ontology, Collections.emptyList());
     }
 
+    /**
+     * Uses no TBox, and only supports the expressions provided. Hence, the manager is required to create the ontology used internally.
+     */
     public static ReasonerFacade newReasonerFacadeWithoutTBox(
             Collection<OWLClassExpression> expressions, OWLOntologyManager manager) throws OWLOntologyCreationException {
         OWLOntology emptyTBox = manager.createOntology();
@@ -60,6 +69,15 @@ public class ReasonerFacade {
         return newReasonerFacadeWithTBox(emptyTBox, expressions);
     }
 
+    /**
+     * Uses no TBox for inferences, but supports all names found in the provided in the ontology, together with the
+     * provided ones.
+     *
+     * @param ontology
+     * @param additionalExpressions
+     * @return
+     * @throws OWLOntologyCreationException
+     */
     public static ReasonerFacade newReasonerFacadeWithoutTBox(OWLOntology ontology,
             Collection<OWLClassExpression> additionalExpressions) throws OWLOntologyCreationException 
         {
@@ -72,12 +90,22 @@ public class ReasonerFacade {
         return newReasonerFacadeWithTBox(emptyTBox, expressions);
     }
 
+    /**
+     * Uses TBox for inferences, and supports only those expressions found in the ontology.
+     * @param ontology
+     * @return
+     */
     public static ReasonerFacade newReasonerFacadeWithTBox(OWLOntology ontology) {
         return newReasonerFacadeWithTBox(ontology, Collections.emptyList());
     }
 
 
-
+    /**
+     * Uses the TBox for inferences, and supports those expressions found in the ontology, together with the ones supplied.
+     * @param ontology
+     * @param additionalExpressions
+     * @return
+     */
     public static ReasonerFacade newReasonerFacadeWithTBox(
             OWLOntology ontology, Collection<OWLClassExpression> additionalExpressions) {
         Set<OWLClassExpression> expressions = ontology.getNestedClassExpressions();
