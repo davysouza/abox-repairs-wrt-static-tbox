@@ -268,6 +268,10 @@ public class ReasonerFacade {
     }
 
 
+    /**
+     * Return or class expressions that are equivalent to exp, or subsumed by it. That is: the set of all subsummes,
+     * including the equivalent ones.
+     */
     public Set<OWLClassExpression> equivalentOrSubsumedBy(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
@@ -310,6 +314,18 @@ public class ReasonerFacade {
     		}
     	}
         return Optional.empty();
+    }
+
+
+    /**
+     * Checks whether exp is subsumed by some element in the set.
+     */
+    public boolean subsumedByAny(OWLClassExpression exp, Set<OWLClassExpression> set2) {
+        if(set2.contains(exp)) // cheap test first
+            return true;
+        else
+            return set2.stream()
+                    .anyMatch(otherExp -> subsumedBy(exp, otherExp));
     }
 
 }

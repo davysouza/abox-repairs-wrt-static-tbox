@@ -74,7 +74,7 @@ public class RepairTypeHandler {
         for (OWLClassExpression atom : repairPreType) {
             Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
             for (OWLClassExpression subsumee : setOfSubsumees) {
-                if (subsumee != null && !repairPreType.stream().anyMatch(exp -> reasonerWithTBox.subsumedBy(subsumee, exp))) {
+                if (reasonerWithTBox.subsumedByAny(subsumee, repairPreType)) {
                     return false;
                 }
             }
@@ -104,7 +104,11 @@ public class RepairTypeHandler {
                 Set<OWLClassExpression> setOfSubsumees = reasonerWithTBox.equivalentOrSubsumedBy(exp);
                 for (OWLClassExpression subConcept : setOfSubsumees) {
 
-                    if (!anySubsumes(subConcept, tempSet)) {
+                    // I think the test in the following if statement will always fail:
+                    // subConcept is subsumed by exp, and exp is in tempSet, consequently,
+                    // subConcept is subsumed by some element in tempSet. Maybe some subsumption test was in the other
+                    // direction? or do we want to ignore exp from the comparison?
+                    if (!reasonerWithoutTBox.subsumedByAny(subConcept, tempSet)) {
                         List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
 
                         // bit dirty, but ensures experiment can be reproduced
@@ -123,17 +127,6 @@ public class RepairTypeHandler {
 
         return newMinimisedRepairType(resultingSet);
     }
-
-	/**
-	 * Checks whether any element in set is subsumes exp
-	 */
-	private boolean anySubsumes(OWLClassExpression exp, Set<OWLClassExpression> set2) {
-		if(set2.contains(exp)) // cheap test first
-			return true;
-    	else
-    		return set2.stream()
-				.anyMatch(otherExp -> reasonerWithoutTBox.subsumedBy(exp, otherExp));
-	}
 
     /**
      * The method receives a repair type that does not cover the given set Succ(K,r,u).

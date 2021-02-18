@@ -94,7 +94,7 @@ public class SeedFunctionHandler {
 							// if we can find a covering concept for the conjunction (no TBox), we add it to the hitting set
 							// otherwise, we pick a random conjunct, and add this to the repairtype
 							//
-							// the covering concept is a conjunct that is subsumed by something that is already in the hitting set.
+							// the covering concept is a conjunct that subsumes something that is already in the hitting set.
 							// why do we want to add it in this case?
 
 							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
