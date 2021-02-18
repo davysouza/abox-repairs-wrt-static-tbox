@@ -186,4 +186,8 @@ abstract public class RepairGenerator {
 		
 		return newOntology;
 	}
+	
+	public int getNumberOfCollectedIndividuals() {
+		return setOfCollectedIndividuals.size();
+	}
 }
