@@ -1,6 +1,7 @@
 package de.tu_dresden.lat.abox_repairs.repair_types;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
 import org.apache.logging.log4j.LogManager;
@@ -87,14 +88,15 @@ public class RepairTypeHandler {
      * Given a repair pre-type and a random object, this method will this repair pre-type
      * to a repair type that has been premise-saturated
      *
-     * @param preType a repair pre-type that may not be premise-saturated yet
+     * @param hittingSet a repair pre-type that may not be premise-saturated yet
      * @param random  a random object that help choose a random repair type that will be returned
      * @return a random repair type
      */
 
-    public RepairType convertToRandomRepairType(Set<OWLClassExpression> preType, Random random) {
+   
+    public RepairType convertToRandomRepairType(Set<OWLClassExpression> hittingSet, Random random) {
 
-        Set<OWLClassExpression> resultingSet = new HashSet<>(preType);
+        Set<OWLClassExpression> resultingSet = new HashSet<>(hittingSet);
 
         boolean isSaturated = false;
         while (!isSaturated) {
@@ -102,14 +104,13 @@ public class RepairTypeHandler {
             isSaturated = true;
             for (OWLClassExpression exp : tempSet) {
                 Set<OWLClassExpression> setOfSubsumees = reasonerWithTBox.equivalentOrSubsumedBy(exp);
-                for (OWLClassExpression subConcept : setOfSubsumees) {
-
-                    // I think the test in the following if statement will always fail:
-                    // subConcept is subsumed by exp, and exp is in tempSet, consequently,
-                    // subConcept is subsumed by some element in tempSet. Maybe some subsumption test was in the other
-                    // direction? or do we want to ignore exp from the comparison?
+                for (OWLClassExpression subConcept : setOfSubsumees) {          
                     if (!reasonerWithoutTBox.subsumedByAny(subConcept, tempSet)) {
-                        List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
+                    	
+                    	Set<OWLClassExpression> topLevelConjuncts = subConcept.asConjunctSet();
+                        List<OWLClassExpression> listOfConcept = topLevelConjuncts.stream()
+								.filter(con -> !reasonerWithTBox.equivalentToOWLThing(con))
+								.collect(Collectors.toList());
 
                         // bit dirty, but ensures experiment can be reproduced
 						// remark: expensive, but only used once when the seed functions are selected
@@ -169,9 +170,12 @@ public class RepairTypeHandler {
                         Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
 
                         for (OWLClassExpression conjunct : topLevelConjunct) {
-                            Set<OWLClassExpression> tempCandidate = new HashSet<>(candidate);
-                            tempCandidate.add(conjunct);
-                            setOfCandidates.add(tempCandidate);
+                        	if(!reasonerWithTBox.equivalentToOWLThing(conjunct)) {
+                        		Set<OWLClassExpression> tempCandidate = new HashSet<>(candidate);
+                                tempCandidate.add(conjunct);
+                                setOfCandidates.add(tempCandidate);
+                        	}
+                            
                         }
 
                         break outerloop;
@@ -203,7 +207,11 @@ public class RepairTypeHandler {
 	 * the given repair type and the class expression
 	 */
     private Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, OWLClassExpression exp) {
-
+    	
+    	if(reasonerWithTBox.equivalentToOWLThing(exp)) {
+    		return Collections.emptySet();
+    	}
+    	
         Set<Set<OWLClassExpression>> result = new HashSet<>();
 
         for (OWLClassExpression subsumer : reasonerWithoutTBox.equivalentOrSubsuming(exp)) {
@@ -219,25 +227,26 @@ public class RepairTypeHandler {
 
     /**
      * @param type   a repair type
-     * @param expSet a set of class expressions
+     * @param successorSet a set of class expressions
      * @return the set that contains minimal repair pre-types that cover the union of the two input sets
      */
-    public Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, Set<OWLClassExpression> expSet) {
+    private Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, Set<OWLClassExpression> successorSet) {
 
-        assert expSet.size() > 0;
+        assert successorSet.size() > 0;
 
 
         Set<Set<OWLClassExpression>> queue = new HashSet<>();
         queue.add(type);
-//    	Set<Set<OWLClassExpression>> candidates = new HashSet<>();
 
-        for (OWLClassExpression exp : expSet) {
-            Set<Set<OWLClassExpression>> tempSet = new HashSet<>();
-            for (Set<OWLClassExpression> currentSet : queue) {
-                tempSet.addAll(findCoveringPreTypes(currentSet, exp));
-            }
-            queue.removeAll(queue);
-            queue.addAll(tempSet);
+        for (OWLClassExpression exp : successorSet) {
+        	if(!reasonerWithTBox.equivalentToOWLThing(exp)) {
+        		Set<Set<OWLClassExpression>> tempSet = new HashSet<>();
+                for (Set<OWLClassExpression> currentSet : queue) {
+                    tempSet.addAll(findCoveringPreTypes(currentSet, exp));
+                }
+                queue.removeAll(queue);
+                queue.addAll(tempSet);
+        	}
         }
 
         return queue;

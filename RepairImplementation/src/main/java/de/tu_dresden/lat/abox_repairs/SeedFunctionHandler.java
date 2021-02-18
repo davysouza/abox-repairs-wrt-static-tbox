@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
@@ -86,16 +87,20 @@ public class SeedFunctionHandler {
 						 * If the repair request contains a conjunction, we do not have to repair all conjuncts, but
 						 * just one.
 						 */
-
+						Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
+						List<OWLClassExpression> topLevelConjunctList = 
+								topLevelConjuncts.stream()
+										.filter(con -> !reasonerWithTBox.equivalentToOWLThing(con))
+										.collect(Collectors.toList());
+						
 						if(hittingSetFunction.containsKey(individual)) {
-							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(topLevelConjuncts);
+							
 							int randomIndex = rand.nextInt(topLevelConjunctList.size());
 							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
 							hittingSetFunction.get(individual).add(conceptTemp);
 						}
 						else {
-							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
+//							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
 							int randomIndex = rand.nextInt(topLevelConjunctList.size());
 							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
 							Set<OWLClassExpression> initHittingSet = new HashSet<OWLClassExpression>();
