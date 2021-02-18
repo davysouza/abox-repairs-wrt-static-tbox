@@ -19,10 +19,10 @@ public abstract class AnonymousVariableDetector {
     public static AnonymousVariableDetector newInstance(boolean saturated, Main.RepairVariant variant) {
         if(!saturated)
             return new AnonymousVariableDetector.DefaultVersion();
-        else if(variant.equals(Main.RepairVariant.CQ))
+        else if(Main.CQ_ANY.contains(variant))
             return new AnonymousVariableDetector.CQVersion();
         else {
-            assert variant.equals(Main.RepairVariant.IQ);
+            assert Main.IQ_ANY.contains(variant);
             return new AnonymousVariableDetector.IQVersion();
         }
     }
@@ -30,7 +30,7 @@ public abstract class AnonymousVariableDetector {
     /**
      * Use this for non-saturated ontologies.
      */
-    public static class DefaultVersion extends AnonymousVariableDetector {
+    private static class DefaultVersion extends AnonymousVariableDetector {
         @Override
         public boolean isAnonymous(OWLNamedIndividual individual) {
             return false;
@@ -40,7 +40,7 @@ public abstract class AnonymousVariableDetector {
     /**
      * Use this for CQ-saturated ontologies.
      */
-    public static class CQVersion extends AnonymousVariableDetector {
+    private static class CQVersion extends AnonymousVariableDetector {
 
         private Pattern pattern = Pattern.compile("[0-9_]+");
 
@@ -53,7 +53,7 @@ public abstract class AnonymousVariableDetector {
     /**
      * Use this for IQ-saturated ontologies;
      */
-    public static class IQVersion extends AnonymousVariableDetector {
+    private static class IQVersion extends AnonymousVariableDetector {
 
         @Override
         public boolean isAnonymous(OWLNamedIndividual individual){

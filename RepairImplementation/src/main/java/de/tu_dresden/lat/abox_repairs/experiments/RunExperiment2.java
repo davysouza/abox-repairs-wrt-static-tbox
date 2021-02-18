@@ -28,7 +28,7 @@ public class RunExperiment2 {
     public static void main(String[] args) throws OWLOntologyCreationException, SaturationException {
         if(args.length<3) {
             System.out.println("Usage: ");
-            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE SATURATED|NOT_SATURATED IQ|CQ [SEED]");
+            System.out.println("java -cp ... "+RunExperiment1.class.getCanonicalName()+ " ONTOLOGY_FILE SATURATED|NOT_SATURATED IQ|CQ|CANONICAL_IQ|CANONICAL_CQ [SEED]");
             System.out.println();
             System.out.println("Generates a repair of ONTOLOGY_FILE with a randomly generated repair request that");
             System.out.println("randomly selects an entailed concept assertion. You may optionally provide");
@@ -75,6 +75,10 @@ public class RunExperiment2 {
                 return Main.RepairVariant.IQ;
             case "CQ":
                 return Main.RepairVariant.CQ;
+            case "CANONICAL_IQ":
+                return Main.RepairVariant.CANONICAL_IQ;
+            case "CANONICAL_CQ":
+                return Main.RepairVariant.CANONICAL_CQ;
             default:
                 System.out.println("Unexpected repair variant: " + string);
                 System.out.println("Call without parameters to get help information");
