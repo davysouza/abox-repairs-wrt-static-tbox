@@ -7,6 +7,7 @@ import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 
 
@@ -94,7 +95,7 @@ public class RepairTypeHandler {
      */
 
    
-    public RepairType convertToRandomRepairType(Set<OWLClassExpression> hittingSet, Random random) {
+    public RepairType convertToRandomRepairType(Set<OWLClassExpression> hittingSet, OWLNamedIndividual ind, Random random) {
 
         Set<OWLClassExpression> resultingSet = new HashSet<>(hittingSet);
 
@@ -108,7 +109,8 @@ public class RepairTypeHandler {
 
                     // note that above, we take the subsumees wrt. the TBox, while below, we test against the subsumers
                     // without the TBox
-                    if (!reasonerWithoutTBox.subsumedByAny(subConcept, tempSet)) {
+                    if (!reasonerWithoutTBox.subsumedByAny(subConcept, tempSet) 
+                    		&& reasonerWithTBox.instanceOf(ind, subConcept)) {
                     	
                     	Set<OWLClassExpression> topLevelConjuncts = subConcept.asConjunctSet();
                         List<OWLClassExpression> listOfConcept = topLevelConjuncts.stream()
@@ -138,7 +140,8 @@ public class RepairTypeHandler {
      * @return the set that contains all minimal repair types that cover the union of
      * the repair type and the set Succ(K,r,u).
      */
-    public Set<RepairType> findCoveringRepairTypes(RepairType repairType, Set<OWLClassExpression> successorSet) {
+    public Set<RepairType> findCoveringRepairTypes(RepairType repairType, 
+    		Set<OWLClassExpression> successorSet, OWLNamedIndividual ind) {
 
         // repairType should never be null
 
@@ -159,9 +162,9 @@ public class RepairTypeHandler {
             for (OWLClassExpression concept : candidate) {
 
                 for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
-                    if (! reasonerWithoutTBox.subsumedByAny(subsumee, candidate)) {
-//                            candidate.stream().anyMatch(otherConcept ->
-//                            reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
+                    if (! reasonerWithoutTBox.subsumedByAny(subsumee, candidate) && 
+                    		reasonerWithTBox.instanceOf(ind, subsumee)) {
+
 
                         alreadySaturated = false;
 
@@ -189,6 +192,7 @@ public class RepairTypeHandler {
         }
 
         final Set<RepairType> minimalRepairTypes = new HashSet<>();
+        
         for (RepairType type : resultingSet) {
             if (minimalRepairTypes.stream().noneMatch(otherType ->
                     reasonerWithoutTBox.isCovered(otherType.getClassExpressions(), type.getClassExpressions()))) {

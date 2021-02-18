@@ -71,13 +71,6 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 					RepairType type = typeHandler.newMinimisedRepairType(repairTypeCandidate);
 					makeCopy(individual, type);
 				}
-				else {
-					RepairType initType = typeHandler.newMinimisedRepairType(new HashSet<>());
-					Set<RepairType> setOfTypes = typeHandler.findCoveringRepairTypes(initType, repairTypeCandidate);
-					for(RepairType type : setOfTypes) {
-						makeCopy(individual, type);
-					}
-				}
 			}
 		}
 	}
@@ -93,11 +86,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 				 ind.getIRI().getFragment() + 
 				individualCounter.get(ind));
 		seedFunction.put(freshIndividual, typ);
-//		copyToOriginal.put(freshIndividual, ind);
-		
-//		Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(ind);
-//		setOfCopies.add(freshIndividual);
-//		originalToCopy.put(ind, setOfCopies);
+
 		
 		setOfCollectedIndividuals.add(freshIndividual);
 		

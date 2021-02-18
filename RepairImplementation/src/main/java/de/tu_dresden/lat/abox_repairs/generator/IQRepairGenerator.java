@@ -109,7 +109,7 @@ public class IQRepairGenerator extends RepairGenerator {
 						}
 					}
 					else {
-						Set<RepairType> setOfRepairTypes = typeHandler.findCoveringRepairTypes(emptyType, successorSet);
+						Set<RepairType> setOfRepairTypes = typeHandler.findCoveringRepairTypes(emptyType, successorSet, originalObject);
 						if(!setOfRepairTypes.isEmpty()) {
 							for(RepairType newType : setOfRepairTypes) {
 								boolean individualAlreadyExists = false;

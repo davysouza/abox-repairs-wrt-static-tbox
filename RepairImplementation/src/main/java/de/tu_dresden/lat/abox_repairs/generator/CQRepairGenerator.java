@@ -122,7 +122,8 @@ public class CQRepairGenerator extends RepairGenerator {
 								type2.getClassExpressions() : new HashSet<>();
 						
 						if(!reasonerWithTBox.isCovered(successorSet, coveringSet)) {
-							Set<RepairType> setOfRepairTypes = typeHandler.findCoveringRepairTypes(type2, successorSet);
+							Set<RepairType> setOfRepairTypes = 
+									typeHandler.findCoveringRepairTypes(type2, successorSet, originalInd2);
 							
 							for(RepairType newType : setOfRepairTypes) {
 								boolean individualAlreadyExists = false;

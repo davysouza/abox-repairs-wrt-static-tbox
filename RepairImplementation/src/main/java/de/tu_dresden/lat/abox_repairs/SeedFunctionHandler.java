@@ -56,7 +56,7 @@ public class SeedFunctionHandler {
 		
 		for(OWLNamedIndividual individual : setOfIndividuals) {
 			
-			RepairType type = typeHandler.convertToRandomRepairType(hittingSetFunction.get(individual), rand);
+			RepairType type = typeHandler.convertToRandomRepairType(hittingSetFunction.get(individual), individual, rand);
 			seedFunction.put(individual, type);
 		}
 		
