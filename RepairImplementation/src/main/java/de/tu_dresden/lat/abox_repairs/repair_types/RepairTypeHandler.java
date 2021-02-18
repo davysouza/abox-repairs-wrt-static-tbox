@@ -38,12 +38,10 @@ public class RepairTypeHandler {
      */
     public RepairType minimise(RepairType type) {
         Set<OWLClassExpression> newClasses = new HashSet<>(type.getClassExpressions());
-
-        for (OWLClassExpression exp : type.getClassExpressions()) {
-            if (exp.isOWLThing())
-                newClasses.remove(exp);
-            else if (newClasses.contains(exp)) {
-                newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
+        for(OWLClassExpression exp:type.getClassExpressions()){
+        	assert(!exp.isOWLThing());
+            if(newClasses.contains(exp)) {
+            	newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
                 newClasses.add(exp);
             }
         }
@@ -201,12 +199,16 @@ public class RepairTypeHandler {
     }
 
 
-    /**
-     * @param type a repair type
-     * @param exp  a class expression
-     * @return the set that contains minimal repair pre-types that cover the union of
-     * the given repair type and the class expression
-     */
+	/**
+	 * 
+	 * @param type	a repair type
+	 * 
+	 * @param exp 	a class expression
+	 * 
+	 * @return
+	 * the set that contains minimal repair pre-types that cover the union of 
+	 * the given repair type and the class expression
+	 */
     private Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
         Set<Set<OWLClassExpression>> result = new HashSet<>();
