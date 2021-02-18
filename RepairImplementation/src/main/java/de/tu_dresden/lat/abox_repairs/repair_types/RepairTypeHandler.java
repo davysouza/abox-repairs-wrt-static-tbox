@@ -111,9 +111,6 @@ public class RepairTypeHandler {
                     if (!reasonerWithoutTBox.subsumedByAny(subConcept, tempSet)) {
                         List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
 
-                        // bit dirty, but ensures experiment can be reproduced
-						// remark: expensive, but only used once when the seed functions are selected
-                        listOfConcept.sort(Comparator.comparing(a -> a.toString()));
 
                         int index = random.nextInt(listOfConcept.size());
 
@@ -137,16 +134,13 @@ public class RepairTypeHandler {
      * @return the set that contains all minimal repair types that cover the union of
      * the repair type and the set Succ(K,ru)
      */
-
     public Set<RepairType> findCoveringRepairTypes(RepairType repairType, Set<OWLClassExpression> successorSet) {
 
-        // if type is null, we are computing IQ repairs, otherwise, we are computing CQ repairs
-        // see CQ/IQ construction rule in CADE-21 paper.
+        // repairType should never be null
 
         Set<Set<OWLClassExpression>> setOfCandidates =
-                repairType != null ?
-                        findCoveringPreTypes(new HashSet<>(repairType.getClassExpressions()), successorSet) :
-                        findCoveringPreTypes(new HashSet<>(), successorSet);
+                        findCoveringPreTypes(new HashSet<>(repairType.getClassExpressions()), successorSet);
+
 
         Set<RepairType> resultingSet = new HashSet<>();
 
@@ -193,14 +187,13 @@ public class RepairTypeHandler {
 
 
 	/**
-	 * 
+	 * Find covering pretypes. There is one such for each (non-TBox) subsumee atom of exp, which is then added to the type.
+     *
 	 * @param type	a repair type
-	 * 
 	 * @param exp 	a class expression
 	 * 
-	 * @return
-	 * the set that contains minimal repair pre-types that cover the union of 
-	 * the given repair type and the class expression
+	 * @return the set that contains minimal repair pre-types that cover the union of
+	 *         the given repair type and the class expression
 	 */
     private Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, OWLClassExpression exp) {
 
@@ -218,6 +211,10 @@ public class RepairTypeHandler {
     }
 
     /**
+     * compute pre-types for the union of two sets.
+     * Returns the result of iterating over the findCoveringPreTypes method that takes a single concept as second
+     * argument, each case using the newly extended set of pretypes as argument.
+     *
      * @param type   a repair type
      * @param expSet a set of class expressions
      * @return the set that contains minimal repair pre-types that cover the union of the two input sets
