@@ -104,10 +104,8 @@ public class RepairTypeHandler {
                 Set<OWLClassExpression> setOfSubsumees = reasonerWithTBox.equivalentOrSubsumedBy(exp);
                 for (OWLClassExpression subConcept : setOfSubsumees) {
 
-                    // I think the test in the following if statement will always fail:
-                    // subConcept is subsumed by exp, and exp is in tempSet, consequently,
-                    // subConcept is subsumed by some element in tempSet. Maybe some subsumption test was in the other
-                    // direction? or do we want to ignore exp from the comparison?
+                    // note that above, we take the subsumees wrt. the TBox, while below, we test against the subsumers
+                    // without the TBox
                     if (!reasonerWithoutTBox.subsumedByAny(subConcept, tempSet)) {
                         List<OWLClassExpression> listOfConcept = new LinkedList<>(subConcept.asConjunctSet());
 
@@ -127,12 +125,12 @@ public class RepairTypeHandler {
 
     /**
      * The method receives a repair type that does not cover the given set Succ(K,r,u).
-     * This
+     * It then computes a set of repair types that cover the union of the repair type and the set Succ(K,r,u)
      *
      * @param repairType
-     * @param successorSet
+     * @param successorSet Succ(K,r,u) in this case.
      * @return the set that contains all minimal repair types that cover the union of
-     * the repair type and the set Succ(K,ru)
+     * the repair type and the set Succ(K,r,u).
      */
     public Set<RepairType> findCoveringRepairTypes(RepairType repairType, Set<OWLClassExpression> successorSet) {
 
@@ -155,8 +153,9 @@ public class RepairTypeHandler {
             for (OWLClassExpression concept : candidate) {
 
                 for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(concept)) {
-                    if (!candidate.stream().anyMatch(otherConcept ->
-                            reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
+                    if (! reasonerWithoutTBox.subsumedByAny(subsumee, candidate)) {
+//                            candidate.stream().anyMatch(otherConcept ->
+//                            reasonerWithoutTBox.subsumedBy(subsumee, otherConcept))) {
 
                         alreadySaturated = false;
 

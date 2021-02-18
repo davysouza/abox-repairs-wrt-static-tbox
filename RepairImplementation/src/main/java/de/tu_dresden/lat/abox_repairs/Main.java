@@ -152,7 +152,7 @@ public class Main {
 		}
 
 
-
+		reasonerWithTBox.update();
 
 		logger.debug("after initializing reasoners: ");
 

@@ -106,9 +106,13 @@ public class ReasonerFacade {
 
         long start = System.nanoTime();
         reasoner.precomputeInferences();
+        reasoner.flush();
         logger.info("classification took "+(((double)System.nanoTime()-start)/1_000_000_000));
     }
 
+    public void update() {
+        reasoner.flush();
+    }
 
     private void addExpressions(Set<OWLClassExpression> exps) {
         for(OWLClassExpression exp:exps) {
@@ -287,6 +291,16 @@ public class ReasonerFacade {
     }
 
 
+    /**
+     * Determine whether set1 is covered by set2, according to the Definition in the CADE-21 paper.
+     *
+     * Here, "covered by" means that for every concept C in set1, we can find a concept D in set2
+     * s.t. C is subsumed by D.
+     *
+     * @param set1
+     * @param set2
+     * @return
+     */
     public boolean isCovered(Set<OWLClassExpression> set1, Set<OWLClassExpression> set2) {
 
         // cheap test first
