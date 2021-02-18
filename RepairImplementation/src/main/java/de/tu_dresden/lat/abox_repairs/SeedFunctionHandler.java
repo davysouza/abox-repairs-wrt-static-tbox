@@ -88,45 +88,13 @@ public class SeedFunctionHandler {
 						 */
 
 						if(hittingSetFunction.containsKey(individual)) {
-
-							// in case we already added something to the individual, there are two possibilities
-							// for the conjunction:
-							// if we can find a covering concept for the conjunction (no TBox), we add it to the hitting set
-							// otherwise, we pick a random conjunct, and add this to the repairtype
-							//
-							// the covering concept is a conjunct that subsumes something that is already in the hitting set.
-							// why do we want to add it in this case?
-
 							Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-							Optional<OWLClassExpression> opt = reasonerWithoutTBox.findCoveringConcept(
-									hittingSetFunction.get(individual), topLevelConjuncts);
-							if(opt.isPresent()) {
-								hittingSetFunction.get(individual).add(opt.get());
-
-								// the following line looks suspicous: we are replacing the value under "individual"
-								// with the value under "individual" - the map should not be changed.
-								// either you wanted to do something else, or the following line can go.
-								hittingSetFunction.put(individual, hittingSetFunction.get(individual));
-							}
-							else { // no covering concept returned
-								List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(topLevelConjuncts);
-								int randomIndex = rand.nextInt(topLevelConjunctList.size());
-								// small remark: we are converting a set into a list, and then using our random
-								// generator to pick a random element. As the order of sets can be different on
-								// different runs, this may still lead to different behaviour for the same seed function
-								OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
-								hittingSetFunction.get(individual).add(conceptTemp);
-
-
-								// the following line looks suspicous: we are replacing the value under "individual"
-								// with the value under "individual" - the map should not be changed.
-								// either you wanted to do something else, or the following line can go.
-								hittingSetFunction.put(individual, hittingSetFunction.get(individual));
-							}
+							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(topLevelConjuncts);
+							int randomIndex = rand.nextInt(topLevelConjunctList.size());
+							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
+							hittingSetFunction.get(individual).add(conceptTemp);
 						}
-						else { // hittingSetFunction does not contain individual as key
-
-							// in this case, we pick a random conjunct, and add this one to the hitting set function
+						else {
 							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
 							int randomIndex = rand.nextInt(topLevelConjunctList.size());
 							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
@@ -134,28 +102,13 @@ public class SeedFunctionHandler {
 							initHittingSet.add(conceptTemp);
 							hittingSetFunction.put(individual, initHittingSet);
 						}
+
 					}
 					else { // concept is not a conjunction
 						if(!hittingSetFunction.containsKey(individual))
 							hittingSetFunction.put(individual, new HashSet<>());
 
 						hittingSetFunction.get(individual).add(concept);
-
-						// Simplified from the following code:
-						/*
-						if(hittingSetFunction.containsKey(individual)) {
-							if(!hittingSetFunction.get(individual).contains(concept)) {
-								Set<OWLClassExpression> currentHittingSet = hittingSetFunction.get(individual);
-								currentHittingSet.add(concept);
-								hittingSetFunction.put(individual, currentHittingSet);
-							}
-						}
-						else {
-							Set<OWLClassExpression> initHittingSet = new HashSet<OWLClassExpression>();
-							initHittingSet.add(concept);
-							hittingSetFunction.put(individual, initHittingSet);
-						}
-						 */
 					}
 				}
 			}
