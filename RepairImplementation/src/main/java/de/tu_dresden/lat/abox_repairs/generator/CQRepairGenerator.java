@@ -40,7 +40,9 @@ public class CQRepairGenerator extends RepairGenerator {
 				individualCounter.put(individual, individualCounter.get(individual) + 1);
 				OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
 						individual.getIRI().getFragment() + (individualCounter.get(individual)));
-				
+
+				// TODO I noticed that quite often we initialise those empty repair types
+				// it might be worth having a dedicated constructor/build method for this
 				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
 				seedFunction.put(freshIndividual, type);
 				Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(individual);

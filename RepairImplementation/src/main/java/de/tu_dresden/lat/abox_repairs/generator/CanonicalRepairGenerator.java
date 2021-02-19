@@ -61,7 +61,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 		for(OWLNamedIndividual individual : ontology.getIndividualsInSignature()) {
 			Set<OWLClassExpression> setOfAtoms = new HashSet<>();
 			for(OWLClassExpression assertedConcept : reasonerWithTBox.instanceOf(individual)) {
-				if(assertedConcept instanceof OWLClass || assertedConcept instanceof OWLObjectSomeValuesFrom) {
+				if(atomForRepairType(assertedConcept)) {
 					setOfAtoms.add(assertedConcept);
 				}
 			}
@@ -73,6 +73,11 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 				}
 			}
 		}
+	}
+
+	private boolean atomForRepairType(OWLClassExpression exp){
+		return (exp instanceof OWLClass || exp instanceof OWLObjectSomeValuesFrom)
+				&& !reasonerWithTBox.equivalentToOWLThing(exp);
 	}
 
 	
