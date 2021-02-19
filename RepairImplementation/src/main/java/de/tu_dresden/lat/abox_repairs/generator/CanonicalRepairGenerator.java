@@ -31,7 +31,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 	@Override
 	public void repair() throws OWLOntologyCreationException {
 		// TODO Auto-generated method stub
-		
+		setOfCollectedIndividuals = new HashSet<>();
 		
 		long startTimeVariables = System.nanoTime();
 		

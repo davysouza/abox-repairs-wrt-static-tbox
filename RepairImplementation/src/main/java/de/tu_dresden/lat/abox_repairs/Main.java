@@ -91,6 +91,12 @@ public class Main {
                 case "CQ":
                     variant = RepairVariant.CQ;
                     break;
+                case "CANONICAL_IQ":
+                    variant = RepairVariant.CANONICAL_IQ;
+                    break;
+                case "CANONICAL_CQ":
+                    variant = RepairVariant.CANONICAL_CQ;
+                    break;
                 default:
                     System.out.println("Unknown repairVariant: " + args[i + 2]);
                     System.exit(1);
