@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -16,7 +17,9 @@ import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
+import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 
 public class CQRepairGenerator extends RepairGenerator {
 
@@ -67,6 +70,13 @@ public class CQRepairGenerator extends RepairGenerator {
 	
 	protected void initialisation() {
 		// Variables Intitialisation
+		
+		anonymousDetector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.CQ);
+		
+		setOfCollectedIndividuals = setOfSaturationIndividuals.stream()
+				.filter(ind -> anonymousDetector.isNamed(ind))
+				.collect(Collectors.toSet());
+		
 		for(OWLNamedIndividual individual : setOfSaturationIndividuals) {
 			
 			if(seedFunction.get(individual) != null) {
@@ -76,10 +86,10 @@ public class CQRepairGenerator extends RepairGenerator {
 				
 				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
 				seedFunction.put(freshIndividual, type);
-				Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(individual);
+				Set<OWLNamedIndividual> setOfCopies = objectToCopies.get(individual);
 				setOfCopies.add(freshIndividual);
-				originalToCopy.put(individual, setOfCopies);
-				copyToOriginal.put(freshIndividual, individual);
+				objectToCopies.put(individual, setOfCopies);
+				copyToObject.put(freshIndividual, individual);
 				setOfCollectedIndividuals.add(freshIndividual);
 			}
 			
@@ -107,8 +117,8 @@ public class CQRepairGenerator extends RepairGenerator {
 			OWLNamedIndividual ind1 = p.getLeft();
 			OWLNamedIndividual ind2 = p.getRight();
 			
-			OWLNamedIndividual originalInd1 = setOfSaturationIndividuals.contains(ind1)? ind1 : copyToOriginal.get(ind1);
-			OWLNamedIndividual originalInd2 = setOfSaturationIndividuals.contains(ind2)? ind2 : copyToOriginal.get(ind2);
+			OWLNamedIndividual originalInd1 = setOfSaturationIndividuals.contains(ind1)? ind1 : copyToObject.get(ind1);
+			OWLNamedIndividual originalInd2 = setOfSaturationIndividuals.contains(ind2)? ind2 : copyToObject.get(ind2);
 			
 			for(OWLObjectProperty role: ontology.getObjectPropertiesInSignature()) {
 				OWLObjectPropertyAssertionAxiom roleAssertion = factory
@@ -131,7 +141,7 @@ public class CQRepairGenerator extends RepairGenerator {
 							
 							for(RepairType newType : setOfRepairTypes) {
 								boolean individualAlreadyExists = false;
-								for(OWLNamedIndividual copy : originalToCopy.get(originalInd2)) {
+								for(OWLNamedIndividual copy : objectToCopies.get(originalInd2)) {
 									if((seedFunction.get(copy) == null && newType.getClassExpressions().isEmpty()) ||
 										(seedFunction.get(copy) != null && seedFunction.get(copy).equals(newType))) {
 										individualAlreadyExists = true;
@@ -155,11 +165,11 @@ public class CQRepairGenerator extends RepairGenerator {
 				 ind.getIRI().getFragment() + 
 				individualCounter.get(ind));
 		seedFunction.put(freshIndividual, typ);
-		copyToOriginal.put(freshIndividual, ind);
+		copyToObject.put(freshIndividual, ind);
 		
-		Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(ind);
+		Set<OWLNamedIndividual> setOfCopies = objectToCopies.get(ind);
 		setOfCopies.add(freshIndividual);
-		originalToCopy.put(ind, setOfCopies);
+		objectToCopies.put(ind, setOfCopies);
 		
 		for(OWLNamedIndividual individual : setOfCollectedIndividuals) {
 			Pair<OWLNamedIndividual, OWLNamedIndividual> pair1 = Pair.of(individual, freshIndividual);

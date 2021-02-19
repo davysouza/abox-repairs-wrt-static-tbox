@@ -7,6 +7,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 
 public class IQRepairGenerator extends RepairGenerator {
 
@@ -25,9 +27,7 @@ public class IQRepairGenerator extends RepairGenerator {
 
 	private Queue<OWLNamedIndividual> queueOfIndividuals;
 	
-	// the set of all individuals that exist in the original ontology that is even not saturated yet
-	private Set<OWLNamedIndividual> setOfOriginalIndividuals;
-	
+		
 	public IQRepairGenerator(OWLOntology inputOntology,
 			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
 		
@@ -78,11 +78,13 @@ public class IQRepairGenerator extends RepairGenerator {
 	
 	protected void initialisation() {
 		
-		setOfOriginalIndividuals = setOfSaturationIndividuals.stream()
-				.filter(ind -> ind.getIRI().toString()
-				.startsWith("__i__")).collect(Collectors.toSet());
+		anonymousDetector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.IQ);
 		
-		setOfCollectedIndividuals = new HashSet<>(setOfOriginalIndividuals);
+		setOfCollectedIndividuals = setOfSaturationIndividuals.stream()
+									.filter(ind -> anonymousDetector.isNamed(ind))
+									.collect(Collectors.toSet());
+		
+		 
 	}
 	
 	protected void generatingVariables() {
@@ -94,7 +96,7 @@ public class IQRepairGenerator extends RepairGenerator {
 			OWLNamedIndividual individual = queueOfIndividuals.poll();
 			
 			OWLNamedIndividual originalIndividual = setOfSaturationIndividuals.contains(individual) ?
-					individual : copyToOriginal.get(individual);
+					individual : copyToObject.get(individual);
 			
 			Set<OWLObjectPropertyAssertionAxiom> setOfRoleAssertions = ontology
 					.getObjectPropertyAssertionAxioms(originalIndividual);
@@ -111,7 +113,7 @@ public class IQRepairGenerator extends RepairGenerator {
 					RepairType emptyType = typeHandler.newMinimisedRepairType(new HashSet<>());
 					if(successorSet.isEmpty()) {
 						boolean individualAlreadyExists = false;
-						for(OWLNamedIndividual copy : originalToCopy.get(originalObject)) {
+						for(OWLNamedIndividual copy : objectToCopies.get(originalObject)) {
 							if (seedFunction.get(copy) == null || 
 								(seedFunction.get(copy) != null && seedFunction.get(copy).equals(emptyType))) {
 									individualAlreadyExists = true;
@@ -128,7 +130,7 @@ public class IQRepairGenerator extends RepairGenerator {
 						if(!setOfRepairTypes.isEmpty()) {
 							for(RepairType newType : setOfRepairTypes) {
 								boolean individualAlreadyExists = false;
-								for(OWLNamedIndividual copy : originalToCopy.get(originalObject)) {
+								for(OWLNamedIndividual copy : objectToCopies.get(originalObject)) {
 									if(seedFunction.get(copy) != null) {
 										if(seedFunction.get(copy).equals(newType)) {
 											individualAlreadyExists = true;
@@ -156,11 +158,11 @@ public class IQRepairGenerator extends RepairGenerator {
 				 ind.getIRI().getFragment() + 
 				individualCounter.get(ind));
 		seedFunction.put(freshIndividual, typ);
-		copyToOriginal.put(freshIndividual, ind);
+		copyToObject.put(freshIndividual, ind);
 		
-		Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(ind);
+		Set<OWLNamedIndividual> setOfCopies = objectToCopies.get(ind);
 		setOfCopies.add(freshIndividual);
-		originalToCopy.put(ind, setOfCopies);
+		objectToCopies.put(ind, setOfCopies);
 		
 		queueOfIndividuals.add(freshIndividual);
 		

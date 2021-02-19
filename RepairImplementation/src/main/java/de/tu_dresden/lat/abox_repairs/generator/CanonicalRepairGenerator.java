@@ -50,8 +50,6 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 			}
 			
 		}
-		
-		
 	}
 
 	@Override
@@ -89,6 +87,12 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 
 		
 		setOfCollectedIndividuals.add(freshIndividual);
+		
+	}
+
+	@Override
+	protected void initialisation() {
+		// TODO Auto-generated method stub
 		
 	}
 }
