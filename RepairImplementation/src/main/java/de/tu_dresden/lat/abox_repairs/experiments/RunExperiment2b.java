@@ -151,7 +151,7 @@ public class RunExperiment2b {
             while(!classes.isEmpty()) {
                 OWLClassExpression clazz = classes.get(random.nextInt(classes.size()));
                 classes.remove(clazz);
-                long sigSize = clazz.signature().filter(c -> c.isTopEntity()).count();
+                long sigSize = clazz.signature().filter(c -> !c.isTopEntity()).count();
                 if(sigSize>1 && !facade.equivalentToOWLThing(clazz)){
                     RepairRequest result = new RepairRequest();
                     result.put(individual, Collections.singleton(clazz));
