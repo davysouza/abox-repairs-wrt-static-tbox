@@ -67,7 +67,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 			}
 			Set<Set<OWLClassExpression>> powerSet = Sets.powerSet(setOfAtoms);
 			for(Set<OWLClassExpression> repairTypeCandidate: powerSet) {
-				if(typeHandler.isPremiseSaturated(repairTypeCandidate)) {
+				if(typeHandler.isPremiseSaturated(repairTypeCandidate, individual)) {
 					RepairType type = typeHandler.newMinimisedRepairType(repairTypeCandidate);
 					makeCopy(individual, type);
 				}

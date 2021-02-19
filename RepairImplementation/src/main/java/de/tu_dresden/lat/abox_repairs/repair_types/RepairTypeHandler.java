@@ -71,12 +71,13 @@ public class RepairTypeHandler {
      * @return true if the given repair pre-type is already premise-saturated
      */
 
-    public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType) {
+    public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
 
         for (OWLClassExpression atom : repairPreType) {
             Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
             for (OWLClassExpression subsumee : setOfSubsumees) {
-                if (reasonerWithTBox.subsumedByAny(subsumee, repairPreType)) {
+                if (!reasonerWithTBox.subsumedByAny(subsumee, repairPreType) && 
+                		reasonerWithTBox.instanceOf(ind, subsumee)) {
                     return false;
                 }
             }
