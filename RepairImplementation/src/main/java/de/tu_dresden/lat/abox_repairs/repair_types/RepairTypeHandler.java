@@ -76,7 +76,7 @@ public class RepairTypeHandler {
         for (OWLClassExpression atom : repairPreType) {
             Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
             for (OWLClassExpression subsumee : setOfSubsumees) {
-                if (!reasonerWithTBox.subsumedByAny(subsumee, repairPreType) && 
+                if (!reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) && 
                 		reasonerWithTBox.instanceOf(ind, subsumee)) {
                     return false;
                 }
