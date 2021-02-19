@@ -34,7 +34,7 @@ public class CQRepairGenerator extends RepairGenerator {
 	}
 	
 	
-	public void repair() throws OWLOntologyCreationException {
+/*	public void repair() throws OWLOntologyCreationException {
 
 		initialisation();
 		
@@ -66,7 +66,7 @@ public class CQRepairGenerator extends RepairGenerator {
 		
 		logger.debug("\nAfter generating matrix");
 		newOntology.axioms().forEach(ax -> logger.debug(ax));
-	}
+	}*/
 	
 	protected void initialisation() {
 		// Variables Intitialisation

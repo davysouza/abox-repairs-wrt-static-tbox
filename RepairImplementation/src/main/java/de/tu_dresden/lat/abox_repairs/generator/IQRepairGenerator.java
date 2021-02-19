@@ -34,7 +34,7 @@ public class IQRepairGenerator extends RepairGenerator {
 		super(inputOntology, inputSeedFunction);
 	}
 	
-	
+	/*
 	public void repair() throws OWLOntologyCreationException {
 		
 		initialisation();
@@ -74,7 +74,7 @@ public class IQRepairGenerator extends RepairGenerator {
 		newOntology.axioms().forEach(ax -> logger.debug("- " + ax.toString()));
 	
 	}
-	
+	*/
 	
 	protected void initialisation() {
 		

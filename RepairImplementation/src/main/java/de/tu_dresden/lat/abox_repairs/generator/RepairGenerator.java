@@ -65,8 +65,43 @@ abstract public class RepairGenerator {
 	
 	protected abstract void makeCopy(OWLNamedIndividual ind, RepairType typ);
 	
-	public abstract void repair() throws OWLOntologyCreationException;
-	
+	//public abstract void repair() throws OWLOntologyCreationException;
+
+	public void repair() throws OWLOntologyCreationException {
+
+		initialisation();
+
+		long startTimeVariables = System.nanoTime();
+
+		generatingVariables();
+
+		double timeVariables = (double)(System.nanoTime() - startTimeVariables)/1_000_000_000;
+
+		logger.info("Time for generating variables: " + timeVariables);
+		logger.info("Variables introduced: "+setOfCollectedIndividuals.size());
+
+		/*logger.debug("\nAfter generating necessary variables");
+		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
+			logger.debug("- " + ind);
+			if(seedFunction.get(ind)!= null) {
+				logger.debug(seedFunction.get(ind).getClassExpressions());
+				logger.debug("");
+			}
+
+		}*/
+
+		long startTimeMatrix = System.nanoTime();
+
+		generatingMatrix();
+
+		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
+
+		logger.info("Time for generating Matrix: " + timeMatrix);
+
+		//logger.debug("\nAfter generating matrix");
+		//newOntology.axioms().forEach(ax -> logger.debug(ax));
+	}
+
 	public RepairGenerator(OWLOntology inputOntology,
 			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
 		
