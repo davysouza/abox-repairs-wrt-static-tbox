@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-
+import java.util.stream.Collectors;
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +25,9 @@ public class IQRepairGenerator extends RepairGenerator {
 
 	private Queue<OWLNamedIndividual> queueOfIndividuals;
 	
+	// the set of all individuals that exist in the original ontology that is even not saturated yet
+	private Set<OWLNamedIndividual> setOfOriginalIndividuals;
+	
 	public IQRepairGenerator(OWLOntology inputOntology,
 			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
 		
@@ -34,6 +37,7 @@ public class IQRepairGenerator extends RepairGenerator {
 	
 	public void repair() throws OWLOntologyCreationException {
 		
+		initialisation();
 		
 		long startTimeVariables = System.nanoTime();
 		
@@ -72,13 +76,24 @@ public class IQRepairGenerator extends RepairGenerator {
 	}
 	
 	
+	protected void initialisation() {
+		
+		setOfOriginalIndividuals = setOfSaturationIndividuals.stream()
+				.filter(ind -> ind.getIRI().toString()
+				.startsWith("__i__")).collect(Collectors.toSet());
+		
+		setOfCollectedIndividuals = new HashSet<>(setOfOriginalIndividuals);
+	}
+	
 	protected void generatingVariables() {
+		
+		
 		queueOfIndividuals = new PriorityQueue<>(setOfCollectedIndividuals);
 
 		while(!queueOfIndividuals.isEmpty()) {
 			OWLNamedIndividual individual = queueOfIndividuals.poll();
 			
-			OWLNamedIndividual originalIndividual = setOfOriginalIndividuals.contains(individual) ?
+			OWLNamedIndividual originalIndividual = setOfSaturationIndividuals.contains(individual) ?
 					individual : copyToOriginal.get(individual);
 			
 			Set<OWLObjectPropertyAssertionAxiom> setOfRoleAssertions = ontology
@@ -151,5 +166,7 @@ public class IQRepairGenerator extends RepairGenerator {
 		
 		setOfCollectedIndividuals.add(freshIndividual);
 	}
+
+
 
 }

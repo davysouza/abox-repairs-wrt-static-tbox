@@ -33,29 +33,7 @@ public class CQRepairGenerator extends RepairGenerator {
 	
 	public void repair() throws OWLOntologyCreationException {
 		
-		// Variables Intitialisation
-		for(OWLNamedIndividual individual : setOfOriginalIndividuals) {
-			
-			if(seedFunction.get(individual) != null) {
-				individualCounter.put(individual, individualCounter.get(individual) + 1);
-				OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
-						individual.getIRI().getFragment() + (individualCounter.get(individual)));
-				
-				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
-				seedFunction.put(freshIndividual, type);
-				Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(individual);
-				setOfCopies.add(freshIndividual);
-				originalToCopy.put(individual, setOfCopies);
-				copyToOriginal.put(freshIndividual, individual);
-				setOfCollectedIndividuals.add(freshIndividual);
-			}
-			
-			else {
-				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
-				seedFunction.put(individual, type);
-			}
-			
-		}
+		initialisation();
 		
 		long startTimeVariables = System.nanoTime();
 		
@@ -87,6 +65,32 @@ public class CQRepairGenerator extends RepairGenerator {
 		newOntology.axioms().forEach(ax -> logger.debug(ax));
 	}
 	
+	protected void initialisation() {
+		// Variables Intitialisation
+		for(OWLNamedIndividual individual : setOfSaturationIndividuals) {
+			
+			if(seedFunction.get(individual) != null) {
+				individualCounter.put(individual, individualCounter.get(individual) + 1);
+				OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
+						individual.getIRI().getFragment() + (individualCounter.get(individual)));
+				
+				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
+				seedFunction.put(freshIndividual, type);
+				Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(individual);
+				setOfCopies.add(freshIndividual);
+				originalToCopy.put(individual, setOfCopies);
+				copyToOriginal.put(freshIndividual, individual);
+				setOfCollectedIndividuals.add(freshIndividual);
+			}
+			
+			else {
+				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
+				seedFunction.put(individual, type);
+			}
+			
+		}
+	}
+	
 	protected void generatingVariables() {
 		queueOfPairs = 
 				new PriorityQueue<Pair<OWLNamedIndividual, OWLNamedIndividual>>();
@@ -103,8 +107,8 @@ public class CQRepairGenerator extends RepairGenerator {
 			OWLNamedIndividual ind1 = p.getLeft();
 			OWLNamedIndividual ind2 = p.getRight();
 			
-			OWLNamedIndividual originalInd1 = setOfOriginalIndividuals.contains(ind1)? ind1 : copyToOriginal.get(ind1);
-			OWLNamedIndividual originalInd2 = setOfOriginalIndividuals.contains(ind2)? ind2 : copyToOriginal.get(ind2);
+			OWLNamedIndividual originalInd1 = setOfSaturationIndividuals.contains(ind1)? ind1 : copyToOriginal.get(ind1);
+			OWLNamedIndividual originalInd2 = setOfSaturationIndividuals.contains(ind2)? ind2 : copyToOriginal.get(ind2);
 			
 			for(OWLObjectProperty role: ontology.getObjectPropertiesInSignature()) {
 				OWLObjectPropertyAssertionAxiom roleAssertion = factory
@@ -160,8 +164,10 @@ public class CQRepairGenerator extends RepairGenerator {
 		for(OWLNamedIndividual individual : setOfCollectedIndividuals) {
 			Pair<OWLNamedIndividual, OWLNamedIndividual> pair1 = Pair.of(individual, freshIndividual);
 			Pair<OWLNamedIndividual, OWLNamedIndividual> pair2 = Pair.of(freshIndividual, individual);
+			Pair<OWLNamedIndividual, OWLNamedIndividual> pair3 = Pair.of(freshIndividual, freshIndividual);
 			queueOfPairs.add(pair1);
 			queueOfPairs.add(pair2);
+			queueOfPairs.add(pair3);
 		}
 
 		
