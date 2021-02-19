@@ -31,7 +31,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 	@Override
 	public void repair() throws OWLOntologyCreationException {
 		// TODO Auto-generated method stub
-		
+		setOfCollectedIndividuals = new HashSet<>();
 		
 		long startTimeVariables = System.nanoTime();
 		
@@ -50,8 +50,6 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 			}
 			
 		}
-		
-		
 	}
 
 	@Override
@@ -67,7 +65,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 			}
 			Set<Set<OWLClassExpression>> powerSet = Sets.powerSet(setOfAtoms);
 			for(Set<OWLClassExpression> repairTypeCandidate: powerSet) {
-				if(typeHandler.isPremiseSaturated(repairTypeCandidate)) {
+				if(typeHandler.isPremiseSaturated(repairTypeCandidate, individual)) {
 					RepairType type = typeHandler.newMinimisedRepairType(repairTypeCandidate);
 					makeCopy(individual, type);
 				}
@@ -91,13 +89,15 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 				 ind.getIRI().getFragment() + 
 				individualCounter.get(ind));
 		seedFunction.put(freshIndividual, typ);
-		copyToOriginal.put(freshIndividual, ind);
-		
-		Set<OWLNamedIndividual> setOfCopies = originalToCopy.get(ind);
-		setOfCopies.add(freshIndividual);
-		originalToCopy.put(ind, setOfCopies);
+
 		
 		setOfCollectedIndividuals.add(freshIndividual);
+		
+	}
+
+	@Override
+	protected void initialisation() {
+		// TODO Auto-generated method stub
 		
 	}
 }

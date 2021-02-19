@@ -28,6 +28,7 @@ import org.semanticweb.owlapi.model.parameters.Imports;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
+import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 
 abstract public class RepairGenerator {
 
@@ -39,11 +40,13 @@ abstract public class RepairGenerator {
 	protected IRI iri;
 	protected Map<OWLNamedIndividual, RepairType> seedFunction;
 	protected Map<OWLNamedIndividual, Integer> individualCounter;
-	protected Map<OWLNamedIndividual, OWLNamedIndividual> copyToOriginal;
-	protected Map<OWLNamedIndividual, Set<OWLNamedIndividual>> originalToCopy;
+	protected Map<OWLNamedIndividual, OWLNamedIndividual> copyToObject;
+	protected Map<OWLNamedIndividual, Set<OWLNamedIndividual>> objectToCopies;
 	
-	protected Set<OWLNamedIndividual> setOfOriginalIndividuals;
+	// the set of all individuals contained in the saturation
+	protected Set<OWLNamedIndividual> setOfSaturationIndividuals;
 	
+	// the set of all individuals that are needed for constructing the repair
 	protected Set<OWLNamedIndividual> setOfCollectedIndividuals;
 
 	
@@ -54,7 +57,13 @@ abstract public class RepairGenerator {
 	
 	protected OWLOntology newOntology;
 	
+	protected AnonymousVariableDetector anonymousDetector;
+	
 	protected abstract void generatingVariables();
+	
+	protected abstract void initialisation();
+	
+	protected abstract void makeCopy(OWLNamedIndividual ind, RepairType typ);
 	
 	public abstract void repair() throws OWLOntologyCreationException;
 	
@@ -64,19 +73,20 @@ abstract public class RepairGenerator {
 		this.ontology = inputOntology;
 		this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 		this.seedFunction = inputSeedFunction;
-		this.setOfOriginalIndividuals  = ontology.getIndividualsInSignature();
-		this.setOfCollectedIndividuals = new HashSet<>(setOfOriginalIndividuals);
-		this.copyToOriginal = new HashMap<>();
-		this.originalToCopy = new HashMap<>();
+		
+		this.setOfSaturationIndividuals  = ontology.getIndividualsInSignature();
+
+		this.copyToObject = new HashMap<>();
+		this.objectToCopies = new HashMap<>();
 		this.individualCounter = new HashMap<>();
 		
 		// Initializing originalToCopy 
-		for(OWLNamedIndividual originalIndividual : setOfOriginalIndividuals) {
+		for(OWLNamedIndividual originalIndividual : setOfSaturationIndividuals) {
 			Set<OWLNamedIndividual> initSet = new HashSet<OWLNamedIndividual>();
 			initSet.add(originalIndividual);
 			individualCounter.put(originalIndividual, 0);
-			originalToCopy.put(originalIndividual, initSet);
-			copyToOriginal.put(originalIndividual, originalIndividual);
+			objectToCopies.put(originalIndividual, initSet);
+			copyToObject.put(originalIndividual, originalIndividual);
 		}
 
 		Optional<IRI> opt = ontology.getOntologyID().getOntologyIRI();
@@ -91,16 +101,19 @@ abstract public class RepairGenerator {
 	
 	
 	
+	
+	
 	protected void generatingMatrix() throws OWLOntologyCreationException {
+		
+		reasonerWithTBox.cleanOntology();
+	// TODO: bad code design
+		
 		OWLOntologyManager man = OWLManager.createOWLOntologyManager();
 		
 		newOntology = man.createOntology();
-//		for(OWLAxiom ax : ontology.getTBoxAxioms(Imports.INCLUDED)) {
-//			logger.debug("axiom " + ax);
-//		}
-		
+
 		newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
-//		logger.debug("\nWhen building the matrix of the repair");
+
 
 		for(OWLAxiom ax: ontology.getABoxAxioms(Imports.INCLUDED)) {
 			
@@ -108,7 +121,7 @@ abstract public class RepairGenerator {
 				OWLClassAssertionAxiom classAssertion = (OWLClassAssertionAxiom) ax;
 				OWLNamedIndividual originalInd = (OWLNamedIndividual) classAssertion.getIndividual();
 				
-				for(OWLNamedIndividual copyInd : originalToCopy.get(originalInd)) {
+				for(OWLNamedIndividual copyInd : objectToCopies.get(originalInd)) {
 					if(seedFunction.get(copyInd) == null || !seedFunction.get(copyInd).getClassExpressions()
 							.contains(classAssertion.getClassExpression())) {
 						OWLClassAssertionAxiom newAxiom = factory
@@ -125,8 +138,8 @@ abstract public class RepairGenerator {
 				OWLNamedIndividual originalSubject = (OWLNamedIndividual) roleAssertion.getSubject();
 				OWLNamedIndividual originalObject = (OWLNamedIndividual) roleAssertion.getObject();
 				
-				for(OWLNamedIndividual copySubject : originalToCopy.get(originalSubject)) {
-					for(OWLNamedIndividual copyObject : originalToCopy.get(originalObject)) {
+				for(OWLNamedIndividual copySubject : objectToCopies.get(originalSubject)) {
+					for(OWLNamedIndividual copyObject : objectToCopies.get(originalObject)) {
 						
 						if(seedFunction.get(copySubject) == null || seedFunction.get(copySubject).getClassExpressions().isEmpty()) {
 							OWLObjectPropertyAssertionAxiom newAxiom = factory
@@ -179,7 +192,7 @@ abstract public class RepairGenerator {
 	}
 	
 	
-	protected abstract void makeCopy(OWLNamedIndividual ind, RepairType typ);
+	
 	
 	
 	public OWLOntology getRepair() {
