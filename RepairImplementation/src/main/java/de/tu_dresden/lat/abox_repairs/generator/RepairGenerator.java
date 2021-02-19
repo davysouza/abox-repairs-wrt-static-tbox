@@ -104,6 +104,10 @@ abstract public class RepairGenerator {
 	
 	
 	protected void generatingMatrix() throws OWLOntologyCreationException {
+		
+		reasonerWithTBox.cleanOntology();
+	// TODO: bad code design
+		
 		OWLOntologyManager man = OWLManager.createOWLOntologyManager();
 		
 		newOntology = man.createOntology();
