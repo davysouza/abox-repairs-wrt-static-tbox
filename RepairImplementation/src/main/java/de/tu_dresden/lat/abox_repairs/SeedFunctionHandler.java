@@ -77,7 +77,7 @@ public class SeedFunctionHandler {
 		for(OWLNamedIndividual individual : setOfIndividuals) {
 			Set<OWLClassExpression> setOfConcepts = repairRequest.get(individual);
 			
-			System.out.println("Repair Request " + individual + " " + setOfConcepts);
+			//System.out.println("Repair Request " + individual + " " + setOfConcepts);
 			for(OWLClassExpression concept : setOfConcepts) {
 
 				if(reasonerWithTBox.instanceOf(individual, concept) ) {
