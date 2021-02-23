@@ -44,7 +44,7 @@ abstract public class RepairGenerator {
 	protected Map<OWLNamedIndividual, Set<OWLNamedIndividual>> objectToCopies;
 	
 	// the set of all individuals contained in the saturation
-	protected Set<OWLNamedIndividual> setOfSaturationIndividuals;
+	protected Set<OWLNamedIndividual> setOfSaturatedIndividuals;
 	
 	// the set of all individuals that are needed for constructing the repair
 	protected Set<OWLNamedIndividual> setOfCollectedIndividuals;
@@ -63,44 +63,10 @@ abstract public class RepairGenerator {
 	
 	protected abstract void initialisation();
 	
-	protected abstract void makeCopy(OWLNamedIndividual ind, RepairType typ);
 	
-	//public abstract void repair() throws OWLOntologyCreationException;
 
-	public void repair() throws OWLOntologyCreationException {
 
-		initialisation();
-
-		long startTimeVariables = System.nanoTime();
-
-		generatingVariables();
-
-		double timeVariables = (double)(System.nanoTime() - startTimeVariables)/1_000_000_000;
-
-		logger.info("Time for generating variables: " + timeVariables);
-		logger.info("Variables introduced: "+setOfCollectedIndividuals.size());
-
-		/*logger.debug("\nAfter generating necessary variables");
-		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-			logger.debug("- " + ind);
-			if(seedFunction.get(ind)!= null) {
-				logger.debug(seedFunction.get(ind).getClassExpressions());
-				logger.debug("");
-			}
-
-		}*/
-
-		long startTimeMatrix = System.nanoTime();
-
-		generatingMatrix();
-
-		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
-
-		logger.info("Time for generating Matrix: " + timeMatrix);
-
-		//logger.debug("\nAfter generating matrix");
-		//newOntology.axioms().forEach(ax -> logger.debug(ax));
-	}
+	
 
 	public RepairGenerator(OWLOntology inputOntology,
 			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
@@ -109,14 +75,14 @@ abstract public class RepairGenerator {
 		this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 		this.seedFunction = inputSeedFunction;
 		
-		this.setOfSaturationIndividuals  = ontology.getIndividualsInSignature();
+		this.setOfSaturatedIndividuals  = ontology.getIndividualsInSignature();
 
 		this.copyToObject = new HashMap<>();
 		this.objectToCopies = new HashMap<>();
 		this.individualCounter = new HashMap<>();
 		
-		// Initializing originalToCopy 
-		for(OWLNamedIndividual originalIndividual : setOfSaturationIndividuals) {
+		// Initializing originalToCopy, and vice versa
+		for(OWLNamedIndividual originalIndividual : setOfSaturatedIndividuals) {
 			Set<OWLNamedIndividual> initSet = new HashSet<OWLNamedIndividual>();
 			initSet.add(originalIndividual);
 			individualCounter.put(originalIndividual, 0);
@@ -134,9 +100,49 @@ abstract public class RepairGenerator {
 		this.typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 	}
 	
+	/**
+	 * Performs a stepwise rule to compute a repair
+	 * @throws OWLOntologyCreationException
+	 */
+	public void repair() throws OWLOntologyCreationException {
+
+		initialisation();
+
+		long startTimeVariables = System.nanoTime();
+
+		generatingVariables();
+
+		double timeVariables = (double)(System.nanoTime() - startTimeVariables)/1_000_000_000;
+
+		logger.info("Time for generating variables: " + timeVariables);
+		logger.info("Variables introduced: "+setOfCollectedIndividuals.size());
+
+		logger.debug("\nAfter generating necessary variables");
+		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
+			logger.debug("- " + ind);
+			if(seedFunction.get(ind)!= null) {
+				logger.debug(seedFunction.get(ind).getClassExpressions());
+				logger.debug("");
+			}
+
+		}
+
+		long startTimeMatrix = System.nanoTime();
+
+		generatingMatrix();
+
+		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
+
+		logger.info("Time for generating Matrix: " + timeMatrix);
+
+		logger.debug("\nAfter generating matrix");
+		newOntology.axioms().forEach(ax -> logger.debug(ax));
+	}
 	
-	
-	
+	/**
+	 * Generating the matrix of the repair
+	 * @throws OWLOntologyCreationException
+	 */
 	
 	protected void generatingMatrix() throws OWLOntologyCreationException {
 		
@@ -162,7 +168,7 @@ abstract public class RepairGenerator {
 						OWLClassAssertionAxiom newAxiom = factory
 									.getOWLClassAssertionAxiom(classAssertion.getClassExpression(), copyInd);
 						newOntology.add(newAxiom);
-//						logger.debug("New Class Assertion " + newAxiom);
+						logger.debug("New Class Assertion " + newAxiom);
 					}
 				}
 			}
@@ -181,7 +187,7 @@ abstract public class RepairGenerator {
 									.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
 							newOntology.add(newAxiom);
 							
-//							logger.debug("New Role Assertion" + newAxiom);
+							logger.debug("New Role Assertion" + newAxiom);
 						}
 						else {
 							RepairType type1 = seedFunction.get(copySubject);
@@ -192,7 +198,7 @@ abstract public class RepairGenerator {
 										.getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
 								newOntology.add(newAxiom);
 								
-//								logger.debug("New Role Assertion " + newAxiom);
+								logger.debug("New Role Assertion " + newAxiom);
 							} 
 							else  {
 								RepairType type2 = seedFunction.get(copyObject);
@@ -213,12 +219,22 @@ abstract public class RepairGenerator {
 
 	}
 	
-	protected Set<OWLClassExpression> computeSuccessorSet(RepairType inputType, OWLObjectProperty inputRole, OWLNamedIndividual ind) {
+	/**
+	 * Take the set of all fillers of existential restrictions with the role name r 
+	 * that occur in the repair type K such that 
+	 * the individual u is an instance of each filler w.r.t. the saturation
+	 * 
+	 * @param Repair type k
+	 * @param Role name r
+	 * @param individual u
+	 * @return
+	 */
+	protected Set<OWLClassExpression> computeSuccessorSet(RepairType k, OWLObjectProperty r, OWLNamedIndividual u) {
 		Set<OWLClassExpression> set = new HashSet<>();
-		for(OWLClassExpression concept : inputType.getClassExpressions()) {
+		for(OWLClassExpression concept : k.getClassExpressions()) {
 			if(concept instanceof OWLObjectSomeValuesFrom &&
-				((OWLObjectSomeValuesFrom) concept).getProperty().equals(inputRole) && 
-				reasonerWithTBox.instanceOf(ind, ((OWLObjectSomeValuesFrom) concept).getFiller())) {
+				((OWLObjectSomeValuesFrom) concept).getProperty().equals(r) && 
+				reasonerWithTBox.instanceOf(u, ((OWLObjectSomeValuesFrom) concept).getFiller())) {
 					set.add(((OWLObjectSomeValuesFrom) concept).getFiller());
 			}
 		}
@@ -226,7 +242,26 @@ abstract public class RepairGenerator {
 		return set;
 	}
 	
-	
+	/**
+	 * Make a copy of an individual with repair type K
+	 * @param ind
+	 * @param k
+	 * @return
+	 */
+	protected OWLNamedIndividual createCopy(OWLNamedIndividual ind, RepairType k) {
+		individualCounter.put(ind, individualCounter.get(ind) + 1);
+		OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
+				 ind.getIRI().getFragment() + 
+				individualCounter.get(ind));
+		
+		seedFunction.put(freshIndividual, k);
+		copyToObject.put(freshIndividual, ind);
+		objectToCopies.get(ind).add(freshIndividual);
+		
+		setOfCollectedIndividuals.add(freshIndividual);
+		
+		return freshIndividual;
+	}
 	
 	
 	

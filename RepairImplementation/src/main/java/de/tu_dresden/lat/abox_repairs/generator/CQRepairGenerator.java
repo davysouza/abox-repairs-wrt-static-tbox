@@ -34,68 +34,21 @@ public class CQRepairGenerator extends RepairGenerator {
 	}
 	
 	
-/*	public void repair() throws OWLOntologyCreationException {
-
-		initialisation();
-		
-		long startTimeVariables = System.nanoTime();
-		
-		generatingVariables();
-		
-		double timeVariables = (double)(System.nanoTime() - startTimeVariables)/1_000_000_000;
-		
-		logger.info("Time for generating variables: " + timeVariables);
-		
-		logger.debug("\nAfter generating necessary variables");
-		for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
-			logger.debug("- " + ind);
-			if(seedFunction.get(ind)!= null) {
-				logger.debug(seedFunction.get(ind).getClassExpressions());
-				logger.debug("");
-			}
-			
-		}
-		
-		long startTimeMatrix = System.nanoTime();
-		
-		generatingMatrix();
-		
-		double timeMatrix = (double)(System.nanoTime() - startTimeMatrix)/1_000_000_000;
-		
-		logger.info("Time for generating Matrix: " + timeMatrix);
-		
-		logger.debug("\nAfter generating matrix");
-		newOntology.axioms().forEach(ax -> logger.debug(ax));
-	}*/
-	
 	protected void initialisation() {
 		// Variables Intitialisation
 		
 		anonymousDetector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.CQ);
 		
-		setOfCollectedIndividuals = setOfSaturationIndividuals.stream()
+		setOfCollectedIndividuals = setOfSaturatedIndividuals.stream()
 				.filter(ind -> anonymousDetector.isNamed(ind))
 				.collect(Collectors.toSet());
 		
-		for(OWLNamedIndividual individual : setOfSaturationIndividuals) {
+		for(OWLNamedIndividual individual : setOfSaturatedIndividuals) {
 			
-			if(seedFunction.get(individual) != null) {
+			if(anonymousDetector.isAnonymous(individual) || 
+				!seedFunction.get(individual).getClassExpressions().isEmpty()) {				
+				createCopy(individual,typeHandler.newMinimisedRepairType(new HashSet<>()));
 				individualCounter.put(individual, individualCounter.get(individual) + 1);
-				OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
-						individual.getIRI().getFragment() + (individualCounter.get(individual)));
-				
-				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
-				seedFunction.put(freshIndividual, type);
-				Set<OWLNamedIndividual> setOfCopies = objectToCopies.get(individual);
-				setOfCopies.add(freshIndividual);
-				objectToCopies.put(individual, setOfCopies);
-				copyToObject.put(freshIndividual, individual);
-				setOfCollectedIndividuals.add(freshIndividual);
-			}
-			
-			else {
-				RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
-				seedFunction.put(individual, type);
 			}
 			
 		}
@@ -117,10 +70,11 @@ public class CQRepairGenerator extends RepairGenerator {
 			OWLNamedIndividual ind1 = p.getLeft();
 			OWLNamedIndividual ind2 = p.getRight();
 			
-			OWLNamedIndividual originalInd1 = setOfSaturationIndividuals.contains(ind1)? ind1 : copyToObject.get(ind1);
-			OWLNamedIndividual originalInd2 = setOfSaturationIndividuals.contains(ind2)? ind2 : copyToObject.get(ind2);
+			OWLNamedIndividual originalInd1 = setOfSaturatedIndividuals.contains(ind1)? ind1 : copyToObject.get(ind1);
+			OWLNamedIndividual originalInd2 = setOfSaturatedIndividuals.contains(ind2)? ind2 : copyToObject.get(ind2);
 			
 			for(OWLObjectProperty role: ontology.getObjectPropertiesInSignature()) {
+				
 				OWLObjectPropertyAssertionAxiom roleAssertion = factory
 						.getOWLObjectPropertyAssertionAxiom(role, originalInd1, originalInd2);
 				
@@ -128,30 +82,27 @@ public class CQRepairGenerator extends RepairGenerator {
 					RepairType type1 = seedFunction.get(ind1);
 					RepairType type2 = seedFunction.get(ind2);
 					
-					if(type1 != null) {
-						Set<OWLClassExpression> successorSet = computeSuccessorSet(
-								type1,role, originalInd2);
+					Set<OWLClassExpression> successorSet = computeSuccessorSet(
+							type1,role, originalInd2);
+					
+					Set<OWLClassExpression> coveringSet = type2.getClassExpressions();
+					
+					if(!reasonerWithTBox.isCovered(successorSet, coveringSet)) {
+						Set<RepairType> setOfRepairTypes = 
+								typeHandler.findCoveringRepairTypes(type2, successorSet, originalInd2);
 						
-						Set<OWLClassExpression> coveringSet = type2 != null? 
-								type2.getClassExpressions() : new HashSet<>();
-						
-						if(!reasonerWithTBox.isCovered(successorSet, coveringSet)) {
-							Set<RepairType> setOfRepairTypes = 
-									typeHandler.findCoveringRepairTypes(type2, successorSet, originalInd2);
-							
-							for(RepairType newType : setOfRepairTypes) {
-								boolean individualAlreadyExists = false;
-								for(OWLNamedIndividual copy : objectToCopies.get(originalInd2)) {
-									if((seedFunction.get(copy) == null && newType.getClassExpressions().isEmpty()) ||
-										(seedFunction.get(copy) != null && seedFunction.get(copy).equals(newType))) {
-										individualAlreadyExists = true;
-										break;
-									}
-								}
-								if(!individualAlreadyExists) {
-									makeCopy(originalInd2, newType);
+						for(RepairType newType : setOfRepairTypes) {
+							if(!objectToCopies.get(originalInd2).stream().anyMatch(copy -> newType.equals(seedFunction.get(copy)))) {
+								OWLNamedIndividual copy = createCopy(originalInd2, newType);
+								
+								for(OWLNamedIndividual individual : setOfCollectedIndividuals) {
+									Pair<OWLNamedIndividual, OWLNamedIndividual> pair1 = Pair.of(individual, copy);
+									Pair<OWLNamedIndividual, OWLNamedIndividual> pair2 = Pair.of(copy, individual);
+									queueOfPairs.add(pair1);
+									queueOfPairs.add(pair2);
 								}
 							}
+							
 						}
 					}
 				}
@@ -159,28 +110,5 @@ public class CQRepairGenerator extends RepairGenerator {
 		}
 	}
 	
-	protected void makeCopy(OWLNamedIndividual ind, RepairType typ) {
-		individualCounter.put(ind, individualCounter.get(ind) + 1);
-		OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
-				 ind.getIRI().getFragment() + 
-				individualCounter.get(ind));
-		seedFunction.put(freshIndividual, typ);
-		copyToObject.put(freshIndividual, ind);
-		
-		Set<OWLNamedIndividual> setOfCopies = objectToCopies.get(ind);
-		setOfCopies.add(freshIndividual);
-		objectToCopies.put(ind, setOfCopies);
-		
-		for(OWLNamedIndividual individual : setOfCollectedIndividuals) {
-			Pair<OWLNamedIndividual, OWLNamedIndividual> pair1 = Pair.of(individual, freshIndividual);
-			Pair<OWLNamedIndividual, OWLNamedIndividual> pair2 = Pair.of(freshIndividual, individual);
-			Pair<OWLNamedIndividual, OWLNamedIndividual> pair3 = Pair.of(freshIndividual, freshIndividual);
-			queueOfPairs.add(pair1);
-			queueOfPairs.add(pair2);
-			queueOfPairs.add(pair3);
-		}
-
-		
-		setOfCollectedIndividuals.add(freshIndividual);
-	}
+	
 }

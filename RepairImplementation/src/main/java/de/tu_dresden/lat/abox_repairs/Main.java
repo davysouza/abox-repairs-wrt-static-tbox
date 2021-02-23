@@ -43,13 +43,13 @@ public class Main {
     private OWLOntology ontology;
 
     private Map<OWLNamedIndividual, RepairType> seedFunction;
-    private Map<OWLNamedIndividual, Set<OWLClassExpression>> repairRequest;
+    private RepairRequest repairRequest;
 
     private ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 
-    public static enum RepairVariant {IQ, CQ, CANONICAL_IQ, CANONICAL_CQ}
-
-    ;
+    public static enum RepairVariant {IQ, CQ, CANONICAL_IQ, CANONICAL_CQ};
+    
+    private RepairVariant variant;
 
     public static EnumSet<RepairVariant> IQ_ANY = EnumSet.of(RepairVariant.IQ, RepairVariant.CANONICAL_IQ);
     public static EnumSet<RepairVariant> CQ_ANY = EnumSet.of(RepairVariant.CQ, RepairVariant.CANONICAL_CQ);
@@ -74,39 +74,40 @@ public class Main {
                     OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(args[i]));
 
             logger.debug("after loading ontology: ");
-
+            
+            System.out.println(m.ontology.getNestedClassExpressions());
 
             File file = new File(args[i + 1]);
             RepairRequestParser rrParser = new RepairRequestParser(m.ontology);
-            RepairRequest repairRequest = rrParser.repairRequestScanning(file);
+            m.repairRequest = rrParser.repairRequestScanning(file);
 
 
-            RepairVariant variant;
+            
 
 
             switch (args[i + 2]) {
                 case "IQ":
-                    variant = RepairVariant.IQ;
+                    m.variant = RepairVariant.IQ;
                     break;
                 case "CQ":
-                    variant = RepairVariant.CQ;
+                    m.variant = RepairVariant.CQ;
                     break;
                 case "CANONICAL_IQ":
-                    variant = RepairVariant.CANONICAL_IQ;
+                    m.variant = RepairVariant.CANONICAL_IQ;
                     break;
                 case "CANONICAL_CQ":
-                    variant = RepairVariant.CANONICAL_CQ;
+                    m.variant = RepairVariant.CANONICAL_CQ;
                     break;
                 default:
                     System.out.println("Unknown repairVariant: " + args[i + 2]);
                     System.exit(1);
-                    variant = RepairVariant.CQ;
+                    m.variant = RepairVariant.CQ;
             }
 
             if (args[i + 3].equals("true"))
-                m.performRepair(m.ontology, repairRequest, variant, true);
+                m.performRepair(m.ontology, m.repairRequest, m.variant, true);
             else
-                m.performRepair(m.ontology, repairRequest, variant, false);
+                m.performRepair(m.ontology, m.repairRequest, m.variant, false);
 
             i += 4;
             if (i < args.length) System.out.println("\n" + "=================================================");
@@ -135,6 +136,7 @@ public class Main {
         //setOntology(module);
         setOntology(inputOntology);
         this.repairRequest = repairRequest;
+        this.variant = repairVariant;
 
         long startTime = System.nanoTime();
 
@@ -181,24 +183,27 @@ public class Main {
 
         reasonerWithTBox.update();
 
-        if (isCompliantWith(repairRequest)) {
+        if (isCompliant()) {
             System.out.println("\nThe ontology is compliant!");
         } else {
             System.out.println("\nThe ontology is not compliant!");
 
-//			if(repairAlternative.equals(RepairAlternative.Optimized)) {
-            seedFunctionConstruction(repairRequest);
+            
+            if(!CANONICAL_ANY.contains(repairVariant)) {
+            	seedFunctionConstruction();
 
-            Set<OWLNamedIndividual> setIndividuals = seedFunction.keySet();
-            Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
-            logger.debug("\nSeed Function");
-            while (iteSetIndividuals.hasNext()) {
-                OWLNamedIndividual oni = iteSetIndividuals.next();
-                logger.debug("- " + oni);
-                RepairType type = seedFunction.get(oni);
-                logger.debug(type.getClassExpressions());
-                logger.debug("");
+                Set<OWLNamedIndividual> setIndividuals = seedFunction.keySet();
+                Iterator<OWLNamedIndividual> iteSetIndividuals = setIndividuals.iterator();
+                logger.debug("\nSeed Function");
+                while (iteSetIndividuals.hasNext()) {
+                    OWLNamedIndividual oni = iteSetIndividuals.next();
+                    logger.debug("- " + oni);
+                    RepairType type = seedFunction.get(oni);
+                    logger.debug(type.getClassExpressions());
+                    logger.debug("");
+                }
             }
+            
 
             if (repairVariant.equals(RepairVariant.IQ)) {
                 IQRepair();
@@ -209,11 +214,7 @@ public class Main {
                 assert CANONICAL_ANY.contains(repairVariant);
                 CanonicalRepair();
             }
-//			}
-//			else {
-//				seedFunction = new HashMap<>();
-//				CanonicalRepair();
-//			}
+
 
             cleanOntology(); // <-- this should not be done if the reasoner facades is still used!
 
@@ -244,7 +245,7 @@ public class Main {
             System.out.println(" Duration (sat/repair sec.): " + saturator.getDuration() + "/" + timeRepairing);
             initReasonerFacade();
 
-            if (isCompliantWith(repairRequest)) {
+            if (isCompliant()) {
                 System.out.println("The ontology is now compliant");
             } else {
                 System.out.println("The ontology is still not compliant");
@@ -309,23 +310,22 @@ public class Main {
         saturator.saturate(ontology);
     }
 
-    private void seedFunctionConstruction(RepairRequest inputRepairRequest) {
+    private void seedFunctionConstruction() {
         long time = System.nanoTime();
-
-        SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(reasonerWithTBox, reasonerWithoutTBox);
-
-        seedFunctionHandler.constructSeedFunction(inputRepairRequest);
-        seedFunction = seedFunctionHandler.getSeedFunction();
+        
+        SeedFunctionHandler seedFunctionHandler = new SeedFunctionHandler(ontology, repairRequest, variant,
+        		reasonerWithTBox, reasonerWithoutTBox);
+        seedFunction = seedFunctionHandler.computeRandomSeedFunction();
 
         logger.info("Seed function construction took: " + (((double) System.nanoTime() - time) / 1_000_000_000));
     }
 
-    private boolean isCompliantWith(RepairRequest inputRepairRequest) {
+    private boolean isCompliant() {
         boolean compliant = true;
 
-        for (OWLNamedIndividual individual : inputRepairRequest.keySet()) {
+        for (OWLNamedIndividual individual : repairRequest.keySet()) {
 
-            for (OWLClassExpression concept : inputRepairRequest.get(individual)) {
+            for (OWLClassExpression concept : repairRequest.get(individual)) {
                 if (reasonerWithTBox.instanceOf(individual, concept)) {
                     System.out.println("Not Compliant! " + individual + " " + concept);
                     return false;
