@@ -73,6 +73,11 @@ public class RepairTypeHandler {
 
     public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
 
+        /* You should replace the condition reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) &&
+		             			reasonerWithTBox.instanceOf(ind, subsumee)
+           by
+            !reasonerWithTBox.instanceOf(ind, subsumee) || reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType)
+           to match Condition 3 of the definition. */
     	return repairPreType.stream().allMatch(atom -> reasonerWithTBox.equivalentOrSubsumedBy(atom)
 				.stream().allMatch(subsumee -> 
 								reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) && 
@@ -146,13 +151,15 @@ public class RepairTypeHandler {
 
         Set<RepairType> resultingSet = new HashSet<>();
 
-
+        /* The below three lines are a bit confusing at first sight. */
         while (setOfCandidates.iterator().hasNext()) {
             Set<OWLClassExpression> candidate = setOfCandidates.iterator().next();
             setOfCandidates.remove(candidate);
 
             boolean isSaturated = true;
-           
+
+            /* Why don't you process several atoms in one go?  Essentially, you always enlarge 'candidate' by exactly one
+            * atom.   */
             for (OWLClassExpression atom : candidate) {
 
                 for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(atom)) {
@@ -161,6 +168,8 @@ public class RepairTypeHandler {
 
                         isSaturated = false;
 
+                        /* The below variable should rather be named 'topLevelConjuncts' as it can contain several top
+                        * level conjuncts. */
                         Set<OWLClassExpression> topLevelConjunct = subsumee.asConjunctSet();
 
                         for (OWLClassExpression conjunct : topLevelConjunct) {
@@ -176,6 +185,7 @@ public class RepairTypeHandler {
             }
             if (isSaturated) {
                 RepairType newType = newMinimisedRepairType(candidate);
+                /* The test is superfluous. */
                 if (!resultingSet.contains(newType)) resultingSet.add(newType);
             }
 
@@ -240,11 +250,22 @@ public class RepairTypeHandler {
         Set<Set<OWLClassExpression>> queueSet = new HashSet<>();
         queueSet.add(type);
 
+        /* If 'successorSet' contains a concept that is equivalent to owl:thing w.r.t. the TBox, then there does not
+        * exist any repair type that covers the union of 'type' and 'successorSet', i.e., this method should then return
+        * the empty set, which it actually does not.*/
+        /* You do not need to collect all elements in a set over which you then iterate.  You could do the same in a
+        * cheaper way by replacing the for loop by
+        * successorSet.stream()
+        *       .filter(concept -> !reasonerWithTBox.equivalentToOWLThing(concept))
+        *       .forEach(exp -> { <code in the body of the for loop> });
+        * A similar comment applies to the for loop over 'setOfAtoms' below.*/
         for (OWLClassExpression exp : successorSet.stream()
         								.filter(concept -> !reasonerWithTBox.equivalentToOWLThing(concept))
         								.collect(Collectors.toSet())) {
         	
         	Set<Set<OWLClassExpression>> newSet = new HashSet<>();
+        	/* Could it happen that you encounter an instance of OWLClassExpression that consists of several nested
+        	* instances of OWLObjectIntersectionOf but that is an atom after flattening?*/
     		Set<OWLClassExpression> setOfAtoms = reasonerWithoutTBox.equivalentOrSubsuming(exp).stream()
     								.filter(atom -> !(atom instanceof OWLObjectIntersectionOf &&  
     												!reasonerWithTBox.equivalentToOWLThing(atom)))
@@ -258,6 +279,7 @@ public class RepairTypeHandler {
     				newSet.add(unionSet);
     			}
     		}
+    		/* You get the same result but in a cheaper way with the instruction queueSet.clear(); */
             queueSet.removeAll(queueSet);
             queueSet.addAll(newSet);
         }
