@@ -12,6 +12,9 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * TODO work in progress
+ */
 public class RepairTypeGeneratorF {
 
     private static final Logger logger = LogManager.getLogger(RepairTypeGeneratorF.class);

@@ -30,7 +30,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 	
 
 	@Override
-	protected void generatingVariables() {
+	protected void generateVariables() {
 		// TODO Auto-generated method stub
 		
 		for(OWLNamedIndividual individual : ontology.getIndividualsInSignature()) {
@@ -62,7 +62,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 
 
 	@Override
-	protected void initialisation() {
+	protected void initialise() {
 		// TODO Auto-generated method stub
 		
 	}

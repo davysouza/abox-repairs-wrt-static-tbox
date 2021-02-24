@@ -235,8 +235,10 @@ public class Main {
             } else {
                 System.out.print("#Individuals (orig/sat/repair): "
                         + oldIndividuals + "/"
-                        + (oldIndividuals + saturator.addedIndividuals()) + "/" +
+                        + (oldIndividuals + saturator.addedIndividuals()) + "/"+
+                        repairGenerator.getNumberOfCollectedIndividuals() + "/"+
                         ontology.getIndividualsInSignature().size());
+                ;
                 System.out.print(" #Assertions (orig/sat/repair): "
                         + oldAssertions + "/"
                         + (oldAssertions + saturator.addedAssertions()) + "/" +
