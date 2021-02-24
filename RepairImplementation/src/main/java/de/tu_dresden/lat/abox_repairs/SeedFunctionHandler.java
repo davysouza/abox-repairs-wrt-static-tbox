@@ -14,10 +14,12 @@ import java.util.stream.Collectors;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
+import org.semanticweb.owlapi.model.OWLOntology;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
+import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 
 
 public class SeedFunctionHandler {
@@ -25,14 +27,30 @@ public class SeedFunctionHandler {
 	
 	private Map<OWLNamedIndividual, RepairType> seedFunction;
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> hittingSetFunction;
+	private RepairRequest repairRequest;
+	private OWLOntology ontology;
+	private RepairTypeHandler typeHandler;
+	private AnonymousVariableDetector detector;
 	private final ReasonerFacade reasonerWithTBox;
 	private final ReasonerFacade reasonerWithoutTBox;
+
 	
-	private Random rand;
 	
-	public SeedFunctionHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
+	public SeedFunctionHandler(OWLOntology inputOntology, RepairRequest repairRequest, Main.RepairVariant variant,
+			ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
+		
+		this.ontology = inputOntology;
+		this.repairRequest = repairRequest;
+
+		/* Please replace the ankward four lines by just one instruction:
+		*  detector = AnonymousVariableDetector.newInstance(true, variant); */
+		if(variant.equals(Main.RepairVariant.IQ))
+			detector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.IQ);
+		else 
+			detector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.CQ);
 		this.reasonerWithTBox = reasonerWithTBox;
 		this.reasonerWithoutTBox = reasonerWithoutTBox;
+		this.typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
 	}
 	
 	
@@ -44,22 +62,31 @@ public class SeedFunctionHandler {
 	 * 
 	 */
 	
-	public void constructSeedFunction(RepairRequest repairRequest) {
+	public Map<OWLNamedIndividual, RepairType> computeRandomSeedFunction() {
 		
-		rand = new Random();
-		
-		constructHittingSet(repairRequest);
+		computeRandomHittingSet();
 		
 		seedFunction = new HashMap<>();
-		Set<OWLNamedIndividual> setOfIndividuals = hittingSetFunction.keySet();
-		RepairTypeHandler typeHandler = new RepairTypeHandler(reasonerWithTBox, reasonerWithoutTBox);
+		Set<OWLNamedIndividual> setOfMappedIndividuals = hittingSetFunction.keySet();
 		
-		for(OWLNamedIndividual individual : setOfIndividuals) {
+		
+		for(OWLNamedIndividual individual : setOfMappedIndividuals) {
 			
-			RepairType type = typeHandler.convertToRandomRepairType(hittingSetFunction.get(individual), individual, rand);
+			RepairType type = typeHandler.convertToRandomRepairType(hittingSetFunction.get(individual), individual);
 			seedFunction.put(individual, type);
 		}
 		
+		Set<OWLNamedIndividual> setOfRemainingIndividuals = ontology.getIndividualsInSignature().stream()
+															.filter(ind -> !setOfMappedIndividuals.contains(ind) &&
+																			detector.isNamed(ind))
+															.collect(Collectors.toSet());
+		
+		for(OWLNamedIndividual individual : setOfRemainingIndividuals) {
+			RepairType type = typeHandler.newMinimisedRepairType(new HashSet<>());
+			seedFunction.put(individual, type);
+		}
+		
+		return seedFunction;
 	}
 	
 	/**
@@ -70,64 +97,31 @@ public class SeedFunctionHandler {
 	 * 
 	 * @param repairRequest a repair request
 	 */
-	private void constructHittingSet(RepairRequest repairRequest) {
+	private void computeRandomHittingSet() {
 		hittingSetFunction = new HashMap<>();
-
-		Set<OWLNamedIndividual> setOfIndividuals = repairRequest.keySet();
-		for(OWLNamedIndividual individual : setOfIndividuals) {
-			Set<OWLClassExpression> setOfConcepts = repairRequest.get(individual);
+		
+		for(OWLNamedIndividual individual : repairRequest.individuals()) {
 			
-			//System.out.println("Repair Request " + individual + " " + setOfConcepts);
-			for(OWLClassExpression concept : setOfConcepts) {
-
+			for(OWLClassExpression concept : repairRequest.get(individual)) {
+				
 				if(reasonerWithTBox.instanceOf(individual, concept) ) {
-
+					
 					if(concept instanceof OWLObjectIntersectionOf) {
-						/**
-						 * If the repair request contains a conjunction, we do not have to repair all conjuncts, but
-						 * just one.
-						 */
-						Set<OWLClassExpression> topLevelConjuncts = concept.asConjunctSet();
-						List<OWLClassExpression> topLevelConjunctList = 
-								topLevelConjuncts.stream()
-										.filter(con -> !reasonerWithTBox.equivalentToOWLThing(con))
-										.collect(Collectors.toList());
+						OWLClassExpression atom = concept.asConjunctSet().stream()
+								.filter(con -> !reasonerWithTBox.equivalentToOWLThing(con))
+								.findAny().orElseThrow(() -> new IllegalArgumentException("Invalid Repair Request"));
+								
+						concept = atom;
 						
-						if(hittingSetFunction.containsKey(individual)) {
-							
-							int randomIndex = rand.nextInt(topLevelConjunctList.size());
-							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
-							hittingSetFunction.get(individual).add(conceptTemp);
-						}
-						else {
-//							List<OWLClassExpression> topLevelConjunctList = new ArrayList<OWLClassExpression>(concept.asConjunctSet());
-							int randomIndex = rand.nextInt(topLevelConjunctList.size());
-							OWLClassExpression conceptTemp = topLevelConjunctList.get(randomIndex);
-							Set<OWLClassExpression> initHittingSet = new HashSet<OWLClassExpression>();
-							initHittingSet.add(conceptTemp);
-							hittingSetFunction.put(individual, initHittingSet);
-						}
-
 					}
-					else { // concept is not a conjunction
-						if(!hittingSetFunction.containsKey(individual))
-							hittingSetFunction.put(individual, new HashSet<>());
+					if(!hittingSetFunction.containsKey(individual))
+						hittingSetFunction.put(individual, new HashSet<>());
 
-						hittingSetFunction.get(individual).add(concept);
-					}
+					hittingSetFunction.get(individual).add(concept);
+					
 				}
 			}
-		}
-		
-	}
-	
-	/**
-	 * 
-	 * @return the computed seed function
-	 */
-	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
-		return seedFunction;
-	}
-	
-	
+			
+		}		
+	}	
 }

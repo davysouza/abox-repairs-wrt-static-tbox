@@ -10,6 +10,10 @@ import java.util.function.BiPredicate;
 
 public class UtilF {
 
+    private UtilF(){
+        // utilities class
+    }
+
     public static boolean isAtom(OWLClassExpression owlClassExpression) {
         return !owlClassExpression.isOWLThing() && owlClassExpression.asConjunctSet().size() == 1;
     }
