@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
-
+import org.semanticweb.owlapi.model.OWLOntology;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 
@@ -25,9 +25,12 @@ public class RepairTypeHandler {
 
     private final ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 
+    
     public RepairTypeHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
-        this.reasonerWithTBox = reasonerWithTBox;
+//    	this.ontology = inputOntology;
+    	this.reasonerWithTBox = reasonerWithTBox;
         this.reasonerWithoutTBox = reasonerWithoutTBox;
+//        this.setOfSubconcepts = ontology.getNestedClassExpressions();
     }
 
     public RepairType newMinimisedRepairType(Set<OWLClassExpression> classExpressions) {
@@ -65,6 +68,8 @@ public class RepairTypeHandler {
     }
 
     /**
+     * A repair pre-type for an individual u only satisfies Properties 1.) and 2.) of Definition 5 in the paper
+     * 
      * Check whether the given repair pre-type is already premise-saturated
      *
      * @param repairPreType a repair pre-type
@@ -77,11 +82,32 @@ public class RepairTypeHandler {
 		             			reasonerWithTBox.instanceOf(ind, subsumee)
            by
             !reasonerWithTBox.instanceOf(ind, subsumee) || reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType)
-           to match Condition 3 of the definition. */
+           to match Condition 3 of the definition.
+
+           That comment applies to the version before your last two commits, which is:
+           
+    public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
+
     	return repairPreType.stream().allMatch(atom -> reasonerWithTBox.equivalentOrSubsumedBy(atom)
-				.stream().allMatch(subsumee -> 
-								reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) && 
+				.stream().allMatch(subsumee ->
+								reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) &&
 		             			reasonerWithTBox.instanceOf(ind, subsumee) ) );
+
+    }
+*/
+    	
+//    	Set<OWLClassExpression> setOfFilteredSubconcepts =  
+//    			setOfSubconcepts.stream().filter(subconcept -> reasonerWithTBox.instanceOf(ind, subconcept) && 
+//    														   reasonerWithTBox.subsumedByAny(subconcept, repairPreType))
+//    									.collect(Collectors.toSet());
+//    	
+//    	return repairPreType.stream().allMatch(atom -> !reasonerWithTBox.equivalentToOWLThing(atom)) &&
+//    			reasonerWithoutTBox.isCovered(setOfFilteredSubconcepts, repairPreType);
+
+    	return repairPreType.stream().allMatch(atom -> reasonerWithTBox.equivalentOrSubsumedBy(atom)
+							.stream().allMatch(subsumee -> !reasonerWithTBox.equivalentToOWLThing(atom) &&
+															reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) && 
+															reasonerWithTBox.instanceOf(ind, subsumee)));
     	
     }
 
@@ -207,34 +233,6 @@ public class RepairTypeHandler {
         
     }
 
-
-//	/**
-//	 * Find covering pretypes. There is one such for each (non-TBox) subsumee atom of exp, which is then added to the type.
-//     *
-//	 * @param type	a repair type
-//	 * @param exp 	a class expression
-//	 * 
-//	 * @return the set that contains minimal repair pre-types that cover the union of
-//	 *         the given repair type and the class expression
-//	 */
-//    private Set<Set<OWLClassExpression>> findCoveringPreTypes(Set<OWLClassExpression> type, OWLClassExpression exp) {
-//    	
-//    	if(reasonerWithTBox.equivalentToOWLThing(exp)) {
-//    		return Collections.emptySet();
-//    	}
-//    	
-//        Set<Set<OWLClassExpression>> result = new HashSet<>();
-//
-//        for (OWLClassExpression subsumer : reasonerWithoutTBox.equivalentOrSubsuming(exp)) {
-//            if (!(subsumer instanceof OWLObjectIntersectionOf)) {
-//                Set<OWLClassExpression> newType = new HashSet<>(type);
-//                newType.add(subsumer);
-//                result.add(newType);
-//            }
-//        }
-//
-//        return result;
-//    }
 
     /**
      * compute pre-types for the union of two sets.

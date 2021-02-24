@@ -36,10 +36,10 @@ public class SeedFunctionHandler {
 
 	
 	
-	public SeedFunctionHandler(OWLOntology ontology, RepairRequest repairRequest, Main.RepairVariant variant,
+	public SeedFunctionHandler(OWLOntology inputOntology, RepairRequest repairRequest, Main.RepairVariant variant,
 			ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
 		
-		this.ontology = ontology;
+		this.ontology = inputOntology;
 		this.repairRequest = repairRequest;
 		
 		if(variant.equals(Main.RepairVariant.IQ))
@@ -121,15 +121,5 @@ public class SeedFunctionHandler {
 			}
 			
 		}		
-	}
-	
-//	/**
-//	 * 
-//	 * @return the computed seed function
-//	 */
-//	public Map<OWLNamedIndividual, RepairType> getSeedFunction(){
-//		return seedFunction;
-//	}
-	
-	
+	}	
 }
