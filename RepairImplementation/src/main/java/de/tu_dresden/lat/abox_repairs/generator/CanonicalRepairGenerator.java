@@ -51,6 +51,9 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 	}
 
 	private boolean atomForRepairType(OWLClassExpression exp){
+		/* As you want to test whether 'exp' is an atom, you must replace the condition
+		*  !reasonerWithTBox.equivalentToOWLThing(exp)
+		*  with !reasonerWithoutTBox.equivalentToOWLThing(exp) */
 		return (exp instanceof OWLClass || exp instanceof OWLObjectSomeValuesFrom)
 				&& !reasonerWithTBox.equivalentToOWLThing(exp);
 	}
