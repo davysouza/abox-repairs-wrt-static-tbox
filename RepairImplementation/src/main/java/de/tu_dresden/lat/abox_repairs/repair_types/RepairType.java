@@ -14,6 +14,11 @@ import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
  * @author Patrick Koopmann
  */
 public class RepairType {
+
+    public static final RepairType empty() {
+        return new RepairType(Collections.emptySet());
+    }
+
     private final Set<OWLClassExpression> toRepair;
 
     // package visibility since it should only be used by the RepairTypeHandler
@@ -23,6 +28,10 @@ public class RepairType {
 
     public Set<OWLClassExpression> getClassExpressions(){
         return Collections.unmodifiableSet(toRepair);
+    }
+
+    public final boolean isEmpty() {
+        return toRepair.isEmpty();
     }
 
     @Override

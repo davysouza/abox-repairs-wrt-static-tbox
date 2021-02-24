@@ -59,7 +59,7 @@ abstract public class RepairGenerator {
 
     protected RepairTypeHandler typeHandler;
 
-    protected OWLOntology newOntology;
+    protected OWLOntology repair;
 
     protected AnonymousVariableDetector anonymousDetector;
 
@@ -78,7 +78,7 @@ abstract public class RepairGenerator {
 
         this.ontology = inputOntology;
         this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        this.objectToRepairType = inputSeedFunction;
+        this.objectToRepairType = new HashMap<>(inputSeedFunction);
 
         this.objectToTypesWithCopies = HashMultimap.create();
         for(Map.Entry<OWLNamedIndividual, RepairType> seedFunctionEntry : inputSeedFunction.entrySet()){
@@ -130,7 +130,7 @@ abstract public class RepairGenerator {
         double timeVariables = (double) (System.nanoTime() - startTimeVariables) / 1_000_000_000;
 
         logger.info("Time for generating variables: " + timeVariables);
-        logger.info("Variables introduced: " + setOfCollectedIndividuals.size());
+        logger.info("Variables introduced: " + getNumberOfCollectedIndividuals());
 
         logger.debug("\nAfter generating necessary variables");
 		/*for(OWLNamedIndividual ind : setOfCollectedIndividuals) {
@@ -151,7 +151,7 @@ abstract public class RepairGenerator {
         logger.info("Time for generating Matrix: " + timeMatrix);
 
         logger.debug("\nAfter generating matrix");
-        newOntology.axioms().forEach(ax -> logger.debug(ax));
+        repair.axioms().forEach(ax -> logger.debug(ax));
     }
 
     /**
@@ -159,15 +159,15 @@ abstract public class RepairGenerator {
      *
      * @throws OWLOntologyCreationException
      */
-    private void generateMatrix() throws OWLOntologyCreationException {
+    protected void generateMatrix() throws OWLOntologyCreationException {
 
         reasonerWithTBox.cleanOntology(); // TODO: bad code design
 
         OWLOntologyManager man = OWLManager.createOWLOntologyManager();
 
-        newOntology = man.createOntology();
+        repair = man.createOntology();
 
-        newOntology.add(ontology.getTBoxAxioms(Imports.INCLUDED));
+        repair.add(ontology.getTBoxAxioms(Imports.INCLUDED));
 
         for (OWLAxiom ax : ontology.getABoxAxioms(Imports.INCLUDED)) {
 
@@ -183,7 +183,7 @@ abstract public class RepairGenerator {
                             .contains(classAssertion.getClassExpression())) {
                         OWLClassAssertionAxiom newAxiom = factory
                                 .getOWLClassAssertionAxiom(classAssertion.getClassExpression(), copyInd);
-                        newOntology.add(newAxiom);
+                        repair.add(newAxiom);
                         logger.debug("New Class Assertion " + newAxiom);
                     }
                 }
@@ -203,7 +203,7 @@ abstract public class RepairGenerator {
                             if (reasonerWithoutTBox.isCovered(successorSet, type2.getClassExpressions())) {
                                 OWLObjectPropertyAssertionAxiom newAxiom = factory
                                         .getOWLObjectPropertyAssertionAxiom(role, copySubject, copyObject);
-                                newOntology.add(newAxiom);
+                                repair.add(newAxiom);
 
                                 logger.debug("New Role Assertion " + newAxiom);
                             }
@@ -265,7 +265,7 @@ abstract public class RepairGenerator {
 
     public OWLOntology getRepair() {
 
-        return newOntology;
+        return repair;
     }
 
     public int getNumberOfCollectedIndividuals() {

@@ -107,9 +107,9 @@ public class RunExperiment1 {
                 OWLManager.createOWLOntologyManager()
                         .loadOntologyFromOntologyDocument(new File(ontologyFileName));
 
-        RepairRequest repairRequest = generateRepairRequest(ontology, proportionIndividuals, proportionClassNames);
-
         anonymousVariableDetector=AnonymousVariableDetector.newInstance(!saturationRequired,repairVariant);
+
+        RepairRequest repairRequest = generateRepairRequest(ontology, proportionIndividuals, proportionClassNames);
 
         Main main = new Main(random);
         main.performRepair(ontology, repairRequest, repairVariant, saturationRequired);
