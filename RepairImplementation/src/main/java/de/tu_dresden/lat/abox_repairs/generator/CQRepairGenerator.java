@@ -42,7 +42,9 @@ public class CQRepairGenerator extends RepairGenerator {
 		setOfCollectedIndividuals = setOfSaturatedIndividuals.stream()
 				.filter(ind -> anonymousDetector.isNamed(ind))
 				.collect(Collectors.toSet());
-		
+
+		/* It is a bit misleading to call the variable 'individual', as one could confuse it with what we call an
+		*  "individual name" in the paper.  I would rather call it 'objectName'. */
 		for(OWLNamedIndividual individual : setOfSaturatedIndividuals) {
 			
 			if(anonymousDetector.isAnonymous(individual) || 
@@ -53,7 +55,9 @@ public class CQRepairGenerator extends RepairGenerator {
 			
 		}
 	}
-	
+
+	/* The below code is a bit difficult to understand, but I believe that the current version now does the job
+	 *  correctly. */
 	protected void generatingVariables() {
 		queueOfPairs = 
 				new PriorityQueue<Pair<OWLNamedIndividual, OWLNamedIndividual>>();
@@ -94,7 +98,8 @@ public class CQRepairGenerator extends RepairGenerator {
 						for(RepairType newType : setOfRepairTypes) {
 							if(!objectToCopies.get(originalInd2).stream().anyMatch(copy -> newType.equals(seedFunction.get(copy)))) {
 								OWLNamedIndividual copy = createCopy(originalInd2, newType);
-								
+								/* The below lines will add the pair 'Pair.of(copy, copy)' twice and so it will be
+								*  processed twice. */
 								for(OWLNamedIndividual individual : setOfCollectedIndividuals) {
 									Pair<OWLNamedIndividual, OWLNamedIndividual> pair1 = Pair.of(individual, copy);
 									Pair<OWLNamedIndividual, OWLNamedIndividual> pair2 = Pair.of(copy, individual);

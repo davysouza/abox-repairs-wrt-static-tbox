@@ -164,6 +164,12 @@ public class RepairTypeHandler {
      * @return the set that contains all minimal repair types that cover the union of
      * the repair type and the set Succ(K,r,u).
      */
+    /* If I see it correctly, then this method returns the set of all minimal repair types for 'ind' that cover both
+    *  'repairType' and 'successorSet'.  Why not call it 'getMinimalRepairTypes' or 'getMinimalRepairTypesCovering'
+    *  then? */
+    /* If 'successorSet' contains a concept equivalent to owl:thing with respect to the TBox, then this method must
+    *  return the empty set, as then there does not exist any repair types for 'ind' that cover both 'repairType' and
+    *  'successorSet' whatsoever.  See also my comment to the below method 'findCoveringPreTypes'. */
     public Set<RepairType> findCoveringRepairTypes(RepairType repairType, 
     		Set<OWLClassExpression> successorSet, OWLNamedIndividual ind) {
 
@@ -188,6 +194,11 @@ public class RepairTypeHandler {
             * atom.   */
             for (OWLClassExpression atom : candidate) {
 
+                /* It can happen that, in some branch of computation, the current 'candidate' contains an atom being
+                *  equivalent to owl:Thing w.r.t. the TBox.  Then, the 'candidate' cannot be saturated to a repair type!
+                *  However, due to the unusual implementation of the reasoner facade, these cases cannot be detected
+                *  here.  As a quick and dirty fix, you must always explicitly test whether 'candidate' contains an atom
+                *  that is equivalent to owl:Thing w.r.t. the TBox. */
                 for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(atom)) {
                     if (! reasonerWithoutTBox.subsumedByAny(subsumee, candidate) && 
                     		reasonerWithTBox.instanceOf(ind, subsumee)) {

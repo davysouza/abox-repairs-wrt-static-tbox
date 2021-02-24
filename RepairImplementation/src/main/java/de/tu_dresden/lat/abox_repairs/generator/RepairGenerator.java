@@ -42,7 +42,9 @@ abstract public class RepairGenerator {
 	protected Map<OWLNamedIndividual, Integer> individualCounter;
 	protected Map<OWLNamedIndividual, OWLNamedIndividual> copyToObject;
 	protected Map<OWLNamedIndividual, Set<OWLNamedIndividual>> objectToCopies;
-	
+
+	/* I find the name strange, as it indicates that this is a set of saturated individuals.  Instead, it consists of
+	*  all object names in the saturation.  I would thus rather call it 'setOfObjectNamesInTheSaturation'. */
 	// the set of all individuals contained in the saturation
 	protected Set<OWLNamedIndividual> setOfSaturatedIndividuals;
 	
@@ -259,7 +261,9 @@ abstract public class RepairGenerator {
 		OWLNamedIndividual freshIndividual = factory.getOWLNamedIndividual(
 				 ind.getIRI().getFragment() + 
 				individualCounter.get(ind));
-		
+
+		/* With the paper in mind, it is misleading to call the below map 'seedFunction'.  A more suitable name would be
+		*  'repairTypes' or 'repairTypeMapping' or similar. */
 		seedFunction.put(freshIndividual, k);
 		copyToObject.put(freshIndividual, ind);
 		objectToCopies.get(ind).add(freshIndividual);

@@ -46,7 +46,9 @@ public class IQRepairGenerator extends RepairGenerator {
 		
 		 
 	}
-	
+
+	/* The below code is a bit difficult to understand, but I believe that the current version now does the job
+	*  correctly. */
 	protected void generatingVariables() {
 		
 		
