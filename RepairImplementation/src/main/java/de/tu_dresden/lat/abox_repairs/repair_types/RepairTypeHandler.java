@@ -95,6 +95,25 @@ public class RepairTypeHandler {
 
     }
 */
+
+        /* Please do not introduce new bugs, Adrian.  Before your commit "fixed the method isPremiseSaturated" four days
+        *  ago, the method was as follows and returned correct results.  Please code carefully!
+        *
+        * public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
+
+        for (OWLClassExpression atom : repairPreType) {
+            Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
+            for (OWLClassExpression subsumee : setOfSubsumees) {
+                if (!reasonerWithTBox.subsumedByAny(subsumee, repairPreType) &&
+                		reasonerWithTBox.instanceOf(ind, subsumee)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+*/
     	
 //    	Set<OWLClassExpression> setOfFilteredSubconcepts =  
 //    			setOfSubconcepts.stream().filter(subconcept -> reasonerWithTBox.instanceOf(ind, subconcept) && 
