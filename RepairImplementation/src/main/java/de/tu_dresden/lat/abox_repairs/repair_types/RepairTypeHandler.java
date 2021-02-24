@@ -85,7 +85,7 @@ public class RepairTypeHandler {
            to match Condition 3 of the definition.
 
            That comment applies to the version before your last two commits, which is:
-           
+
     public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
 
     	return repairPreType.stream().allMatch(atom -> reasonerWithTBox.equivalentOrSubsumedBy(atom)

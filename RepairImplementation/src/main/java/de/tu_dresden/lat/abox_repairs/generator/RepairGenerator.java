@@ -58,9 +58,13 @@ abstract public class RepairGenerator {
 	protected OWLOntology newOntology;
 	
 	protected AnonymousVariableDetector anonymousDetector;
-	
+
+	/* Methods usually have action verbs or action phrases as names, cf.
+	 *  https://docs.oracle.com/javase/tutorial/java/javaOO/methods.html */
 	protected abstract void generatingVariables();
-	
+
+	/* Methods usually have action verbs or action phrases as names, cf.
+	 *  https://docs.oracle.com/javase/tutorial/java/javaOO/methods.html */
 	protected abstract void initialisation();
 	
 	
@@ -143,7 +147,9 @@ abstract public class RepairGenerator {
 	 * Generating the matrix of the repair
 	 * @throws OWLOntologyCreationException
 	 */
-	
+
+	/* Methods usually have action verbs or action phrases as names, cf.
+	*  https://docs.oracle.com/javase/tutorial/java/javaOO/methods.html */
 	protected void generatingMatrix() throws OWLOntologyCreationException {
 		
 		reasonerWithTBox.cleanOntology();

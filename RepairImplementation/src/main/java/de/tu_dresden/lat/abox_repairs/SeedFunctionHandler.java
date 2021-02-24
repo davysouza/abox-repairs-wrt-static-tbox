@@ -41,7 +41,9 @@ public class SeedFunctionHandler {
 		
 		this.ontology = inputOntology;
 		this.repairRequest = repairRequest;
-		
+
+		/* Please replace the ankward four lines by just one instruction:
+		*  detector = AnonymousVariableDetector.newInstance(true, variant); */
 		if(variant.equals(Main.RepairVariant.IQ))
 			detector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.IQ);
 		else 

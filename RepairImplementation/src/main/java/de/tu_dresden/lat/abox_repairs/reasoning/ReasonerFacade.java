@@ -30,6 +30,10 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
  * 
  * @author Patrick Koopmann
  */
+/* I really like the idea behind the reasoner facade!  However, the provided methods should do what their name
+*  indicates.  Thus, I suggest to remove the filtering of owl:Thing and owl:Nothing from the results.  Otherwise
+*  a user could easily get confused due to expected but missing results.  The filtering should only be done when
+*  there is a real need, e.g., in code calling methods from this class where these concepts are not interesting.*/
 public class ReasonerFacade {
 
     private static Logger logger = LogManager.getLogger(ReasonerFacade.class);
