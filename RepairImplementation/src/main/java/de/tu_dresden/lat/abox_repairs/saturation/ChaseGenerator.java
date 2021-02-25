@@ -4,10 +4,12 @@ package de.tu_dresden.lat.abox_repairs.saturation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
+import de.tu_dresden.lat.abox_repairs.ontology_tools.FreshNameProducer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.IRI;
@@ -86,10 +88,10 @@ public class ChaseGenerator implements ABoxSaturator {
 			reasoner.getInferences().forEach(fact -> {
 			//	System.out.println("Fact: "+fact);
 			//	System.out.println("Abox: "+fact2Axiom(fact));
-				OWLAxiom axiom = fact2Axiom(fact);
-				if(!ontology.containsAxiom(axiom)){
+				Optional<OWLAxiom> axiom = fact2Axiom(fact);
+				if(axiom.isPresent() && !ontology.containsAxiom(axiom.get())){
 					//System.out.println("Newly derived: "+axiom);
-					ontology.add(axiom);
+					ontology.add(axiom.get());
 					addedAssertions++;
 				}
 			});
@@ -119,21 +121,32 @@ public class ChaseGenerator implements ABoxSaturator {
 		return duration;
 	}
 
-	private OWLAxiom fact2Axiom(Fact fact) {
+	/* We should rather use an instance of OWLAnonymousIndividual if arguments.get(0).isVariable() is true, and use an
+	*  instance of OWLNamedIndividual only in the remaining cases.
+	*  A benefit is that then there is a clear distinction between named individuals (individual names in the paper)
+	*  and anonymous individuals (variables in the paper), i.e., the class AnonymousVariableDetector is then not
+	*  required anymore.
+	*  To make these instances of OWLAnonymousIndividual accessible, the reasoner facade can add fresh instances of
+	*  OWLNamedIndividual plus a corresponding instance of OWLSameIndividualAxiom---just like it was done to make the
+	*  complex, anonymous instances of OWLClassExpression accessible. */
+	private Optional<OWLAxiom> fact2Axiom(Fact fact) {
 		List<Term> arguments = fact.getArguments();
 		Predicate predicate = fact.getPredicate();
 		if(arguments.size()==1){
-			return factory.getOWLClassAssertionAxiom(
-				factory.getOWLClass(toIRI(predicate)), 
-				factory.getOWLNamedIndividual(toIRI(arguments.get(0)))
-			);
+			if (FreshNameProducer.isFreshOWLClassName(predicate.getName()))
+				return Optional.empty();
+			else
+				return Optional.of(factory.getOWLClassAssertionAxiom(
+					factory.getOWLClass(toIRI(predicate)),
+					factory.getOWLNamedIndividual(toIRI(arguments.get(0)))
+				));
 		} else {
 			assert arguments.size()==2;
 
-			return factory.getOWLObjectPropertyAssertionAxiom(
+			return Optional.of(factory.getOWLObjectPropertyAssertionAxiom(
 				factory.getOWLObjectProperty(toIRI(predicate)), 
 				factory.getOWLNamedIndividual(toIRI(arguments.get(0))), 
-				factory.getOWLNamedIndividual(toIRI(arguments.get(1))));
+				factory.getOWLNamedIndividual(toIRI(arguments.get(1)))));
 		}
 	}
 	

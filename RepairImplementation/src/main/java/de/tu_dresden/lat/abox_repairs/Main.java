@@ -3,8 +3,7 @@ package de.tu_dresden.lat.abox_repairs;
 import java.io.*;
 import java.util.*;
 
-import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
-import de.tu_dresden.lat.abox_repairs.ontology_tools.RelevantSubOntologyExtractor;
+import de.tu_dresden.lat.abox_repairs.ontology_tools.*;
 import de.tu_dresden.lat.abox_repairs.saturation.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,8 +20,6 @@ import de.tu_dresden.lat.abox_repairs.generator.CQRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.CanonicalRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
-import de.tu_dresden.lat.abox_repairs.ontology_tools.CycleChecker;
-import de.tu_dresden.lat.abox_repairs.ontology_tools.ELRestrictor;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 
@@ -215,6 +212,8 @@ public class Main {
                 CanonicalRepair();
             }
 
+            reasonerWithTBox = ReasonerFacade.newReasonerFacadeWithTBox(ontology, additionalExpressions);
+            reasonerWithTBox.update();
 
             cleanOntology(); // <-- this should not be done if the reasoner facades is still used!
 
@@ -273,11 +272,11 @@ public class Main {
 
     }
 
+    private List<OWLClassExpression> additionalExpressions = new LinkedList<>();
 
     private void initReasonerFacade() throws OWLOntologyCreationException {
         long start = System.nanoTime();
 
-        List<OWLClassExpression> additionalExpressions = new LinkedList<>();
         for (Collection<OWLClassExpression> exps : repairRequest.values()) {
             for (OWLClassExpression exp : exps) {
                 additionalExpressions.add(exp);
@@ -329,7 +328,16 @@ public class Main {
 
             for (OWLClassExpression concept : repairRequest.get(individual)) {
                 if (reasonerWithTBox.instanceOf(individual, concept)) {
-                    System.out.println("Not Compliant! " + individual + " " + concept);
+                    logger.info("The ontology is not compliant, since " + individual + " is an instance of " + concept + ".");
+                    if (seedFunction != null) {
+                        logger.info("The seed function maps " + individual + " to " + seedFunction.get(individual).getClassExpressions());
+                        logger.info(ontology.getClassAssertionAxioms(individual));
+                        try {
+                            logger.info(Prover.getJustification(ontology,OWLManager.getOWLDataFactory().getOWLClassAssertionAxiom(concept, individual)));
+                        } catch (OWLOntologyCreationException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                     return false;
                 }
             }

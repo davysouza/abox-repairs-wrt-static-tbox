@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
  */
 public class FreshNameProducer {
 
+    private static final String PREFIX = "Fresh_Class_";
     private final OWLDataFactory factory;
     private final Set<OWLClass> knownClasses;
 
@@ -49,16 +50,27 @@ public class FreshNameProducer {
     }
 
     public OWLClass freshName() {
-        OWLClass name = factory.getOWLClass(IRI.create(""+freshNameCounter));
+        OWLClass name = factory.getOWLClass(IRI.create(PREFIX + freshNameCounter));
 
         freshNameCounter++;
 
         while(knownClasses.contains(name)) {
-            name = factory.getOWLClass(IRI.create(""+freshNameCounter));
+            name = factory.getOWLClass(IRI.create(PREFIX + freshNameCounter));
             freshNameCounter++;
         }
 
         return name;
+    }
+
+    public static boolean isFreshOWLClass(OWLClassExpression owlClassExpression) {
+        return !owlClassExpression.isOWLThing()
+                && !owlClassExpression.isOWLNothing()
+                && owlClassExpression instanceof OWLClass
+                && isFreshOWLClassName(owlClassExpression.asOWLClass().getIRI().toString());
+    }
+
+    public static boolean isFreshOWLClassName(String name) {
+        return name.startsWith(PREFIX);
     }
 
 }
