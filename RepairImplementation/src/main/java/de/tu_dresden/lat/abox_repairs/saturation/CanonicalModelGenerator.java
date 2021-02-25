@@ -5,15 +5,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
-import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
-import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.*;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import org.semanticweb.owlapi.model.parameters.Imports;
@@ -129,7 +121,10 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 	/* Please rather return an instance of OWLAnonymousIndividual here.
 	*  A benefit is that then there is a clear distinction between named individuals (individual names in the paper)
 	*  and anonymous individuals (variables in the paper), i.e., the class AnonymousVariableDetector is then not
-	*  required anymore. */
+	*  required anymore.
+	*  To make these instances of OWLAnonymousIndividual accessible, the reasoner facade can add fresh instances of
+	*  OWLNamedIndividual plus a corresponding instance of OWLSameIndividualAxiom---just like it was done to make the
+	*  complex, anonymous instances of OWLClassExpression accessible. */
 	private OWLNamedIndividual getIndividual(OWLClassExpression exp, OWLOntology ontology) {
 		//System.out.println("For "+exp);
 

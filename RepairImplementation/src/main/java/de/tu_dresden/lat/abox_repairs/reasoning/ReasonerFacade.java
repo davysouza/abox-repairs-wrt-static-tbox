@@ -33,7 +33,11 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 /* I really like the idea behind the reasoner facade!  However, the provided methods should do what their name
 *  indicates.  Thus, I suggest to remove the filtering of owl:Thing and owl:Nothing from the results.  Otherwise
 *  a user could easily get confused due to expected but missing results.  The filtering should only be done when
-*  there is a real need, e.g., in code calling methods from this class where these concepts are not interesting.*/
+*  there is a real need, e.g., in code calling methods from this class where these concepts are not interesting.
+*
+*  To make instances of OWLAnonymousIndividual accessible, the reasoner facade should add fresh instances of
+*  OWLNamedIndividual plus a corresponding instance of OWLSameIndividualAxiom---just like it was done to make the
+*  complex, anonymous instances of OWLClassExpression accessible.*/
 public class ReasonerFacade {
 
     private static Logger logger = LogManager.getLogger(ReasonerFacade.class);
@@ -174,6 +178,7 @@ public class ReasonerFacade {
         return expression2Name.keySet();
     }
 
+    /* The method should rather allow for arguments of type OWLIndividual. */
     public boolean instanceOf(OWLNamedIndividual ind, OWLClassExpression exp) {
         verifyKnows(exp);
 
@@ -203,6 +208,7 @@ public class ReasonerFacade {
         return result;
     }
 
+    /* The method should rather allow for arguments of type OWLIndividual. */
     public Set<OWLClassExpression> instanceOf(OWLNamedIndividual ind) {
 
         //timer.continueTimer();
