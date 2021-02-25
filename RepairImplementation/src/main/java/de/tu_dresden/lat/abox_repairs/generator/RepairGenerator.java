@@ -40,8 +40,8 @@ abstract public class RepairGenerator {
     protected OWLDataFactory factory;
     protected IRI iri;
     protected Map<OWLNamedIndividual, RepairType> objectToRepairType;
-    protected Map<OWLNamedIndividual, Integer> individualCounter;
     protected Map<OWLNamedIndividual, OWLNamedIndividual> copyToObject;
+    protected Map<OWLNamedIndividual, Integer> individualCounter;
     protected Map<OWLNamedIndividual, Set<OWLNamedIndividual>> objectToCopies;
     protected Multimap<OWLNamedIndividual, RepairType> objectToTypesWithCopies;
 
@@ -63,8 +63,6 @@ abstract public class RepairGenerator {
 
     protected AnonymousVariableDetector anonymousDetector;
 
-    /* Methods usually have action verbs or action phrases as names, cf.
-     *  https://docs.oracle.com/javase/tutorial/java/javaOO/methods.html */
     protected abstract void generateVariables();
 
     protected abstract void initialise();
