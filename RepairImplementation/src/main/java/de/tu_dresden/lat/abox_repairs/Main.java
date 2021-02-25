@@ -19,7 +19,6 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 import de.tu_dresden.lat.abox_repairs.generator.CQRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.CanonicalRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
-import de.tu_dresden.lat.abox_repairs.generator.IQRepairGeneratorA;
 import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
