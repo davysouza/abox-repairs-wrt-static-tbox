@@ -122,7 +122,10 @@ public class ChaseGenerator implements ABoxSaturator {
 	}
 
 	/* We should rather use an instance of OWLAnonymousIndividual if arguments.get(0).isVariable() is true, and use an
-	*  instance of OWLNamedIndividual only in the remaining cases. */
+	*  instance of OWLNamedIndividual only in the remaining cases.
+	*  A benefit is that then there is a clear distinction between named individuals (individual names in the paper)
+	*  and anonymous individuals (variables in the paper), i.e., the class AnonymousVariableDetector is then not
+	*  required anymore. */
 	private Optional<OWLAxiom> fact2Axiom(Fact fact) {
 		List<Term> arguments = fact.getArguments();
 		Predicate predicate = fact.getPredicate();
