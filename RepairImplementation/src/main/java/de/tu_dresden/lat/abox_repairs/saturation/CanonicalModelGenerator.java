@@ -126,6 +126,10 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 		});
 	}
 
+	/* Please rather return an instance of OWLAnonymousIndividual here.
+	*  A benefit is that then there is a clear distinction between named individuals (individual names in the paper)
+	*  and anonymous individuals (variables in the paper), i.e., the class AnonymousVariableDetector is then not
+	*  required anymore. */
 	private OWLNamedIndividual getIndividual(OWLClassExpression exp, OWLOntology ontology) {
 		//System.out.println("For "+exp);
 

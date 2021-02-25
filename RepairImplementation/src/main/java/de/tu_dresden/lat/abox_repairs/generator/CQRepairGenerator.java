@@ -37,6 +37,8 @@ public class CQRepairGenerator extends RepairGenerator {
 
     @Override
     protected void initialise() {
+        /* All named individuals are returned by ontology.getIndividualsInSignature();
+        *  All anonymous individuals are returned by ontology.getAnonymousIndividuals(); */
 
         try {
             repair = ontology.getOWLOntologyManager().createOntology();
