@@ -124,7 +124,7 @@ public class CQRepairGenerator extends RepairGenerator {
             if (reasonerWithoutTBox.isCovered(successorSet, object.getRepairType().getClassExpressions())) {
                 repair.add(copiedAxiom.toAxiomInTheRepair());
             } else {
-                typeHandler.findCoveringRepairTypes(subject.getRepairType(), successorSet, object.getIndividualInTheSaturation().asOWLNamedIndividual())
+                typeHandler.findCoveringRepairTypes(object.getRepairType(), successorSet, object.getIndividualInTheSaturation().asOWLNamedIndividual())
                         .forEach(repairType -> {
                             //
                             final CopiedOWLIndividual newIndividual =
