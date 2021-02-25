@@ -2,6 +2,7 @@ package de.tu_dresden.lat.abox_repairs.generator;
 
 import org.semanticweb.owlapi.model.*;
 
+@Deprecated
 public class RATriple {
     private final OWLNamedIndividual individual1;
     private final OWLNamedIndividual individual2;

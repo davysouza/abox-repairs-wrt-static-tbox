@@ -149,6 +149,7 @@ public class CQRepairGenerator extends RepairGenerator {
     }
 
     @Override
+    @Deprecated
     protected void generateMatrix() throws OWLOntologyCreationException {
 
 //        reasonerWithTBox.cleanOntology(); // TODO: bad code design
@@ -170,6 +171,7 @@ public class CQRepairGenerator extends RepairGenerator {
      * Returns all ways of replacing an individual name A in the triple by the corresponding copy
      * (both individual names are replaced)
      */
+    @Deprecated
     private Set<RATriple> expandNamesToCopies(RATriple triple) {
         Set<RATriple> result = new HashSet<>();
 

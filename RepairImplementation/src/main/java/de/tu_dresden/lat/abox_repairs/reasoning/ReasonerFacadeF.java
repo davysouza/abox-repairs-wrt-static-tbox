@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
  *
  * @author Patrick Koopmann
  */
+@Deprecated
 public class ReasonerFacadeF {
 
     private static Logger logger = LogManager.getLogger(ReasonerFacadeF.class);
