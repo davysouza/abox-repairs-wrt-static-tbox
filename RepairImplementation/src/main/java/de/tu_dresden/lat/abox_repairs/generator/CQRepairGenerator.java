@@ -206,8 +206,8 @@ public class CQRepairGenerator extends RepairGenerator {
     }
 
     private Stream<OWLObjectPropertyAssertionAxiom> objectPropertyAssertionAxiomsWithObject(OWLIndividual individual) {
-//        The below instruction would produce the desired results, but in an optimized manner as the OWLAPI does not
-//        manage an according index.
+//        The below instruction would produce the desired results, but in an unoptimized manner as the OWLAPI does not
+//        manage an according index.  Specifically, all axioms would be visited once, which is expensive.
 //
 //        return ontology.axioms(OWLObjectPropertyAssertionAxiom.class, OWLIndividual.class, individual,
 //                EXCLUDED, IN_SUPER_POSITION);
