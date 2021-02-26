@@ -13,6 +13,7 @@ import org.semanticweb.owlapi.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class RepairGeneratorF {
 
     private OWLOntology saturation, repair;

@@ -330,7 +330,9 @@ public class Main {
                 if (reasonerWithTBox.instanceOf(individual, concept)) {
                     logger.info("The ontology is not compliant, since " + individual + " is an instance of " + concept + ".");
                     if (seedFunction != null) {
-                        logger.info("The seed function maps " + individual + " to " + seedFunction.get(individual).getClassExpressions());
+//                    	logger.info("check if the seed function is " + seedFunction);
+//                    	logger.info("The individual " + individual + "is now being handled.");
+//                        logger.info("The seed function maps " + individual + " to " + seedFunction.get(individual).getClassExpressions());
                         logger.info(ontology.getClassAssertionAxioms(individual));
                         try {
                             logger.info(Prover.getJustification(ontology,OWLManager.getOWLDataFactory().getOWLClassAssertionAxiom(concept, individual)));

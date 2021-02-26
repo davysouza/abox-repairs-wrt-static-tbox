@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 /**
  * TODO work in progress
  */
+@Deprecated
 public class RepairTypeGeneratorF {
 
     private static final Logger logger = LogManager.getLogger(RepairTypeGeneratorF.class);
