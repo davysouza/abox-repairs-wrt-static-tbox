@@ -1,6 +1,5 @@
 package de.tu_dresden.lat.abox_repairs.generator;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
@@ -57,6 +56,7 @@ public final class CopiedOWLIndividual {
     public static final class Factory {
 
         private final Multimap<OWLIndividual, CopiedOWLIndividual> lookupTable = HashMultimap.create();
+        private int nextAnonymousIndividual = 0;
 
         public Factory() {
             super();
@@ -73,7 +73,8 @@ public final class CopiedOWLIndividual {
         public CopiedOWLIndividual newAnonymousIndividual(
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
-            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLAnonymousIndividual());
+//            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLAnonymousIndividual());
+            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLNamedIndividual("anonymous_individual_" + nextAnonymousIndividual++));
             lookupTable.put(individualInTheSaturation, copiedOWLIndividual);
             return copiedOWLIndividual;
         }
