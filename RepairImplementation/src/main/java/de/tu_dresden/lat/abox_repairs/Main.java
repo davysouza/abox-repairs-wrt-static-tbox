@@ -8,13 +8,8 @@ import de.tu_dresden.lat.abox_repairs.saturation.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.expression.OWLEntityChecker;
-import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.Imports;
-import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
-import org.semanticweb.owlapi.util.SimpleShortFormProvider;
-import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
 import de.tu_dresden.lat.abox_repairs.generator.CQRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.CanonicalRepairGenerator;
@@ -22,8 +17,6 @@ import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
-
-import javax.print.attribute.standard.RequestingUserName;
 
 /**
  * TODO: be able to handle the case where the given ontology is already saturated.
@@ -203,10 +196,10 @@ public class Main {
             
 
             if (repairVariant.equals(RepairVariant.IQ)) {
-                IQRepair();
+                repairIQ();
 
             } else if (repairVariant.equals(RepairVariant.CQ)) {
-                CQRepair();
+                repairCQ();
             } else {
                 assert CANONICAL_ANY.contains(repairVariant);
                 CanonicalRepair();
@@ -349,14 +342,14 @@ public class Main {
         return compliant;
     }
 
-    private void CQRepair() throws OWLOntologyCreationException {
+    private void repairCQ() throws OWLOntologyCreationException {
         repairGenerator = new CQRepairGenerator(ontology, seedFunction);
 		repairGenerator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
 		repairGenerator.repair();
         ontology = repairGenerator.getRepair();
     }
 
-    private void IQRepair() throws OWLOntologyCreationException {
+    private void repairIQ() throws OWLOntologyCreationException {
         repairGenerator = new IQRepairGenerator(ontology, seedFunction);
 		repairGenerator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
 		repairGenerator.repair();

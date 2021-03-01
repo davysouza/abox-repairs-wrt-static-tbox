@@ -107,6 +107,9 @@ public class CQRepairGenerator extends RepairGenerator {
 
     @Override
     protected void generateVariables() {
+
+        // I thought the below loop is what we wanted to avoid by looping over the role assertions in the input instead?
+        // (see also below code)
         individualsInTheRepair.forEach(individual1 ->
                 individualsInTheRepair.forEach(individual2 ->
                         addToQueue(individual1, individual2)
