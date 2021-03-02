@@ -1,5 +1,6 @@
 package de.tu_dresden.lat.abox_repairs.generator;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -16,22 +17,24 @@ import com.google.common.collect.Sets;
 
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 
+/**
+ * Careful: this does not compute the canonical repair, but only the variables that would be needed by it.
+ */
 public class CanonicalRepairGenerator extends RepairGenerator {
 	
 	private static Logger logger = LogManager.getLogger(CanonicalRepairGenerator.class);
 	
 	public CanonicalRepairGenerator(OWLOntology inputOntology,
 			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
-		
-		super(inputOntology, inputSeedFunction);
-		
+		//super(inputOntology, inputSeedFunction);
+		super(inputOntology, Collections.emptyMap());
+
 		setOfCollectedIndividuals = new HashSet<>();
 	}
 	
 
 	@Override
 	protected void generateVariables() {
-		// TODO Auto-generated method stub
 		
 		for(OWLNamedIndividual individual : ontology.getIndividualsInSignature()) {
 			Set<OWLClassExpression> setOfAtoms = new HashSet<>();
@@ -55,7 +58,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 		*  !reasonerWithTBox.equivalentToOWLThing(exp)
 		*  with !reasonerWithoutTBox.equivalentToOWLThing(exp) */
 		return (exp instanceof OWLClass || exp instanceof OWLObjectSomeValuesFrom)
-				&& !reasonerWithTBox.equivalentToOWLThing(exp);
+				&& !reasonerWithoutTBox.equivalentToOWLThing(exp);
 	}
 
 	
@@ -63,7 +66,6 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 
 	@Override
 	protected void initialise() {
-		// TODO Auto-generated method stub
 		
 	}
 }

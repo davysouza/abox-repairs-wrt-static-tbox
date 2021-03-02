@@ -74,6 +74,8 @@ abstract public class RepairGenerator {
     public RepairGenerator(OWLOntology inputOntology,
                            Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
 
+        assert inputSeedFunction!=null;
+
         this.ontology = inputOntology;
         this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
         this.objectToRepairType = new HashMap<>(inputSeedFunction);
