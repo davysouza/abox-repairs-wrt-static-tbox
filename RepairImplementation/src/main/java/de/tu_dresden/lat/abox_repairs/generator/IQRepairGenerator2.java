@@ -1,18 +1,20 @@
 package de.tu_dresden.lat.abox_repairs.generator;
 
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.parameters.Imports;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 public class IQRepairGenerator2 extends RepairGenerator {
 
@@ -20,12 +22,11 @@ public class IQRepairGenerator2 extends RepairGenerator {
 
     private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
     private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
-    private final Map<OWLNamedIndividual, RepairType> seedFunction;
+    //    private final Map<OWLNamedIndividual, RepairType> seedFunction;
     private final Queue<CopiedOWLIndividual> queue = new LinkedList<>();
 
-    public IQRepairGenerator2(OWLOntology inputOntology, Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
-        super(inputOntology, inputSeedFunction);
-        this.seedFunction = inputSeedFunction;
+    public IQRepairGenerator2(OWLOntology inputOntology) {
+        super(inputOntology);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class IQRepairGenerator2 extends RepairGenerator {
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e);
         }
-        anonymousDetector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.IQ);
+        anonymousDetector = AnonymousVariableDetector.newInstance(true, RepairManagerBuilder.RepairVariant.IQ);
     }
 
     @Override
@@ -50,7 +51,7 @@ public class IQRepairGenerator2 extends RepairGenerator {
         inputObjectNames.stream()
                 .filter(anonymousDetector::isNamed)
                 .map(individualName ->
-                        copiedOWLIndividualFactory.newNamedIndividual(individualName, seedFunction.get(individualName))
+                        copiedOWLIndividualFactory.newNamedIndividual(individualName, inputSeedFunction.get(individualName))
                 ).forEach(queue::offer);
         while (!queue.isEmpty()) {
             final CopiedOWLIndividual subject = queue.poll();

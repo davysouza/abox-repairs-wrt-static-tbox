@@ -60,7 +60,7 @@ public class RunExperimentCanCQ {
         reasonerWithTBox.update();
 
         System.out.println("\nCQ-repair");
-        final RepairGenerator repairGenerator = new CanonicalRepairGenerator(ontology, null);
+        final RepairGenerator repairGenerator = new CanonicalRepairGenerator(ontology);
         repairGenerator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
         repairGenerator.repair();
         /*ontology = repairGenerator.getRepair();*/
