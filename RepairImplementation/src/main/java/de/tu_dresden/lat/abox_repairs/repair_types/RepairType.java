@@ -49,4 +49,9 @@ public class RepairType {
     public int hashCode() {
         return Objects.hashCode(toRepair);
     }
+
+    @Override
+    public String toString() {
+        return "RepairType{" + toRepair + '}';
+    }
 }

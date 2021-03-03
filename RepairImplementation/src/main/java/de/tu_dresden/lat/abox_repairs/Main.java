@@ -234,7 +234,8 @@ public class Main {
                 System.out.print(" #Assertions (orig/sat/repair): "
                         + oldAssertions + "/"
                         + (oldAssertions + saturator.addedAssertions()) + "/" +
-                        ontology.aboxAxioms(Imports.EXCLUDED).count());
+//                        ontology.aboxAxioms(Imports.EXCLUDED).count());
+                        ontology.getABoxAxioms(Imports.EXCLUDED).size());
             }
             System.out.println(" Duration (sat/repair sec.): " + saturator.getDuration() + "/" + timeRepairing);
             initReasonerFacade();

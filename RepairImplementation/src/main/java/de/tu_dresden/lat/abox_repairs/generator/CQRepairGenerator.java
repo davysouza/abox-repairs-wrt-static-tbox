@@ -2,6 +2,7 @@ package de.tu_dresden.lat.abox_repairs.generator;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.sun.istack.internal.NotNull;
 import de.tu_dresden.lat.abox_repairs.Main;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
@@ -16,6 +17,7 @@ import uk.ac.manchester.cs.owl.owlapi.MapPointer;
 import uk.ac.manchester.cs.owl.owlapi.OWLAxiomIndexImpl;
 import uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -363,6 +365,8 @@ public class CQRepairGenerator extends RepairGenerator {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
+        @ParametersAreNonnullByDefault
         public K visit(OWLNegativeObjectPropertyAssertionAxiom axiom) {
             if (sub) {
                 return (K) axiom.getSubject();
@@ -372,6 +376,8 @@ public class CQRepairGenerator extends RepairGenerator {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
+        @ParametersAreNonnullByDefault
         public K visit(OWLNegativeDataPropertyAssertionAxiom axiom) {
             if (sub) {
                 return (K) axiom.getSubject();
@@ -381,6 +387,8 @@ public class CQRepairGenerator extends RepairGenerator {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
+        @ParametersAreNonnullByDefault
         public K visit(OWLObjectPropertyAssertionAxiom axiom) {
             if (sub) {
                 return (K) axiom.getSubject();
@@ -390,7 +398,9 @@ public class CQRepairGenerator extends RepairGenerator {
         }
 
         @Override
-        public K visit(OWLDataPropertyAssertionAxiom axiom) {
+        @SuppressWarnings("unchecked")
+        @ParametersAreNonnullByDefault
+        public K visit( OWLDataPropertyAssertionAxiom axiom) {
             if (sub) {
                 return (K) axiom.getSubject();
             } else {
