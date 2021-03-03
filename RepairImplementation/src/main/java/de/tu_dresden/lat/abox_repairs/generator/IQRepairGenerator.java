@@ -7,7 +7,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManager;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
@@ -26,17 +27,17 @@ public class IQRepairGenerator extends RepairGenerator {
 	private Queue<OWLNamedIndividual> queueOfIndividuals;
 	
 		
-	public IQRepairGenerator(OWLOntology inputOntology,
-			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
+	public IQRepairGenerator(OWLOntology inputOntology) {
 		
-		super(inputOntology, inputSeedFunction);
+		super(inputOntology);
 	}
 	
 	
 	@Override
 	protected void initialise() {
+		super.initialise();
 		
-		anonymousDetector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.IQ);
+		anonymousDetector = AnonymousVariableDetector.newInstance(true, RepairManagerBuilder.RepairVariant.IQ);
 		
 		setOfCollectedIndividuals = inputObjectNames.stream()
 									.filter(ind -> anonymousDetector.isNamed(ind))
@@ -46,8 +47,6 @@ public class IQRepairGenerator extends RepairGenerator {
 	/* The below code is a bit difficult to understand, but I believe that the current version now does the job
 	*  correctly. */
 	protected void generateVariables() {
-		
-		
 		queueOfIndividuals = new PriorityQueue<>(setOfCollectedIndividuals);
 
 		while(!queueOfIndividuals.isEmpty()) {
@@ -79,9 +78,5 @@ public class IQRepairGenerator extends RepairGenerator {
 			}
 			
 		}
-		
 	}
-
-
-
 }

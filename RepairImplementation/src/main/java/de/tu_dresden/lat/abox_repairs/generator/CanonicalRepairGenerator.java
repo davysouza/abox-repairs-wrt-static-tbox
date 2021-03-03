@@ -24,10 +24,8 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 	
 	private static Logger logger = LogManager.getLogger(CanonicalRepairGenerator.class);
 	
-	public CanonicalRepairGenerator(OWLOntology inputOntology,
-			Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
-		//super(inputOntology, inputSeedFunction);
-		super(inputOntology, Collections.emptyMap());
+	public CanonicalRepairGenerator(OWLOntology inputOntology) {
+		super(inputOntology);
 
 		setOfCollectedIndividuals = new HashSet<>();
 	}
@@ -66,6 +64,6 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 
 	@Override
 	protected void initialise() {
-		
+		super.initialise();
 	}
 }

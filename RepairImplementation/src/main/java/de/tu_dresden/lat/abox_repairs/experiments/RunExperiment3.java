@@ -1,8 +1,9 @@
 package de.tu_dresden.lat.abox_repairs.experiments;
 
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManager;
 import de.tu_dresden.lat.abox_repairs.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
@@ -12,9 +13,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * Compute all single concept assertion repairs one after the other.
@@ -50,7 +49,7 @@ public class RunExperiment3 {
                 System.exit(1);
         }
 
-        Main.RepairVariant repairVariant = pickVariant(args[2]);
+        RepairManagerBuilder.RepairVariant repairVariant = pickVariant(args[2]);
 
 
         RunExperiment3 experiment = new RunExperiment3();
@@ -62,17 +61,17 @@ public class RunExperiment3 {
         }
     }
 
-    private final static Main.RepairVariant pickVariant(String string) {
+    private final static RepairManagerBuilder.RepairVariant pickVariant(String string) {
         switch (string) {
             case "IQ":
-                return Main.RepairVariant.IQ;
+                return RepairManagerBuilder.RepairVariant.IQ;
             case "CQ":
-                return Main.RepairVariant.CQ;
+                return RepairManagerBuilder.RepairVariant.CQ;
             default:
                 System.out.println("Unexpected repair variant: " + string);
                 System.out.println("Call without parameters to get help information");
                 System.exit(1);
-                return Main.RepairVariant.CQ;
+                return RepairManagerBuilder.RepairVariant.CQ;
         }
     }
 
@@ -97,7 +96,7 @@ public class RunExperiment3 {
         random.setSeed(seed);
     }
 
-    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, boolean saturationRequired)
+    private void startExperiment(String ontologyFileName, RepairManagerBuilder.RepairVariant repairVariant, boolean saturationRequired)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
@@ -116,9 +115,15 @@ public class RunExperiment3 {
                     request.put(ind, Collections.singleton(cl));
                     System.out.println("Repair: " + cl + "(" + ind + ")");
 
-                    Main main = new Main(random);
                     try {
-                        main.performRepair(ontology, request, repairVariant, saturationRequired);
+                        RepairManager repairManager =
+                                new RepairManagerBuilder()
+                                        .setOntology(ontology)
+                                        .setRepairRequest(request)
+                                        .setVariant(repairVariant)
+                                        .setNeedsSaturation(saturationRequired)
+                                        .build();
+                        repairManager.performRepair();
                     } catch (OWLOntologyCreationException e) {
                         e.printStackTrace();
                     } catch (SaturationException e) {

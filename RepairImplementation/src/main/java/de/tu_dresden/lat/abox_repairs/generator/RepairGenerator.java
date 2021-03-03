@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import de.tu_dresden.lat.abox_repairs.SeedFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -65,21 +66,25 @@ abstract public class RepairGenerator {
 
     protected abstract void generateVariables();
 
-    protected abstract void initialise();
+
+    protected SeedFunction inputSeedFunction;
 
 
     /**
      * Assumption: inputOntology is saturated (depending on the underlying repair method)
      */
-    public RepairGenerator(OWLOntology inputOntology,
-                           Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
+    public RepairGenerator(OWLOntology inputOntology) {
+        //                       Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
 
-        assert inputSeedFunction!=null;
 
         this.ontology = inputOntology;
         this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        this.objectToRepairType = new HashMap<>(inputSeedFunction);
+    }
 
+    protected void initialise(){
+        assert inputSeedFunction!=null;
+
+        this.objectToRepairType = new HashMap<>(inputSeedFunction);
         this.objectToTypesWithCopies = HashMultimap.create();
         for(Map.Entry<OWLNamedIndividual, RepairType> seedFunctionEntry : inputSeedFunction.entrySet()){
             objectToTypesWithCopies.put(seedFunctionEntry.getKey(), seedFunctionEntry.getValue());
@@ -106,6 +111,11 @@ abstract public class RepairGenerator {
         // TODO not needed
         Optional<IRI> opt = ontology.getOntologyID().getOntologyIRI();
         this.iri = opt.get();
+    }
+
+    public void setSeedFunction(SeedFunction inputSeedFunction){
+        assert inputSeedFunction!=null;
+        this.inputSeedFunction=inputSeedFunction;
     }
 
     public void setReasoner(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {

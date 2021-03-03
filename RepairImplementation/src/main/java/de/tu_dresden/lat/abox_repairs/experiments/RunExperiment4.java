@@ -1,8 +1,9 @@
 package de.tu_dresden.lat.abox_repairs.experiments;
 
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManager;
 import de.tu_dresden.lat.abox_repairs.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
@@ -44,7 +45,7 @@ public class RunExperiment4 {
                 System.exit(1);
         }
 
-        Main.RepairVariant repairVariant = pickVariant(args[2]);
+        RepairManagerBuilder.RepairVariant repairVariant = pickVariant(args[2]);
 
         double proportion = Double.parseDouble(args[3]);
 
@@ -65,17 +66,17 @@ public class RunExperiment4 {
     }
 
 
-    private final static Main.RepairVariant pickVariant(String string) {
+    private final static RepairManagerBuilder.RepairVariant pickVariant(String string) {
         switch (string) {
             case "IQ":
-                return Main.RepairVariant.IQ;
+                return RepairManagerBuilder.RepairVariant.IQ;
             case "CQ":
-                return Main.RepairVariant.CQ;
+                return RepairManagerBuilder.RepairVariant.CQ;
             default:
                 System.out.println("Unexpected repair variant: " + string);
                 System.out.println("Call without parameters to get help information");
                 System.exit(1);
-                return Main.RepairVariant.CQ;
+                return RepairManagerBuilder.RepairVariant.CQ;
         }
     }
 
@@ -100,7 +101,7 @@ public class RunExperiment4 {
         random.setSeed(seed);
     }
 
-    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, boolean saturationRequired, double proportion, int number)
+    private void startExperiment(String ontologyFileName, RepairManagerBuilder.RepairVariant repairVariant, boolean saturationRequired, double proportion, int number)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
@@ -113,8 +114,14 @@ public class RunExperiment4 {
 
         RepairRequest repairRequest = generateRepairRequest(ontology,proportion, number);
 
-        Main main = new Main(random);
-        main.performRepair(ontology, repairRequest, repairVariant,saturationRequired);
+        RepairManager repairManager =
+                new RepairManagerBuilder()
+                        .setOntology(ontology)
+                        .setRepairRequest(repairRequest)
+                        .setVariant(repairVariant)
+                        .setNeedsSaturation(saturationRequired)
+                        .build();
+        repairManager.performRepair();
     }
 
     private RepairRequest generateRepairRequest(

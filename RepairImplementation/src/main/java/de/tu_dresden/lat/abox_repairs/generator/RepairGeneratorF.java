@@ -1,8 +1,9 @@
 package de.tu_dresden.lat.abox_repairs.generator;
 
 import com.google.common.collect.Sets;
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManager;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacadeF;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
 import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeGeneratorF;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 public class RepairGeneratorF {
 
     private OWLOntology saturation, repair;
-    private Main.RepairVariant repairVariant;
+    private RepairManagerBuilder.RepairVariant repairVariant;
     private Map<OWLNamedIndividual, RepairType> repairSeedFunction;
     private Set<Pair<OWLNamedIndividual, RepairType>> objectNamesInTheRepair, individualNamesInTheRepair;
     private AnonymousVariableDetector anonymousVariableDetector;
@@ -25,7 +26,7 @@ public class RepairGeneratorF {
     private RepairTypeGeneratorF repairTypeGenerator;
     private boolean repairIsAlreadyComputed = false;
 
-    public RepairGeneratorF(OWLOntology saturation, Main.RepairVariant repairVariant, Map<OWLNamedIndividual, RepairType> repairSeedFunction, ReasonerFacadeF reasonerWithoutTBox, ReasonerFacadeF reasonerWithTBox) {
+    public RepairGeneratorF(OWLOntology saturation, RepairManagerBuilder.RepairVariant repairVariant, Map<OWLNamedIndividual, RepairType> repairSeedFunction, ReasonerFacadeF reasonerWithoutTBox, ReasonerFacadeF reasonerWithTBox) {
         this.saturation = saturation;
         this.repairVariant = repairVariant;
         this.repairSeedFunction = repairSeedFunction;
