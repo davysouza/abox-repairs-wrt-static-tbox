@@ -1,8 +1,5 @@
 package de.tu_dresden.lat.abox_repairs.repairManager;
 
-import de.tu_dresden.lat.abox_repairs.RepairRequest;
-import de.tu_dresden.lat.abox_repairs.SeedFunction;
-import de.tu_dresden.lat.abox_repairs.SeedFunctionHandler;
 import de.tu_dresden.lat.abox_repairs.generator.CQRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.CanonicalRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
@@ -10,6 +7,7 @@ import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.CycleChecker;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.saturation.ABoxSaturator;
 import de.tu_dresden.lat.abox_repairs.saturation.CanonicalModelGenerator;
 import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;

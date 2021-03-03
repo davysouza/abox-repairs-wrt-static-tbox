@@ -15,7 +15,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 
 import com.google.common.collect.Sets; 
 
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 
 /**
  * Careful: this does not compute the canonical repair, but only the variables that would be needed by it.

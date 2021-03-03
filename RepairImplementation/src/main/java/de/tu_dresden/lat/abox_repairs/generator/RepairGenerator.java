@@ -8,7 +8,7 @@ import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import de.tu_dresden.lat.abox_repairs.SeedFunction;
+import de.tu_dresden.lat.abox_repairs.seed_function.SeedFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -28,8 +28,8 @@ import org.semanticweb.owlapi.model.parameters.Imports;
 
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairTypeHandler;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 
 abstract public class RepairGenerator {

@@ -1,6 +1,6 @@
 package de.tu_dresden.lat.abox_repairs.ontology_tools;
 
-import de.tu_dresden.lat.abox_repairs.RepairRequest;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 
 import org.semanticweb.owlapi.model.*;
 import uk.ac.manchester.cs.owlapi.modularity.SyntacticLocalityModuleExtractor;

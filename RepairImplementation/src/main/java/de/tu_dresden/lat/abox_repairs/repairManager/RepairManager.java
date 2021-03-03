@@ -1,11 +1,11 @@
 package de.tu_dresden.lat.abox_repairs.repairManager;
 
-import de.tu_dresden.lat.abox_repairs.RepairRequest;
-import de.tu_dresden.lat.abox_repairs.SeedFunction;
-import de.tu_dresden.lat.abox_repairs.SeedFunctionHandler;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
+import de.tu_dresden.lat.abox_repairs.seed_function.SeedFunction;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.*;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 import de.tu_dresden.lat.abox_repairs.saturation.*;
+import de.tu_dresden.lat.abox_repairs.seed_function.SeedFunctionHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;

@@ -1,16 +1,13 @@
-package de.tu_dresden.lat.abox_repairs.repair_types;
+package de.tu_dresden.lat.abox_repairs.repair_type;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import de.tu_dresden.lat.abox_repairs.saturation.ChaseGenerator;
-import de.tu_dresden.lat.abox_repairs.tools.UtilF;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
-import org.semanticweb.owlapi.model.OWLOntology;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 

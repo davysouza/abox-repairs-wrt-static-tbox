@@ -1,12 +1,8 @@
 package de.tu_dresden.lat.abox_repairs.ontology_tools;
 
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.*;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Prepare ontology to be adhere to preconditions in the CADE-21 paper:
