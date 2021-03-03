@@ -20,9 +20,7 @@ public class CQRepairGenerator extends RepairGenerator {
     private final Queue<CopiedOWLObjectPropertyAssertionAxiom> queue = new LinkedList<>();
     private final OWLOntologyWithFurtherIndexes ontologyWithFurtherIndexes;
 
-    public CQRepairGenerator(OWLOntology inputOntology,
-                             Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
-
+    public CQRepairGenerator(OWLOntology inputOntology, Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
         super(inputOntology, inputSeedFunction);
         this.seedFunction = inputSeedFunction;
         this.ontologyWithFurtherIndexes = new OWLOntologyWithFurtherIndexes(inputOntology);

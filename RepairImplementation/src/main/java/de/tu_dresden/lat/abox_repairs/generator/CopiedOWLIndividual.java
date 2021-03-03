@@ -3,12 +3,11 @@ package de.tu_dresden.lat.abox_repairs.generator;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
+import org.apache.commons.lang3.tuple.Pair;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLIndividual;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 
 public final class CopiedOWLIndividual {
 
@@ -55,7 +54,8 @@ public final class CopiedOWLIndividual {
 
     public static final class Factory {
 
-        private final Multimap<OWLIndividual, CopiedOWLIndividual> lookupTable = HashMultimap.create();
+        private final Multimap<OWLIndividual, CopiedOWLIndividual> lookupTableCQ = HashMultimap.create();
+        private final Map<Pair<OWLIndividual, RepairType>, CopiedOWLIndividual> lookupTableIQ = new HashMap<>();
         private int nextAnonymousIndividual = 0;
 
         public Factory() {
@@ -66,7 +66,8 @@ public final class CopiedOWLIndividual {
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
             final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, individualInTheSaturation);
-            lookupTable.put(individualInTheSaturation, copiedOWLIndividual);
+            lookupTableCQ.put(individualInTheSaturation, copiedOWLIndividual);
+            lookupTableIQ.put(Pair.of(individualInTheSaturation, repairType), copiedOWLIndividual);
             return copiedOWLIndividual;
         }
 
@@ -75,12 +76,23 @@ public final class CopiedOWLIndividual {
                 RepairType repairType) {
 //            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLAnonymousIndividual());
             final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLNamedIndividual("anonymous_individual_" + nextAnonymousIndividual++));
-            lookupTable.put(individualInTheSaturation, copiedOWLIndividual);
+            lookupTableCQ.put(individualInTheSaturation, copiedOWLIndividual);
+            lookupTableIQ.put(Pair.of(individualInTheSaturation, repairType), copiedOWLIndividual);
             return copiedOWLIndividual;
         }
 
         public Collection<CopiedOWLIndividual> getCopiesOf(OWLIndividual individualInTheSaturation) {
-            return Collections.unmodifiableCollection(lookupTable.get(individualInTheSaturation));
+            return Collections.unmodifiableCollection(lookupTableCQ.get(individualInTheSaturation));
+        }
+
+        public CopiedOWLIndividual getOrElseCreateNewAnonymousIndividual(
+                OWLIndividual individualInTheSaturation,
+                RepairType repairType) {
+            if (lookupTableIQ.containsKey(Pair.of(individualInTheSaturation, repairType))) {
+                return lookupTableIQ.get(Pair.of(individualInTheSaturation, repairType));
+            } else {
+                return newAnonymousIndividual(individualInTheSaturation, repairType);
+            }
         }
 
     }
