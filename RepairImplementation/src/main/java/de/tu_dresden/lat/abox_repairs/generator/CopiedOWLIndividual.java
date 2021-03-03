@@ -2,7 +2,7 @@ package de.tu_dresden.lat.abox_repairs.generator;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLIndividual;
 

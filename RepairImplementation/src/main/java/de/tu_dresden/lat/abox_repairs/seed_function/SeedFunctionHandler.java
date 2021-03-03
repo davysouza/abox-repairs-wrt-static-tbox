@@ -1,24 +1,22 @@
-package de.tu_dresden.lat.abox_repairs;
+package de.tu_dresden.lat.abox_repairs.seed_function;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairTypeHandler;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairTypeHandler;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 
 

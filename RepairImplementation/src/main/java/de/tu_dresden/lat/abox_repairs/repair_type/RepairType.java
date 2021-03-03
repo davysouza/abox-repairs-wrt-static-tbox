@@ -1,14 +1,11 @@
-package de.tu_dresden.lat.abox_repairs.repair_types;
+package de.tu_dresden.lat.abox_repairs.repair_type;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
 
 import org.semanticweb.owlapi.model.OWLClassExpression;
-
-import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 
 /**
  * @author Patrick Koopmann

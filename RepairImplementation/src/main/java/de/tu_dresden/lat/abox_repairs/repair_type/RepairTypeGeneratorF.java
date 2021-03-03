@@ -1,7 +1,7 @@
-package de.tu_dresden.lat.abox_repairs.repair_types;
+package de.tu_dresden.lat.abox_repairs.repair_type;
 
 import com.google.common.collect.Sets;
-import de.tu_dresden.lat.abox_repairs.RepairRequest;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacadeF;
 import de.tu_dresden.lat.abox_repairs.tools.UtilF;
 import org.apache.logging.log4j.LogManager;

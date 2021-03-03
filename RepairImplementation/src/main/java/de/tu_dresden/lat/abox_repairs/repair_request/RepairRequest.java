@@ -1,8 +1,7 @@
-package de.tu_dresden.lat.abox_repairs;
+package de.tu_dresden.lat.abox_repairs.repair_request;
 
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 
 import java.util.HashMap;

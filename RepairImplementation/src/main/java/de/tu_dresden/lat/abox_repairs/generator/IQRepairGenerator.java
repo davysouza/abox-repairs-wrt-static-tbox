@@ -16,7 +16,7 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 
 public class IQRepairGenerator extends RepairGenerator {

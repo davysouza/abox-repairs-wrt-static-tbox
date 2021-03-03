@@ -1,7 +1,7 @@
 package de.tu_dresden.lat.abox_repairs.generator;
 
 import de.tu_dresden.lat.abox_repairs.Main;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
