@@ -1,9 +1,10 @@
 package de.tu_dresden.lat.abox_repairs.experiments;
 
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManager;
 import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 import de.tu_dresden.lat.abox_repairs.tools.Timer;
@@ -39,7 +40,7 @@ public class RunExperiment0 {
         }
 
         String ontologyFileName = args[0];
-        Main.RepairVariant repairVariant = pickVariant(args[2]);
+        RepairManagerBuilder.RepairVariant repairVariant = pickVariant(args[2]);
 
 
         boolean saturationRequired = false;
@@ -66,21 +67,21 @@ public class RunExperiment0 {
         System.out.println("Used seed: "+experiment.getSeed());
     }
 
-    private final static Main.RepairVariant pickVariant(String string) {
+    private final static RepairManagerBuilder.RepairVariant pickVariant(String string) {
         switch (string) {
             case "IQ":
-                return Main.RepairVariant.IQ;
+                return RepairManagerBuilder.RepairVariant.IQ;
             case "CQ":
-                return Main.RepairVariant.CQ;
+                return RepairManagerBuilder.RepairVariant.CQ;
             case "CANONICAL_IQ":
-                return Main.RepairVariant.CANONICAL_IQ;
+                return RepairManagerBuilder.RepairVariant.CANONICAL_IQ;
             case "CANONICAL_CQ":
-                return Main.RepairVariant.CANONICAL_CQ;
+                return RepairManagerBuilder.RepairVariant.CANONICAL_CQ;
             default:
                 System.out.println("Unexpected repair variant: " + string);
                 System.out.println("Call without parameters to get help information");
                 System.exit(1);
-                return Main.RepairVariant.CQ;
+                return RepairManagerBuilder.RepairVariant.CQ;
         }
     }
 
@@ -105,7 +106,7 @@ public class RunExperiment0 {
 
     private AnonymousVariableDetector anonymousVariableDetector;
 
-    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, boolean saturationRequired)
+    private void startExperiment(String ontologyFileName, RepairManagerBuilder.RepairVariant repairVariant, boolean saturationRequired)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
@@ -121,8 +122,7 @@ public class RunExperiment0 {
         RepairRequest repairRequest = generateRepairRequest(ontology);
         timer.pause();
         logger.info("Generating repair request took "+timer.getTime()+" seconds.");
-        Main main = new Main(random);
-        main.performRepair(ontology, repairRequest, repairVariant,saturationRequired);
+
     }
 
     private RepairRequest generateRepairRequest(

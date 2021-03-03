@@ -16,13 +16,14 @@ public class CQRepairGenerator extends RepairGenerator {
     private static Logger logger = LogManager.getLogger(CQRepairGenerator.class);
     private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
     private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
-    private final Map<OWLNamedIndividual, RepairType> seedFunction;
+    //private final Map<OWLNamedIndividual, RepairType> seedFunction;
     private final Queue<CopiedOWLObjectPropertyAssertionAxiom> queue = new LinkedList<>();
     private final OWLOntologyWithFurtherIndexes ontologyWithFurtherIndexes;
 
-    public CQRepairGenerator(OWLOntology inputOntology, Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
-        super(inputOntology, inputSeedFunction);
-        this.seedFunction = inputSeedFunction;
+    public CQRepairGenerator(OWLOntology inputOntology) {
+
+        super(inputOntology);
+        //this.seedFunction = inputSeedFunction;
         this.ontologyWithFurtherIndexes = new OWLOntologyWithFurtherIndexes(inputOntology);
     }
 
@@ -33,6 +34,10 @@ public class CQRepairGenerator extends RepairGenerator {
 
     @Override
     protected void initialise() {
+        super.initialise();
+        /* All named individuals are returned by ontology.getIndividualsInSignature();
+         *  All anonymous individuals are returned by ontology.getAnonymousIndividuals(); */
+
         reasonerWithTBox.cleanOntology(); // TODO: bad code design
         try {
             repair = ontology.getOWLOntologyManager().createOntology();
@@ -52,7 +57,7 @@ public class CQRepairGenerator extends RepairGenerator {
         inputObjectNames.stream()
                 .filter(anonymousDetector::isNamed)
                 .map(individualName ->
-                        copiedOWLIndividualFactory.newNamedIndividual(individualName, seedFunction.get(individualName))
+                        copiedOWLIndividualFactory.newNamedIndividual(individualName, inputSeedFunction.get(individualName))
                 ).forEach(this::addNewIndividualToTheRepair);
 
         /**
@@ -61,7 +66,7 @@ public class CQRepairGenerator extends RepairGenerator {
          */
         inputObjectNames.stream()
                 .filter(objectName -> // If the test fails, then we have already created a copy above.
-                        !(anonymousDetector.isNamed(objectName) && seedFunction.get(objectName).isEmpty()))
+                        !(anonymousDetector.isNamed(objectName) && inputSeedFunction.get(objectName).isEmpty()))
                 .map(objectName ->
                         copiedOWLIndividualFactory.newAnonymousIndividual(objectName, RepairType.empty())
                 ).forEach(this::addNewIndividualToTheRepair);

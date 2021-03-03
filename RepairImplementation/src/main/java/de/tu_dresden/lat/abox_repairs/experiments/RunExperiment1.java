@@ -1,6 +1,7 @@
 package de.tu_dresden.lat.abox_repairs.experiments;
 
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManager;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
@@ -52,14 +53,14 @@ public class RunExperiment1 {
                 System.exit(1);
         }
 
-        Main.RepairVariant repairVariant;
+        RepairManagerBuilder.RepairVariant repairVariant;
         switch(args[2]){
-            case "IQ": repairVariant = Main.RepairVariant.IQ; break;
-            case "CQ": repairVariant = Main.RepairVariant.CQ; break;
+            case "IQ": repairVariant = RepairManagerBuilder.RepairVariant.IQ; break;
+            case "CQ": repairVariant = RepairManagerBuilder.RepairVariant.CQ; break;
             default:
                 System.out.println("Unexpected repair variant: "+args[1]);
                 System.out.println("Call without parameters to get help information");
-                repairVariant=Main.RepairVariant.CQ;
+                repairVariant= RepairManagerBuilder.RepairVariant.CQ;
                 System.exit(1);
         }
 
@@ -100,7 +101,7 @@ public class RunExperiment1 {
 
     private AnonymousVariableDetector anonymousVariableDetector=null;
 
-    private void startExperiment(String ontologyFileName, Main.RepairVariant repairVariant, double proportionIndividuals, double proportionClassNames, boolean saturationRequired)
+    private void startExperiment(String ontologyFileName, RepairManagerBuilder.RepairVariant repairVariant, double proportionIndividuals, double proportionClassNames, boolean saturationRequired)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
@@ -111,8 +112,14 @@ public class RunExperiment1 {
 
         RepairRequest repairRequest = generateRepairRequest(ontology, proportionIndividuals, proportionClassNames);
 
-        Main main = new Main(random);
-        main.performRepair(ontology, repairRequest, repairVariant, saturationRequired);
+        RepairManager repairManager =
+                new RepairManagerBuilder()
+                        .setOntology(ontology)
+                        .setRepairRequest(repairRequest)
+                        .setVariant(repairVariant)
+                        .setNeedsSaturation(saturationRequired)
+                        .build();
+        repairManager.performRepair();
     }
 
     private RepairRequest generateRepairRequest(

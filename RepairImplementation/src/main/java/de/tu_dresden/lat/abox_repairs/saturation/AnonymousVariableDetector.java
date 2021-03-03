@@ -1,8 +1,8 @@
 package de.tu_dresden.lat.abox_repairs.saturation;
 
-import de.tu_dresden.lat.abox_repairs.Main;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManager;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
+import org.checkerframework.checker.units.qual.A;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 
 import java.util.ArrayList;
@@ -10,19 +10,29 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.semanticweb.owlapi.model.OWLOntology;
-import uk.ac.manchester.cs.owl.owlapi.AnonymousIndividualCollector;
 
 public abstract class AnonymousVariableDetector {
 
     public abstract boolean isAnonymous(OWLNamedIndividual individual);
 
-    public static AnonymousVariableDetector newInstance(boolean saturated, Main.RepairVariant variant) {
-        if(!saturated)
+    public static AnonymousVariableDetector newInstance(ABoxSaturator saturator) {
+        if(saturator instanceof DummySaturator)
             return new AnonymousVariableDetector.DefaultVersion();
-        else if(Main.CQ_ANY.contains(variant))
+        else if(saturator instanceof ChaseGenerator)
             return new AnonymousVariableDetector.CQVersion();
         else {
-            assert Main.IQ_ANY.contains(variant);
+            assert saturator instanceof CanonicalModelGenerator;
+            return new AnonymousVariableDetector.IQVersion();
+        }
+    }
+
+    public static AnonymousVariableDetector newInstance(boolean saturated, RepairManagerBuilder.RepairVariant variant) {
+        if(!saturated)
+            return new AnonymousVariableDetector.DefaultVersion();
+        else if(RepairManagerBuilder.CQ_ANY.contains(variant))
+            return new AnonymousVariableDetector.CQVersion();
+        else {
+            assert RepairManagerBuilder.IQ_ANY.contains(variant);
             return new AnonymousVariableDetector.IQVersion();
         }
     }
