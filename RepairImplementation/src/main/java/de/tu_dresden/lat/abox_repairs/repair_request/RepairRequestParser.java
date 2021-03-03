@@ -1,4 +1,4 @@
-package de.tu_dresden.lat.abox_repairs;
+package de.tu_dresden.lat.abox_repairs.repair_request;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;

@@ -4,7 +4,10 @@ import java.io.*;
 import java.util.*;
 
 import de.tu_dresden.lat.abox_repairs.ontology_tools.*;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequestParser;
 import de.tu_dresden.lat.abox_repairs.saturation.*;
+import de.tu_dresden.lat.abox_repairs.seed_function.SeedFunctionHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -16,7 +19,7 @@ import de.tu_dresden.lat.abox_repairs.generator.CanonicalRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
 import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
-import de.tu_dresden.lat.abox_repairs.repair_types.RepairType;
+import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 
 /**
  * TODO: be able to handle the case where the given ontology is already saturated.

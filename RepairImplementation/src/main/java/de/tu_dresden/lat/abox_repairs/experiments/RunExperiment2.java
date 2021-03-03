@@ -1,9 +1,8 @@
 package de.tu_dresden.lat.abox_repairs.experiments;
 
 import de.tu_dresden.lat.abox_repairs.Main;
-import de.tu_dresden.lat.abox_repairs.RepairRequest;
+import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
-import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.lat.abox_repairs.saturation.SaturationException;
 import de.tu_dresden.lat.abox_repairs.tools.Timer;
