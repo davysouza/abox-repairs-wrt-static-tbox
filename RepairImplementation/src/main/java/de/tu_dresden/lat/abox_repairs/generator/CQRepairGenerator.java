@@ -35,17 +35,18 @@ public class CQRepairGenerator extends RepairGenerator {
 
     @Override
     protected void initialise() {
-
         reasonerWithTBox.cleanOntology(); // TODO: bad code design
-
         try {
             repair = ontology.getOWLOntologyManager().createOntology();
             repair.add(ontology.getTBoxAxioms(Imports.INCLUDED));
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e);
         }
-
         anonymousDetector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.CQ);
+    }
+
+    @Override
+    protected void generateVariables() {
 
         /**
          * The set of collected individuals for the repair will contain every named individual
@@ -66,6 +67,27 @@ public class CQRepairGenerator extends RepairGenerator {
                 .map(objectName ->
                         copiedOWLIndividualFactory.newAnonymousIndividual(objectName, RepairType.empty())
                 ).forEach(this::addNewIndividualToTheRepair);
+
+        while (!queue.isEmpty()) {
+            final CopiedOWLObjectPropertyAssertionAxiom copiedAxiom = queue.poll();
+            final CopiedOWLIndividual subject = copiedAxiom.getSubject();
+            final OWLObjectPropertyExpression property = copiedAxiom.getProperty();
+            final CopiedOWLIndividual object = copiedAxiom.getObject();
+            final Set<OWLClassExpression> successorSet = computeSuccessorSet(
+                    subject.getRepairType(),
+                    property.getNamedProperty(),
+                    object.getIndividualInTheSaturation().asOWLNamedIndividual());
+            if (reasonerWithoutTBox.isCovered(successorSet, object.getRepairType().getClassExpressions())) {
+                repair.add(copiedAxiom.toAxiomInTheRepair());
+            } else {
+                typeHandler.findCoveringRepairTypes(object.getRepairType(), successorSet, object.getIndividualInTheSaturation().asOWLNamedIndividual())
+                        .forEach(repairType -> {
+                            final CopiedOWLIndividual newIndividual =
+                                    copiedOWLIndividualFactory.newAnonymousIndividual(object.getIndividualInTheSaturation(), repairType);
+                            addNewIndividualToTheRepair(newIndividual);
+                        });
+            }
+        }
     }
 
     private boolean addNewIndividualToTheRepair(CopiedOWLIndividual newIndividual) {
@@ -97,30 +119,6 @@ public class CQRepairGenerator extends RepairGenerator {
             return true;
         }
         return false;
-    }
-
-    @Override
-    protected void generateVariables() {
-        while (!queue.isEmpty()) {
-            final CopiedOWLObjectPropertyAssertionAxiom copiedAxiom = queue.poll();
-            final CopiedOWLIndividual subject = copiedAxiom.getSubject();
-            final OWLObjectPropertyExpression property = copiedAxiom.getProperty();
-            final CopiedOWLIndividual object = copiedAxiom.getObject();
-            final Set<OWLClassExpression> successorSet = computeSuccessorSet(
-                    subject.getRepairType(),
-                    property.getNamedProperty(),
-                    object.getIndividualInTheSaturation().asOWLNamedIndividual());
-            if (reasonerWithoutTBox.isCovered(successorSet, object.getRepairType().getClassExpressions())) {
-                repair.add(copiedAxiom.toAxiomInTheRepair());
-            } else {
-                typeHandler.findCoveringRepairTypes(object.getRepairType(), successorSet, object.getIndividualInTheSaturation().asOWLNamedIndividual())
-                        .forEach(repairType -> {
-                            final CopiedOWLIndividual newIndividual =
-                                    copiedOWLIndividualFactory.newAnonymousIndividual(object.getIndividualInTheSaturation(), repairType);
-                            addNewIndividualToTheRepair(newIndividual);
-                        });
-            }
-        }
     }
 
     @Override
