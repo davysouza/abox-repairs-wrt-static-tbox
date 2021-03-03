@@ -3,6 +3,7 @@ package de.tu_dresden.lat.abox_repairs;
 import java.io.*;
 import java.util.*;
 
+import de.tu_dresden.lat.abox_repairs.generator.*;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.*;
 import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequest;
 import de.tu_dresden.lat.abox_repairs.repair_request.RepairRequestParser;
@@ -14,10 +15,6 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.Imports;
 
-import de.tu_dresden.lat.abox_repairs.generator.CQRepairGenerator;
-import de.tu_dresden.lat.abox_repairs.generator.CanonicalRepairGenerator;
-import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
-import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 
@@ -354,7 +351,7 @@ public class Main {
     }
 
     private void repairIQ() throws OWLOntologyCreationException {
-        repairGenerator = new IQRepairGenerator(ontology, seedFunction);
+        repairGenerator = new IQRepairGenerator2(ontology, seedFunction);
 		repairGenerator.setReasoner(reasonerWithTBox, reasonerWithoutTBox);
 		repairGenerator.repair();
         ontology = repairGenerator.getRepair();
