@@ -8,9 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.*;
 
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,10 +19,8 @@ public class CanonicalRepairGenerator extends RepairGenerator {
     private static Logger logger = LogManager.getLogger(CanonicalRepairGenerator.class);
     private final Set<Pair<OWLIndividual, RepairType>> individualsInTheRepair = new HashSet<>();
 
-    public CanonicalRepairGenerator(OWLOntology inputOntology,
-                                    Map<OWLNamedIndividual, RepairType> inputSeedFunction) {
-        //super(inputOntology, inputSeedFunction);
-        super(inputOntology, Collections.emptyMap());
+    public CanonicalRepairGenerator(OWLOntology inputOntology) {
+        super(inputOntology);
 
         setOfCollectedIndividuals = new HashSet<>();
     }

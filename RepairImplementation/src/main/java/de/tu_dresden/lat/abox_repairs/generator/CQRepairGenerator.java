@@ -1,6 +1,6 @@
 package de.tu_dresden.lat.abox_repairs.generator;
 
-import de.tu_dresden.lat.abox_repairs.Main;
+import de.tu_dresden.lat.abox_repairs.repairManager.RepairManagerBuilder;
 import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 import de.tu_dresden.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import org.apache.logging.log4j.LogManager;
@@ -9,7 +9,10 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.Imports;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 public class CQRepairGenerator extends RepairGenerator {
 
@@ -45,7 +48,7 @@ public class CQRepairGenerator extends RepairGenerator {
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e);
         }
-        anonymousDetector = AnonymousVariableDetector.newInstance(true, Main.RepairVariant.CQ);
+        anonymousDetector = AnonymousVariableDetector.newInstance(true, RepairManagerBuilder.RepairVariant.CQ);
     }
 
     @Override
