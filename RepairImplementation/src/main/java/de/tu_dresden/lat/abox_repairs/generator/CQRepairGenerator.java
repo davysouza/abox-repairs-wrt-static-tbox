@@ -9,7 +9,6 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.Imports;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -17,7 +16,7 @@ import java.util.Set;
 public class CQRepairGenerator extends RepairGenerator {
 
     private static Logger logger = LogManager.getLogger(CQRepairGenerator.class);
-    private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
+    //    private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
     private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
     //private final Map<OWLNamedIndividual, RepairType> seedFunction;
     private final Queue<CopiedOWLObjectPropertyAssertionAxiom> queue = new LinkedList<>();
@@ -32,15 +31,12 @@ public class CQRepairGenerator extends RepairGenerator {
 
     @Override
     public int getNumberOfCollectedIndividuals() {
-        return individualsInTheRepair.size();
+//        return individualsInTheRepair.size();
+        return copiedOWLIndividualFactory.size();
     }
 
     @Override
     protected void initialise() {
-        super.initialise();
-        /* All named individuals are returned by ontology.getIndividualsInSignature();
-         *  All anonymous individuals are returned by ontology.getAnonymousIndividuals(); */
-
         reasonerWithTBox.cleanOntology(); // TODO: bad code design
         try {
             repair = ontology.getOWLOntologyManager().createOntology();
@@ -57,22 +53,33 @@ public class CQRepairGenerator extends RepairGenerator {
         /**
          * The set of collected individuals for the repair will contain every named individual
          */
-        inputObjectNames.stream()
-                .filter(anonymousDetector::isNamed)
-                .map(individualName ->
-                        copiedOWLIndividualFactory.newNamedIndividual(individualName, inputSeedFunction.get(individualName))
-                ).forEach(this::addNewIndividualToTheRepair);
+//        inputObjectNames.stream()
+//                .filter(anonymousDetector::isNamed)
+//                .map(individualName ->
+//                        copiedOWLIndividualFactory.newNamedIndividual(individualName, inputSeedFunction.get(individualName))
+//                ).forEach(this::addNewIndividualToTheRepair);
 
         /**
          * plus one copy of every variable, and every named individual with nothing assigned by the initial seed function,
          * which is assigned an empty repair type.
          */
-        inputObjectNames.stream()
-                .filter(objectName -> // If the test fails, then we have already created a copy above.
-                        !(anonymousDetector.isNamed(objectName) && inputSeedFunction.get(objectName).isEmpty()))
-                .map(objectName ->
-                        copiedOWLIndividualFactory.newAnonymousIndividual(objectName, RepairType.empty())
-                ).forEach(this::addNewIndividualToTheRepair);
+//        inputObjectNames.stream()
+//                .filter(objectName -> // If the test fails, then we have already created a copy above.
+//                        !(anonymousDetector.isNamed(objectName) && inputSeedFunction.get(objectName).isEmpty()))
+//                .map(objectName ->
+//                        copiedOWLIndividualFactory.newAnonymousIndividual(objectName, RepairType.empty())
+//                ).forEach(this::addNewIndividualToTheRepair);
+
+        ontology.getIndividualsInSignature().stream().forEach(objectName -> {
+            if (anonymousDetector.isNamed(objectName)) {
+                addNewIndividualToTheRepair(copiedOWLIndividualFactory.newNamedIndividual(objectName, inputSeedFunction.get(objectName)));
+                if (!inputSeedFunction.get(objectName).isEmpty()) {
+                    addNewIndividualToTheRepair(copiedOWLIndividualFactory.newAnonymousIndividual(objectName, RepairType.empty()));
+                }
+            } else {
+                addNewIndividualToTheRepair(copiedOWLIndividualFactory.newAnonymousIndividual(objectName, RepairType.empty()));
+            }
+        });
 
         while (!queue.isEmpty()) {
             final CopiedOWLObjectPropertyAssertionAxiom copiedAxiom = queue.poll();
@@ -88,43 +95,46 @@ public class CQRepairGenerator extends RepairGenerator {
             } else {
                 typeHandler.findCoveringRepairTypes(object.getRepairType(), successorSet, object.getIndividualInTheSaturation().asOWLNamedIndividual())
                         .forEach(repairType -> {
-                            final CopiedOWLIndividual newIndividual =
-                                    copiedOWLIndividualFactory.newAnonymousIndividual(object.getIndividualInTheSaturation(), repairType);
-                            addNewIndividualToTheRepair(newIndividual);
+//                            final CopiedOWLIndividual newIndividual =
+//                                    copiedOWLIndividualFactory.newAnonymousIndividual(object.getIndividualInTheSaturation(), repairType);
+//                            addNewIndividualToTheRepair(newIndividual);
+                            if (!copiedOWLIndividualFactory.containsCopy(object.getIndividualInTheSaturation(), repairType)) {
+                                addNewIndividualToTheRepair(copiedOWLIndividualFactory.newAnonymousIndividual(object.getIndividualInTheSaturation(), repairType));
+                            }
                         });
             }
         }
     }
 
-    private boolean addNewIndividualToTheRepair(CopiedOWLIndividual newIndividual) {
-        if (individualsInTheRepair.add(newIndividual)) {
-            ontology.classAssertionAxioms(newIndividual.getIndividualInTheSaturation())
-                    .map(OWLClassAssertionAxiom::getClassExpression)
-                    .filter(owlClassExpression ->
-                            !newIndividual.getRepairType().getClassExpressions().contains(owlClassExpression))
+    private void addNewIndividualToTheRepair(CopiedOWLIndividual newIndividual) {
+//        if (individualsInTheRepair.add(newIndividual)) {
+        ontology.classAssertionAxioms(newIndividual.getIndividualInTheSaturation())
+                .map(OWLClassAssertionAxiom::getClassExpression)
+                .filter(owlClassExpression ->
+                        !newIndividual.getRepairType().getClassExpressions().contains(owlClassExpression))
 //                    .filter(owlClassExpression -> !FreshNameProducer.isFreshOWLClass(owlClassExpression))
-                    .map(owlClassExpression ->
-                            OWLManager.getOWLDataFactory().getOWLClassAssertionAxiom(owlClassExpression, newIndividual.getIndividualInTheRepair()))
-                    .forEach(repair::add);
-            ontologyWithFurtherIndexes.objectPropertyAssertionAxiomsWithSubject(newIndividual.getIndividualInTheSaturation())
-                    .flatMap(axiom ->
-                            copiedOWLIndividualFactory.getCopiesOf(axiom.getObject()).stream()
-                                    .map(individual ->
-                                            new CopiedOWLObjectPropertyAssertionAxiom(newIndividual, axiom.getProperty(), individual))
-                    )
-                    .forEach(queue::offer);
-            ontologyWithFurtherIndexes.objectPropertyAssertionAxiomsWithObject(newIndividual.getIndividualInTheSaturation())
-                    .flatMap(axiom ->
-                            copiedOWLIndividualFactory.getCopiesOf(axiom.getSubject()).stream()
-                                    .filter(individual ->
-                                            !individual.equals(newIndividual))
-                                    .map(individual ->
-                                            new CopiedOWLObjectPropertyAssertionAxiom(individual, axiom.getProperty(), newIndividual))
-                    )
-                    .forEach(queue::offer);
-            return true;
-        }
-        return false;
+                .map(owlClassExpression ->
+                        OWLManager.getOWLDataFactory().getOWLClassAssertionAxiom(owlClassExpression, newIndividual.getIndividualInTheRepair()))
+                .forEach(repair::add);
+        ontologyWithFurtherIndexes.objectPropertyAssertionAxiomsWithSubject(newIndividual.getIndividualInTheSaturation())
+                .flatMap(axiom ->
+                        copiedOWLIndividualFactory.getCopiesOf(axiom.getObject()).stream()
+                                .map(individual ->
+                                        new CopiedOWLObjectPropertyAssertionAxiom(newIndividual, axiom.getProperty(), individual))
+                )
+                .forEach(queue::offer);
+        ontologyWithFurtherIndexes.objectPropertyAssertionAxiomsWithObject(newIndividual.getIndividualInTheSaturation())
+                .flatMap(axiom ->
+                        copiedOWLIndividualFactory.getCopiesOf(axiom.getSubject()).stream()
+                                .filter(individual ->
+                                        !individual.equals(newIndividual))
+                                .map(individual ->
+                                        new CopiedOWLObjectPropertyAssertionAxiom(individual, axiom.getProperty(), newIndividual))
+                )
+                .forEach(queue::offer);
+//            return true;
+//        }
+//        return false;
     }
 
     @Override

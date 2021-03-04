@@ -43,6 +43,9 @@ public final class ComputeRepair {
                 case "IQ":
                     variant = RepairManagerBuilder.RepairVariant.IQ;
                     break;
+                case "IQ2":
+                    variant = RepairManagerBuilder.RepairVariant.IQ2;
+                    break;
                 case "CQ":
                     variant = RepairManagerBuilder.RepairVariant.CQ;
                     break;

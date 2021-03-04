@@ -11,16 +11,15 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.parameters.Imports;
 
-import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Queue;
-import java.util.Set;
 
 public class IQRepairGenerator2 extends RepairGenerator {
 
     private static Logger logger = LogManager.getLogger(IQRepairGenerator.class);
 
-    private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
+    //    private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
     private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
     //    private final Map<OWLNamedIndividual, RepairType> seedFunction;
     private final Queue<CopiedOWLIndividual> queue = new LinkedList<>();
@@ -31,7 +30,8 @@ public class IQRepairGenerator2 extends RepairGenerator {
 
     @Override
     public int getNumberOfCollectedIndividuals() {
-        return individualsInTheRepair.size();
+//        return individualsInTheRepair.size();
+        return copiedOWLIndividualFactory.size();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class IQRepairGenerator2 extends RepairGenerator {
 
     @Override
     protected void generateVariables() {
-        inputObjectNames.stream()
+        ontology.getIndividualsInSignature().stream()
                 .filter(anonymousDetector::isNamed)
                 .map(individualName ->
                         copiedOWLIndividualFactory.newNamedIndividual(individualName, inputSeedFunction.get(individualName))
@@ -73,10 +73,23 @@ public class IQRepairGenerator2 extends RepairGenerator {
                                         axiom.getObject().asOWLNamedIndividual()),
                                 axiom.getObject().asOWLNamedIndividual()
                         ).forEach(repairType -> {
+//                            final CopiedOWLIndividual object =
+//                                    copiedOWLIndividualFactory.getOrElseCreateNewAnonymousIndividual(axiom.getObject().asOWLNamedIndividual(), repairType);
+//                            repair.add(OWLManager.getOWLDataFactory().getOWLObjectPropertyAssertionAxiom(axiom.getProperty(), subject.getIndividualInTheRepair(), object.getIndividualInTheRepair()));
+//                            if (individualsInTheRepair.add(object)) {
+//                                queue.offer(object);
+//                            }
+                            final Optional<CopiedOWLIndividual> optionalObject =
+                                    copiedOWLIndividualFactory.getCopy(axiom.getObject().asOWLNamedIndividual(), repairType);
                             final CopiedOWLIndividual object =
-                                    copiedOWLIndividualFactory.getOrElseCreateNewAnonymousIndividual(axiom.getObject().asOWLNamedIndividual(), repairType);
-                            repair.add(OWLManager.getOWLDataFactory().getOWLObjectPropertyAssertionAxiom(axiom.getProperty(), subject.getIndividualInTheRepair(), object.getIndividualInTheRepair()));
-                            if (individualsInTheRepair.add(object)) {
+                                    optionalObject.orElseGet(() -> copiedOWLIndividualFactory.newAnonymousIndividual(axiom.getObject().asOWLNamedIndividual(), repairType));
+                            repair.add(
+                                    OWLManager.getOWLDataFactory()
+                                            .getOWLObjectPropertyAssertionAxiom(
+                                                    axiom.getProperty(),
+                                                    subject.getIndividualInTheRepair(),
+                                                    object.getIndividualInTheRepair()));
+                            if (!optionalObject.isPresent()) {
                                 queue.offer(object);
                             }
                         });
@@ -88,4 +101,5 @@ public class IQRepairGenerator2 extends RepairGenerator {
     protected void generateMatrix() throws OWLOntologyCreationException {
         /* The matrix is already populated during the above enumeration of all object names. */
     }
+
 }

@@ -1,9 +1,6 @@
 package de.tu_dresden.lat.abox_repairs.repairManager;
 
-import de.tu_dresden.lat.abox_repairs.generator.CQRepairGenerator;
-import de.tu_dresden.lat.abox_repairs.generator.CanonicalRepairGenerator;
-import de.tu_dresden.lat.abox_repairs.generator.IQRepairGenerator;
-import de.tu_dresden.lat.abox_repairs.generator.RepairGenerator;
+import de.tu_dresden.lat.abox_repairs.generator.*;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.CycleChecker;
 import de.tu_dresden.lat.abox_repairs.ontology_tools.OntologyPreparations;
 import de.tu_dresden.lat.abox_repairs.reasoning.ReasonerFacade;
@@ -31,11 +28,11 @@ public class RepairManagerBuilder {
 
     private static Logger logger = LogManager.getLogger(RepairManagerBuilder.class);
 
-    public enum RepairVariant {IQ, CQ, CANONICAL_IQ, CANONICAL_CQ}
+    public enum RepairVariant {IQ, IQ2, CQ, CANONICAL_IQ, CANONICAL_CQ}
 
     //private final RepairVariant variant;
 
-    public static EnumSet<RepairVariant> IQ_ANY = EnumSet.of(RepairVariant.IQ, RepairVariant.CANONICAL_IQ);
+    public static EnumSet<RepairVariant> IQ_ANY = EnumSet.of(RepairVariant.IQ, RepairVariant.IQ2, RepairVariant.CANONICAL_IQ);
     public static EnumSet<RepairVariant> CQ_ANY = EnumSet.of(RepairVariant.CQ, RepairVariant.CANONICAL_CQ);
     public static EnumSet<RepairVariant> CANONICAL_ANY = EnumSet.of(RepairVariant.CANONICAL_IQ, RepairVariant.CANONICAL_CQ);
 
@@ -136,6 +133,8 @@ public class RepairManagerBuilder {
             repairGenerator = new CanonicalRepairGenerator(ontology);
         else if (variant.equals(RepairVariant.IQ))
             repairGenerator = new IQRepairGenerator(ontology);
+        else if (variant.equals(RepairVariant.IQ2))
+            repairGenerator = new IQRepairGenerator2(ontology);
         else {
             assert variant.equals(RepairVariant.CQ);
             repairGenerator = new CQRepairGenerator(ontology);

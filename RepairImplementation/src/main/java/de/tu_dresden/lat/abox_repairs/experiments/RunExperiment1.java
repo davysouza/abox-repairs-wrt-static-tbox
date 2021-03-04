@@ -56,6 +56,7 @@ public class RunExperiment1 {
         RepairManagerBuilder.RepairVariant repairVariant;
         switch(args[2]){
             case "IQ": repairVariant = RepairManagerBuilder.RepairVariant.IQ; break;
+            case "IQ2": repairVariant = RepairManagerBuilder.RepairVariant.IQ2; break;
             case "CQ": repairVariant = RepairManagerBuilder.RepairVariant.CQ; break;
             default:
                 System.out.println("Unexpected repair variant: "+args[1]);

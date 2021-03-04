@@ -73,6 +73,8 @@ public class RunExperiment2 {
         switch (string) {
             case "IQ":
                 return RepairManagerBuilder.RepairVariant.IQ;
+            case "IQ2":
+                return RepairManagerBuilder.RepairVariant.IQ2;
             case "CQ":
                 return RepairManagerBuilder.RepairVariant.CQ;
             case "CANONICAL_IQ":
