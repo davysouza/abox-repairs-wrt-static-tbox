@@ -88,7 +88,7 @@ public class SeedFunctionHandler {
 		 *  And to map those individuals, we need an additional feature to distinguish whether the individuals in the saturated
 		 *  ontology is named or anonymous, so that the anonymous detector is used.
 		 *  But now we could easily employ the getter method that has been provided in the class SeedFunction.java.
-		 *  This implies that we can remove the below iteration. 
+		 *  This implies that we can now remove the creation of setOfRemainingIndividuals and the below iteration. 
 		 */
 		Set<OWLNamedIndividual> setOfRemainingIndividuals = ontology.getIndividualsInSignature()
 															.stream()
@@ -139,5 +139,5 @@ public class SeedFunctionHandler {
 			
 		}
 		return hittingSetFunction;
-	}	
+	}
 }
