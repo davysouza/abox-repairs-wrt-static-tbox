@@ -23,7 +23,7 @@ public class RepairTypeHandler {
 
     private final ReasonerFacade reasonerWithTBox, reasonerWithoutTBox;
 
-    
+
     public RepairTypeHandler(ReasonerFacade reasonerWithTBox, ReasonerFacade reasonerWithoutTBox) {
 //    	this.ontology = inputOntology;
     	this.reasonerWithTBox = reasonerWithTBox;
@@ -54,7 +54,7 @@ public class RepairTypeHandler {
 
     /**
      * A repair pre-type for an individual u only satisfies Properties 1.) and 2.) of Definition 5 in the paper
-     * 
+     *
      * Check whether the given repair pre-type is already premise-saturated
      *
      * @param repairPreType a repair pre-type
@@ -62,42 +62,24 @@ public class RepairTypeHandler {
      */
 
     public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
-
-        /* You should replace the condition reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) &&
-		             			reasonerWithTBox.instanceOf(ind, subsumee)
-           by
-            !reasonerWithTBox.instanceOf(ind, subsumee) || reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType)
-           to match Condition 3 of the definition.
-
-           That comment applies to the version before your last two commits, which is:
-
-    public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
-
-    	return repairPreType.stream().allMatch(atom -> reasonerWithTBox.equivalentOrSubsumedBy(atom)
-				.stream().allMatch(subsumee ->
-								reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) &&
-		             			reasonerWithTBox.instanceOf(ind, subsumee) ) );
-
-    }
-*/
-
-        /* Please do not introduce new bugs, Adrian.  Before your commit "fixed the method isPremiseSaturated" four days
-        *  ago, the method was as follows and returned correct results.  Please code carefully!
-        *
-        *
-        *  public boolean isPremiseSaturated(Set<OWLClassExpression> repairPreType, OWLNamedIndividual ind) {
-        */
-        for (OWLClassExpression atom : repairPreType) {
-            Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
-            for (OWLClassExpression subsumee : setOfSubsumees) {
-                if (!reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) &&
-                		reasonerWithTBox.instanceOf(ind, subsumee)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+//        for (OWLClassExpression atom : repairPreType) {
+//            Set<OWLClassExpression> setOfSubsumees = new HashSet<>(reasonerWithTBox.equivalentOrSubsumedBy(atom));
+//            for (OWLClassExpression subsumee : setOfSubsumees) {
+//                if (!reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) &&
+//                		reasonerWithTBox.instanceOf(ind, subsumee)) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+        return repairPreType.stream().parallel()
+                .allMatch(atom ->
+                        reasonerWithTBox.equivalentOrSubsumedBy(atom).stream().parallel()
+                                .allMatch(subsumee ->
+                                        !reasonerWithTBox.instanceOf(ind, subsumee)
+                                                || reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType)
+                                )
+                );
     }
 /*
     	
@@ -125,27 +107,27 @@ public class RepairTypeHandler {
      * @return a random repair type
      */
 
-   
+
     public RepairType convertToRandomRepairType(Set<OWLClassExpression> hittingSet, OWLNamedIndividual ind) {
-    	
+
     	boolean isSaturated = false;
-        
+
         Set<OWLClassExpression> resultingSet = new HashSet<>(hittingSet);
         Set<OWLClassExpression> setOfNewAtoms = new HashSet<>(hittingSet);
         while (!isSaturated) {
             isSaturated = true;
             Set<OWLClassExpression> buffer = new HashSet<>();
             for (OWLClassExpression exp : setOfNewAtoms) {
-                
+
                 for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(exp)) {
 
-                    
-                    if (!reasonerWithoutTBox.subsumedByAny(subsumee, resultingSet) 
+
+                    if (!reasonerWithoutTBox.subsumedByAny(subsumee, resultingSet)
                     		&& reasonerWithTBox.instanceOf(ind, subsumee)) {
-                    	
+
                     	OWLClassExpression concept = subsumee.asConjunctSet().stream()
                     			.filter(con -> !reasonerWithTBox.equivalentToOWLThing(con)).findAny().get();
-                    	
+
                     	resultingSet.add(concept);
                     	buffer.add(concept);
                         isSaturated = false;
@@ -173,11 +155,11 @@ public class RepairTypeHandler {
     /* If 'successorSet' contains a concept equivalent to owl:thing with respect to the TBox, then this method must
     *  return the empty set, as then there does not exist any repair types for 'ind' that cover both 'repairType' and
     *  'successorSet' whatsoever.  See also my comment to the below method 'findCoveringPreTypes'. */
-    public Set<RepairType> findCoveringRepairTypes(RepairType repairType, 
+    public Set<RepairType> findCoveringRepairTypes(RepairType repairType,
     		Set<OWLClassExpression> successorSet, OWLNamedIndividual ind) {
 
         // repairType should never be null
-    	
+
     	// each candidate in the setOfCandidates cannot contain any atom that is equivalent to owl:Thing
 
         Set<Set<OWLClassExpression>> setOfCandidates =
@@ -206,7 +188,7 @@ public class RepairTypeHandler {
                 *  here.  As a quick and dirty fix, you must always explicitly test whether 'candidate' contains an atom
                 *  that is equivalent to owl:Thing w.r.t. the TBox. */
                 for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(atom)) {
-                    if (! reasonerWithoutTBox.subsumedByAny(subsumee, candidate) && 
+                    if (! reasonerWithoutTBox.subsumedByAny(subsumee, candidate) &&
                     		reasonerWithTBox.instanceOf(ind, subsumee)) {
 
                         isSaturated = false;
@@ -247,7 +229,7 @@ public class RepairTypeHandler {
         }
 
         return minimalRepairTypes;
-        
+
     }
 
 
@@ -278,16 +260,16 @@ public class RepairTypeHandler {
         *       .forEach(exp -> { <code in the body of the for loop> });
         * A similar comment applies to the for loop over 'setOfAtoms' below.*/
         for (OWLClassExpression exp : successorSet) {
-        	
+
         	Set<Set<OWLClassExpression>> newSet = new HashSet<>();
         	/* Could it happen that you encounter an instance of OWLClassExpression that consists of several nested
         	* instances of OWLObjectIntersectionOf but that is an atom after flattening?*/
     		Set<OWLClassExpression> setOfAtoms = reasonerWithoutTBox.equivalentOrSubsuming(exp).stream()
-    								.filter(atom -> !(atom instanceof OWLObjectIntersectionOf &&  
+    								.filter(atom -> !(atom instanceof OWLObjectIntersectionOf &&
     												!reasonerWithTBox.equivalentToOWLThing(atom)))
     								.collect(Collectors.toSet());
-    		
-    		
+
+
     		for(OWLClassExpression atom : setOfAtoms) {
     			for (Set<OWLClassExpression> currentSet : queueSet) {
     				Set<OWLClassExpression> unionSet = new HashSet<>(currentSet);

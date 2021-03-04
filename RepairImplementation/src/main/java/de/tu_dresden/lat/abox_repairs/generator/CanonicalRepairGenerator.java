@@ -1,5 +1,6 @@
 package de.tu_dresden.lat.abox_repairs.generator;
 
+import com.github.jsonldjava.shaded.com.google.common.collect.Streams;
 import com.google.common.collect.Sets;
 import de.tu_dresden.lat.abox_repairs.repair_type.RepairType;
 import fr.pixelprose.count.generator.PowerSet;
@@ -10,6 +11,7 @@ import org.semanticweb.owlapi.model.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 /**
  * Careful: this does not compute the canonical repair, but only the variables that would be needed by it.
@@ -17,7 +19,7 @@ import java.util.Set;
 public class CanonicalRepairGenerator extends RepairGenerator {
 
     private static Logger logger = LogManager.getLogger(CanonicalRepairGenerator.class);
-    private final Set<Pair<OWLIndividual, RepairType>> individualsInTheRepair = new HashSet<>();
+    private final Set<Pair<OWLIndividual, RepairType>> individualsInTheRepair = Sets.newConcurrentHashSet();
 
     public CanonicalRepairGenerator(OWLOntology inputOntology) {
         super(inputOntology);
@@ -48,14 +50,16 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 				}
 			}*/
             final Iterable<Iterable<OWLClassExpression>> powerSet = new PowerSet(setOfAtoms, 0, setOfAtoms.size());
-            for (Iterable<OWLClassExpression> repairTypeCandidate : powerSet) {
+            StreamSupport.stream(powerSet.spliterator(), true).forEach(repairTypeCandidate -> {
+//            for (Iterable<OWLClassExpression> repairTypeCandidate : powerSet) {
                 final Set<OWLClassExpression> _repairTypeCandidate = Sets.newHashSet(repairTypeCandidate);
                 if (typeHandler.isPremiseSaturated(_repairTypeCandidate, individual)) {
                     RepairType type = typeHandler.newMinimisedRepairType(_repairTypeCandidate);
                     /*createCopy(individual, type);*/
                     individualsInTheRepair.add(Pair.of(individual, type));
                 }
-            }
+//            }
+            });
         }
     }
 
