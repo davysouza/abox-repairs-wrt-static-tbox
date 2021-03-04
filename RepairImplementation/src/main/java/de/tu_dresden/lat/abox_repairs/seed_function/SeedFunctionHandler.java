@@ -54,12 +54,20 @@ public class SeedFunctionHandler {
 	/**
 	 * 
 	 * Given a repair request, the method constructs a seed function that 
-	 * maps each individual in the repair request to a repair type
-	 *
+	 * maps each individual in the repair request to a repair type 
+	 * 
 	 * Assumption: every individual in repairRequest is named
 	 * @return
 	 */
 	
+	
+	/*
+	 * The way we construct our seed function at the moment is still not optimal, in the sense that 
+	 * the generated random seed function is not minimal yet w.r.t. covering relation.
+	 * 
+	 * This would be challenging to find a good approach for directly constructing a minimal hitting set or
+	 * a minimal seed function so that the resulting repair can also be optimal
+	 */
 	public SeedFunction computeRandomSeedFunction(RepairRequest repairRequest) {
 		
 		Map<OWLNamedIndividual, Set<OWLClassExpression>> hittingSetFunction =
@@ -75,6 +83,13 @@ public class SeedFunctionHandler {
 			seedFunction.put(individual, type);
 		}
 		
+		/*
+		 *  In the beginning, the iteration is needed in order to map individuals that are not contained in the repair request.
+		 *  And to map those individuals, we need an additional feature to distinguish whether the individuals in the saturated
+		 *  ontology is named or anonymous, so that the anonymous detector is used.
+		 *  But now we could easily employ the getter method that has been provided in the class SeedFunction.java.
+		 *  This implies that we can remove the below iteration. 
+		 */
 		Set<OWLNamedIndividual> setOfRemainingIndividuals = ontology.getIndividualsInSignature()
 															.stream()
 															.filter(ind -> !setOfMappedIndividuals.contains(ind) &&
@@ -95,6 +110,8 @@ public class SeedFunctionHandler {
 	 * constructs a hitting set of the top-level conjuncts of concepts that are 
 	 * asserted to the individual.
 	 */
+	
+	
 	private Map<OWLNamedIndividual, Set<OWLClassExpression>> computeRandomHittingSet(RepairRequest repairRequest) {
 		Map<OWLNamedIndividual, Set<OWLClassExpression>> hittingSetFunction = new HashMap<>(); // TODO use Multimap
 		
