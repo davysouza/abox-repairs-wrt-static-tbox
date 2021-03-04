@@ -81,22 +81,6 @@ public class RepairTypeHandler {
                                 )
                 );
     }
-/*
-    	
-//    	Set<OWLClassExpression> setOfFilteredSubconcepts =  
-//    			setOfSubconcepts.stream().filter(subconcept -> reasonerWithTBox.instanceOf(ind, subconcept) && 
-//    														   reasonerWithTBox.subsumedByAny(subconcept, repairPreType))
-//    									.collect(Collectors.toSet());
-//    	
-//    	return repairPreType.stream().allMatch(atom -> !reasonerWithTBox.equivalentToOWLThing(atom)) &&
-//    			reasonerWithoutTBox.isCovered(setOfFilteredSubconcepts, repairPreType);
-
-    	return repairPreType.stream().allMatch(atom -> reasonerWithTBox.equivalentOrSubsumedBy(atom)
-							.stream().allMatch(subsumee -> !reasonerWithTBox.equivalentToOWLThing(atom) &&
-															reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType) && 
-															reasonerWithTBox.instanceOf(ind, subsumee)));
-    	
-    }*/
 
     /**
      * Given a repair pre-type and a random object, this method will this repair pre-type
