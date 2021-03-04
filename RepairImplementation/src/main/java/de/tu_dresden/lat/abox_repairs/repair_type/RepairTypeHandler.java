@@ -125,6 +125,16 @@ public class RepairTypeHandler {
                     if (!reasonerWithoutTBox.subsumedByAny(subsumee, resultingSet)
                     		&& reasonerWithTBox.instanceOf(ind, subsumee)) {
 
+                    	/*
+                    	 * I think the below code can be replaced with the following code:
+                    	 * OWLClassExpression subsumer = reasonerWithTBox.equivalentOrSubsuming(subsumee).stream()
+                    						.filter(con -> !reasonerWithTBox.equivalentToOWLThing(con) &&
+                    										!(con instanceof OWLObjectIntersectionOf)).findAny().get();
+                    	 * The one below only considers the top-level conjuncts of the subsumee, but not the whole subsumers of it.
+                    	 * The code above should enumerate more possible atoms that can be added to the repair type than the one below.
+                    	 */
+
+
                     	OWLClassExpression concept = subsumee.asConjunctSet().stream()
                     			.filter(con -> !reasonerWithTBox.equivalentToOWLThing(con)).findAny().get();
 
@@ -277,8 +287,7 @@ public class RepairTypeHandler {
     				newSet.add(unionSet);
     			}
     		}
-    		/* You get the same result but in a cheaper way with the instruction queueSet.clear(); */
-            queueSet.removeAll(queueSet);
+            queueSet.clear();
             queueSet.addAll(newSet);
         }
 
