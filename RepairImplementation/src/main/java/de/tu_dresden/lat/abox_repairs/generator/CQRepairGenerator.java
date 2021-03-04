@@ -16,22 +16,18 @@ import java.util.Set;
 public class CQRepairGenerator extends RepairGenerator {
 
     private static Logger logger = LogManager.getLogger(CQRepairGenerator.class);
-    //    private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
+
     private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
-    //private final Map<OWLNamedIndividual, RepairType> seedFunction;
     private final Queue<CopiedOWLObjectPropertyAssertionAxiom> queue = new LinkedList<>();
     private final OWLOntologyWithFurtherIndexes ontologyWithFurtherIndexes;
 
     public CQRepairGenerator(OWLOntology inputOntology) {
-
         super(inputOntology);
-        //this.seedFunction = inputSeedFunction;
         this.ontologyWithFurtherIndexes = new OWLOntologyWithFurtherIndexes(inputOntology);
     }
 
     @Override
     public int getNumberOfCollectedIndividuals() {
-//        return individualsInTheRepair.size();
         return copiedOWLIndividualFactory.size();
     }
 
@@ -95,9 +91,6 @@ public class CQRepairGenerator extends RepairGenerator {
             } else {
                 typeHandler.findCoveringRepairTypes(object.getRepairType(), successorSet, object.getIndividualInTheSaturation().asOWLNamedIndividual())
                         .forEach(repairType -> {
-//                            final CopiedOWLIndividual newIndividual =
-//                                    copiedOWLIndividualFactory.newAnonymousIndividual(object.getIndividualInTheSaturation(), repairType);
-//                            addNewIndividualToTheRepair(newIndividual);
                             if (!copiedOWLIndividualFactory.containsCopy(object.getIndividualInTheSaturation(), repairType)) {
                                 addNewIndividualToTheRepair(copiedOWLIndividualFactory.newAnonymousIndividual(object.getIndividualInTheSaturation(), repairType));
                             }
@@ -107,7 +100,6 @@ public class CQRepairGenerator extends RepairGenerator {
     }
 
     private void addNewIndividualToTheRepair(CopiedOWLIndividual newIndividual) {
-//        if (individualsInTheRepair.add(newIndividual)) {
         ontology.classAssertionAxioms(newIndividual.getIndividualInTheSaturation())
                 .map(OWLClassAssertionAxiom::getClassExpression)
                 .filter(owlClassExpression ->
@@ -132,9 +124,6 @@ public class CQRepairGenerator extends RepairGenerator {
                                         new CopiedOWLObjectPropertyAssertionAxiom(individual, axiom.getProperty(), newIndividual))
                 )
                 .forEach(queue::offer);
-//            return true;
-//        }
-//        return false;
     }
 
     @Override

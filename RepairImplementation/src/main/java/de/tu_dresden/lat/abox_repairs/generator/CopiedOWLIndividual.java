@@ -85,17 +85,6 @@ public final class CopiedOWLIndividual {
             return Collections.unmodifiableCollection(lookupTableCQ.get(individualInTheSaturation));
         }
 
-        @Deprecated
-        protected CopiedOWLIndividual getOrElseCreateNewAnonymousIndividual(
-                OWLIndividual individualInTheSaturation,
-                RepairType repairType) {
-            if (lookupTableIQ.containsKey(Pair.of(individualInTheSaturation, repairType))) {
-                return lookupTableIQ.get(Pair.of(individualInTheSaturation, repairType));
-            } else {
-                return newAnonymousIndividual(individualInTheSaturation, repairType);
-            }
-        }
-
         protected Optional<CopiedOWLIndividual> getCopy(OWLIndividual individualInTheSaturation,
                                                         RepairType repairType) {
             if (lookupTableIQ.containsKey(Pair.of(individualInTheSaturation, repairType))) {

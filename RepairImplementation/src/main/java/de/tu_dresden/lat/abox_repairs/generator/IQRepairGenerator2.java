@@ -19,9 +19,7 @@ public class IQRepairGenerator2 extends RepairGenerator {
 
     private static Logger logger = LogManager.getLogger(IQRepairGenerator.class);
 
-    //    private final Set<CopiedOWLIndividual> individualsInTheRepair = new HashSet<>();
     private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
-    //    private final Map<OWLNamedIndividual, RepairType> seedFunction;
     private final Queue<CopiedOWLIndividual> queue = new LinkedList<>();
 
     public IQRepairGenerator2(OWLOntology inputOntology) {
@@ -30,7 +28,6 @@ public class IQRepairGenerator2 extends RepairGenerator {
 
     @Override
     public int getNumberOfCollectedIndividuals() {
-//        return individualsInTheRepair.size();
         return copiedOWLIndividualFactory.size();
     }
 
@@ -73,12 +70,6 @@ public class IQRepairGenerator2 extends RepairGenerator {
                                         axiom.getObject().asOWLNamedIndividual()),
                                 axiom.getObject().asOWLNamedIndividual()
                         ).forEach(repairType -> {
-//                            final CopiedOWLIndividual object =
-//                                    copiedOWLIndividualFactory.getOrElseCreateNewAnonymousIndividual(axiom.getObject().asOWLNamedIndividual(), repairType);
-//                            repair.add(OWLManager.getOWLDataFactory().getOWLObjectPropertyAssertionAxiom(axiom.getProperty(), subject.getIndividualInTheRepair(), object.getIndividualInTheRepair()));
-//                            if (individualsInTheRepair.add(object)) {
-//                                queue.offer(object);
-//                            }
                             final Optional<CopiedOWLIndividual> optionalObject =
                                     copiedOWLIndividualFactory.getCopy(axiom.getObject().asOWLNamedIndividual(), repairType);
                             final CopiedOWLIndividual object =
@@ -98,6 +89,7 @@ public class IQRepairGenerator2 extends RepairGenerator {
     }
 
     @Override
+    @Deprecated
     protected void generateMatrix() throws OWLOntologyCreationException {
         /* The matrix is already populated during the above enumeration of all object names. */
     }
