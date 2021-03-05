@@ -56,7 +56,7 @@ final class CopiedOWLIndividual {
 
         private final Multimap<OWLIndividual, CopiedOWLIndividual> lookupTableCQ = HashMultimap.create();
         private final Map<Pair<OWLIndividual, RepairType>, CopiedOWLIndividual> lookupTableIQ = new HashMap<>();
-        private int nextAnonymousIndividual = 0;
+//        private int nextAnonymousIndividual = 0;
 
         Factory() {
             super();
