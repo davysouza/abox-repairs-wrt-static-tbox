@@ -9,7 +9,7 @@ import org.semanticweb.owlapi.model.OWLIndividual;
 
 import java.util.*;
 
-public final class CopiedOWLIndividual {
+final class CopiedOWLIndividual {
 
     private final OWLIndividual individualInTheSaturation; // t
     private final RepairType repairType;                   // 𝒦
@@ -25,15 +25,15 @@ public final class CopiedOWLIndividual {
         this.individualInTheRepair = individualInTheRepair;
     }
 
-    protected OWLIndividual getIndividualInTheSaturation() {
+    OWLIndividual getIndividualInTheSaturation() {
         return individualInTheSaturation;
     }
 
-    protected RepairType getRepairType() {
+    RepairType getRepairType() {
         return repairType;
     }
 
-    protected OWLIndividual getIndividualInTheRepair() {
+    OWLIndividual getIndividualInTheRepair() {
         return individualInTheRepair;
     }
 
@@ -52,17 +52,17 @@ public final class CopiedOWLIndividual {
         return Objects.hash(individualInTheSaturation, repairType);
     }
 
-    protected static final class Factory {
+    static final class Factory {
 
         private final Multimap<OWLIndividual, CopiedOWLIndividual> lookupTableCQ = HashMultimap.create();
         private final Map<Pair<OWLIndividual, RepairType>, CopiedOWLIndividual> lookupTableIQ = new HashMap<>();
         private int nextAnonymousIndividual = 0;
 
-        protected Factory() {
+        Factory() {
             super();
         }
 
-        protected CopiedOWLIndividual newNamedIndividual(
+        CopiedOWLIndividual newNamedIndividual(
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
             final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, individualInTheSaturation);
@@ -71,21 +71,21 @@ public final class CopiedOWLIndividual {
             return copiedOWLIndividual;
         }
 
-        protected CopiedOWLIndividual newAnonymousIndividual(
+        CopiedOWLIndividual newAnonymousIndividual(
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
-            // final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLAnonymousIndividual());
-            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLNamedIndividual("anonymous_individual_" + nextAnonymousIndividual++));
+             final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLAnonymousIndividual());
+//            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLNamedIndividual("anonymous_individual_" + nextAnonymousIndividual++));
             lookupTableCQ.put(individualInTheSaturation, copiedOWLIndividual);
             lookupTableIQ.put(Pair.of(individualInTheSaturation, repairType), copiedOWLIndividual);
             return copiedOWLIndividual;
         }
 
-        protected Collection<CopiedOWLIndividual> getCopiesOf(OWLIndividual individualInTheSaturation) {
+        Collection<CopiedOWLIndividual> getCopiesOf(OWLIndividual individualInTheSaturation) {
             return Collections.unmodifiableCollection(lookupTableCQ.get(individualInTheSaturation));
         }
 
-        protected Optional<CopiedOWLIndividual> getCopy(OWLIndividual individualInTheSaturation,
+        Optional<CopiedOWLIndividual> getCopy(OWLIndividual individualInTheSaturation,
                                                         RepairType repairType) {
             if (lookupTableIQ.containsKey(Pair.of(individualInTheSaturation, repairType))) {
                 return Optional.of(lookupTableIQ.get(Pair.of(individualInTheSaturation, repairType)));
@@ -94,12 +94,12 @@ public final class CopiedOWLIndividual {
             }
         }
 
-        protected boolean containsCopy(OWLIndividual individualInTheSaturation,
+        boolean containsCopy(OWLIndividual individualInTheSaturation,
                                        RepairType repairType) {
             return lookupTableIQ.containsKey(Pair.of(individualInTheSaturation, repairType));
         }
 
-        protected int size() {
+        int size() {
             return lookupTableIQ.size();
         }
 

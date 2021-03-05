@@ -6,12 +6,12 @@ import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 
 import java.util.Objects;
 
-public final class CopiedOWLObjectPropertyAssertionAxiom {
+final class CopiedOWLObjectPropertyAssertionAxiom {
 
     private final CopiedOWLIndividual subject, object;
     private final OWLObjectPropertyExpression property;
 
-    public CopiedOWLObjectPropertyAssertionAxiom(
+    CopiedOWLObjectPropertyAssertionAxiom(
             CopiedOWLIndividual subject,
             OWLObjectPropertyExpression property,
             CopiedOWLIndividual object
@@ -21,19 +21,19 @@ public final class CopiedOWLObjectPropertyAssertionAxiom {
         this.object = object;
     }
 
-    public CopiedOWLIndividual getSubject() {
+    CopiedOWLIndividual getSubject() {
         return subject;
     }
 
-    public OWLObjectPropertyExpression getProperty() {
+    OWLObjectPropertyExpression getProperty() {
         return property;
     }
 
-    public CopiedOWLIndividual getObject() {
+    CopiedOWLIndividual getObject() {
         return object;
     }
 
-    public OWLObjectPropertyAssertionAxiom toAxiomInTheRepair() {
+    OWLObjectPropertyAssertionAxiom toAxiomInTheRepair() {
         return OWLManager.getOWLDataFactory().getOWLObjectPropertyAssertionAxiom(
                 property, subject.getIndividualInTheRepair(), object.getIndividualInTheRepair());
     }
