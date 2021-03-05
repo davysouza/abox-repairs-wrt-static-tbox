@@ -16,6 +16,11 @@ import java.util.stream.Stream;
 
 import static org.semanticweb.owlapi.model.AxiomType.OBJECT_PROPERTY_ASSERTION;
 
+/**
+ * A class that encapsulates an instance of {@link org.semanticweb.owlapi.model.OWLOntology} and adds a further index
+ * mapping each instance of {@link org.semanticweb.owlapi.model.OWLIndividual} to the set of all instances of
+ * {@link org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom} in which it occurs in object position.
+ */
 public class OWLOntologyWithFurtherIndexes {
 
     /* Creating a new visitor that is not defined in uk.ac.manchester.cs.owl.owlapi.InitVisitorFactory */
@@ -25,10 +30,40 @@ public class OWLOntologyWithFurtherIndexes {
     private final OWLOntology ontology;
     private transient MapPointer<OWLIndividual, OWLObjectPropertyAssertionAxiom> objectPropertyAssertionsByObjectIndividual;
 
+    private final OWLAxiomVisitor addObjectPropertyAssertionVisitor =
+            new OWLAxiomVisitor() {
+                @Override
+                public void visit(OWLObjectPropertyAssertionAxiom axiom) {
+                    objectPropertyAssertionsByObjectIndividual.put(axiom.getObject(), axiom);
+                }
+            };
+
+    private final OWLAxiomVisitor removeObjectPropertyAssertionVisitor =
+            new OWLAxiomVisitor() {
+                @Override
+                public void visit(OWLObjectPropertyAssertionAxiom axiom) {
+                    objectPropertyAssertionsByObjectIndividual.remove(axiom.getObject(), axiom);
+                }
+            };
+
     public OWLOntologyWithFurtherIndexes(OWLOntology ontology) {
         super();
         this.ontology = ontology;
         initializeLazyObjectPropertyAssertionsMap();
+        ontology.getOWLOntologyManager()
+                .addOntologyChangeListener(
+                        changes ->
+                                changes.stream()
+                                        .filter(change -> change.isAxiomChange(OBJECT_PROPERTY_ASSERTION))
+                                        .forEach(change -> {
+                                            if (change.isAddAxiom()) {
+                                                change.getAddedAxiom().get().accept(addObjectPropertyAssertionVisitor);
+                                            } else if (change.isRemoveAxiom()) {
+                                                change.getRemovedAxiom().get().accept(removeObjectPropertyAssertionVisitor);
+                                            }
+                                        }),
+                        new SpecificOntologyChangeBroadcastStrategy(ontology)
+                );
     }
 
     @SuppressWarnings("unchecked")
@@ -67,12 +102,24 @@ public class OWLOntologyWithFurtherIndexes {
     }
 
     public final Stream<OWLObjectPropertyAssertionAxiom> objectPropertyAssertionAxiomsWithObject(OWLIndividual individual) {
-        /* The below instruction would produce the desired results, but in an unoptimized manner as the OWLAPI does not
-         * manage an according index.  Specifically, all axioms would be visited once, which is expensive.
-         *
-         * return ontology.axioms(OWLObjectPropertyAssertionAxiom.class, OWLIndividual.class, individual, EXCLUDED, IN_SUPER_POSITION); */
         return objectPropertyAssertionsByObjectIndividual.getValues(individual);
     }
+
+//    public ChangeApplied addAxiom(OWLAxiom axiom) {
+//        final ChangeApplied result = ontology.addAxiom(axiom);
+//        if (result.equals(ChangeApplied.SUCCESSFULLY) && axiom.getAxiomType().equals(OBJECT_PROPERTY_ASSERTION)) {
+//            axiom.accept(addObjectPropertyAssertionVisitor);
+//        }
+//        return result;
+//    }
+//
+//    public ChangeApplied removeAxiom(OWLAxiom axiom) {
+//        final ChangeApplied result = ontology.removeAxiom(axiom);
+//        if (result.equals(ChangeApplied.SUCCESSFULLY) && axiom.getAxiomType().equals(OBJECT_PROPERTY_ASSERTION)) {
+//            axiom.accept(removeObjectPropertyAssertionVisitor);
+//        }
+//        return result;
+//    }
 
     private static class ConfigurableInitIndividualVisitor<K extends OWLObject> extends InitVisitorFactory.InitIndividualVisitor<K> {
 
