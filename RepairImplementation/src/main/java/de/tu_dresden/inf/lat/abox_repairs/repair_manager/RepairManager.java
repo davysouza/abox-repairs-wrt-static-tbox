@@ -79,8 +79,9 @@ public class RepairManager {
 
         long startTime = System.nanoTime();
 
-        int oldIndividuals = workingCopy.getIndividualsInSignature().size();
-        long oldAssertions = workingCopy.aboxAxioms(Imports.INCLUDED).count();
+        int oldIndividuals = workingCopy.getIndividualsInSignature().size() + workingCopy.getAnonymousIndividuals().size();
+//        long oldAssertions = workingCopy.aboxAxioms(Imports.INCLUDED).count();
+        long oldAssertions = workingCopy.getABoxAxioms(Imports.INCLUDED).size();
 
         reasonerWithTBox.update();
 
