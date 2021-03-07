@@ -1,5 +1,13 @@
 /target/
 /bin/
 /src/main/resources/log4j2.xml
-el-fragment.owl
 **/.DS_Store
+.classpath
+.project
+.settings/
+.idea/
+abox-repairs.iml
+el-fragment.owl
+ore_ont_*.owl
+repair.owl
+debug.log

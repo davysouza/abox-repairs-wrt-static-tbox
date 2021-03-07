@@ -1,114 +1,155 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>de.tu-dresden.lat</groupId>
-  <artifactId>repair</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>OntologyRepair</name>
-  <properties>
-  	<maven.compiler.target>8</maven.compiler.target>
-    <maven.compiler.source>8</maven.compiler.source>
-  </properties>
-  <dependencies>
-  	<dependency>
-  		<groupId>com.hermit-reasoner</groupId>
-  		<artifactId>org.semanticweb.hermit</artifactId>
-  		<version>1.3.8.4</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.apache.logging.log4j</groupId>
-  		<artifactId>log4j</artifactId>
-  		<version>2.14.0</version>
-  		<type>pom</type>
-  	</dependency>
-  	<dependency>
-  		<groupId>log4j</groupId>
-  		<artifactId>log4j</artifactId>
-  		<version>1.2.14</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>net.sourceforge.owlapi</groupId>
-  		<artifactId>owlapi-distribution</artifactId>
-  		<version>5.1.17</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.semanticweb.elk</groupId>
-  		<artifactId>elk-owlapi5</artifactId>
-  		<version>0.5.0-SNAPSHOT</version>
-  	</dependency>
-  	<dependency>
-		<groupId>org.semanticweb.rulewerk</groupId>
-		<artifactId>rulewerk-core</artifactId>
-	    <version>0.7.0</version>
-    </dependency>
-  	<dependency>
-		<groupId>org.semanticweb.rulewerk</groupId>
-		<artifactId>rulewerk-owlapi</artifactId>
-	    <version>0.7.0</version>
-    </dependency>
-  	<dependency>
-		<groupId>org.semanticweb.rulewerk</groupId>
-		<artifactId>rulewerk-vlog</artifactId>
-	    <version>0.7.0</version>
-    </dependency>
-	<dependency>
-    	<groupId>com.google.guava</groupId>
-    	<artifactId>guava</artifactId>
-    	<version>18.0</version>
-	</dependency>
-	  <dependency>
-		  <groupId>org.apache.logging.log4j</groupId>
-		  <artifactId>log4j-api</artifactId>
-		  <version>2.13.3</version>
-	  </dependency>
-	  <dependency>
-		  <groupId>org.apache.logging.log4j</groupId>
-		  <artifactId>log4j-core</artifactId>
-		  <version>2.13.3</version>
-	  </dependency>
-	  <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
-	  <dependency>
-		  <groupId>org.apache.logging.log4j</groupId>
-		  <artifactId>log4j-slf4j-impl</artifactId>
-		  <version>2.14.0</version>
-	  </dependency>
-  </dependencies>
-  <repositories>
-   <repository>
-      <id>sonatype-nexus-snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-      <releases>
-         <enabled>false</enabled>
-      </releases>
-      <snapshots>
-         <enabled>true</enabled>
-      </snapshots>
-   </repository>
-  </repositories>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <build>
-  	<plugins>
-   		<plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.1.1</version>
+    <groupId>de.tu-dresden.inf.lat</groupId>
+    <artifactId>abox-repairs</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
 
-            <configuration>
-                <descriptorRefs>
-                    <descriptorRef>jar-with-dependencies</descriptorRef>
-                </descriptorRefs>
-            </configuration>
+    <name>Computing Optimal Repairs of Quantified ABoxes w.r.t. Static EL TBoxes</name>
+    <inceptionYear>2021</inceptionYear>
 
-            <executions>
-                <execution>
-                    <id>make-assembly</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>single</goal>
-                    </goals>
-                </execution>
-            </executions>
-		</plugin>
-  	</plugins>
-  </build>
-  
+    <contributors>
+        <contributor>
+            <name>Franz Baader</name>
+            <organization>Technische Universität Dresden</organization>
+            <organizationUrl>https://tu-dresden.de</organizationUrl>
+            <email>franz.baader@tu-dresden.de</email>
+            <url>https://tu-dresden.de/ing/informatik/thi/lat/die-professur/franz-baader</url>
+        </contributor>
+    </contributors>
+
+	<developers>
+		<developer>
+			<name>Patrick Koopmann</name>
+			<organization>Technische Universität Dresden</organization>
+			<organizationUrl>https://tu-dresden.de</organizationUrl>
+			<email>patrick.koopmann@tu-dresden.de</email>
+			<url>https://lat.inf.tu-dresden.de/~koopmann/</url>
+		</developer>
+		<developer>
+			<name>Francesco Kriegel</name>
+			<organization>Technische Universität Dresden</organization>
+			<organizationUrl>https://tu-dresden.de</organizationUrl>
+			<email>francesco.kriegel@tu-dresden.de</email>
+			<url>https://tu-dresden.de/ing/informatik/thi/lat/die-professur/beschaeftigte/francesco-kriegel/</url>
+		</developer>
+		<developer>
+			<name>Adrian Nuradiansyah</name>
+			<organization>Technische Universität Dresden</organization>
+			<organizationUrl>https://tu-dresden.de</organizationUrl>
+			<email>adrian.nuradiansyah@tu-dresden.de</email>
+			<url>https://lat.inf.tu-dresden.de/~adrian/</url>
+		</developer>
+	</developers>
+
+    <properties>
+        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.hermit-reasoner</groupId>
+            <artifactId>org.semanticweb.hermit</artifactId>
+            <version>1.3.8.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>2.14.0</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.14</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-distribution</artifactId>
+            <version>5.1.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.semanticweb.elk</groupId>
+            <artifactId>elk-owlapi5</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.semanticweb.rulewerk</groupId>
+            <artifactId>rulewerk-core</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.semanticweb.rulewerk</groupId>
+            <artifactId>rulewerk-owlapi</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.semanticweb.rulewerk</groupId>
+            <artifactId>rulewerk-vlog</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.13.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.13.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.14.0</version>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>sonatype-nexus-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.1</version>
+
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
