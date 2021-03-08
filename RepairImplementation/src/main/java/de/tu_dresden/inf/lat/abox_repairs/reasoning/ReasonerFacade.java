@@ -9,6 +9,7 @@ import com.github.jsonldjava.shaded.com.google.common.collect.Streams;
 import de.tu_dresden.inf.lat.abox_repairs.ontology_tools.FreshOWLEntityFactory.FreshOWLClassFactory;
 import de.tu_dresden.inf.lat.abox_repairs.ontology_tools.FreshOWLEntityFactory.FreshOWLNamedIndividualFactory;
 import de.tu_dresden.inf.lat.abox_repairs.tools.DisposableFinalVariable;
+import de.tu_dresden.inf.lat.abox_repairs.tools.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.elk.owlapi.ElkReasonerFactory;
@@ -362,6 +363,14 @@ public class ReasonerFacade {
 
     public final Set<OWLClassExpression> getSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
         return OWLAPIStreamUtils.asSet(subsumers(exp));
+    }
+
+    public final Stream<OWLClassExpression> atomicSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        return subsumers(exp).filter(Util::isAtom);
+    }
+
+    public final Set<OWLClassExpression> getAtomicSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(atomicSubsumers(exp));
     }
 
     @Deprecated

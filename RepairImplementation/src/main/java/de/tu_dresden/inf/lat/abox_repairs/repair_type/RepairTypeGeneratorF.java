@@ -3,7 +3,7 @@ package de.tu_dresden.inf.lat.abox_repairs.repair_type;
 import com.google.common.collect.Sets;
 import de.tu_dresden.inf.lat.abox_repairs.reasoning.ReasonerFacade;
 import de.tu_dresden.inf.lat.abox_repairs.repair_request.RepairRequest;
-import de.tu_dresden.inf.lat.abox_repairs.tools.UtilF;
+import de.tu_dresden.inf.lat.abox_repairs.tools.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.semanticweb.owlapi.model.OWLClassExpression;
@@ -42,7 +42,7 @@ public class RepairTypeGeneratorF {
             minimalRepairSeedFunctions.clear();
             for (RepairType repairType : getMinimalRepairTypesCovering(repairRequest.get(owlNamedIndividual), owlNamedIndividual))
                 for (Map<OWLNamedIndividual, RepairType> repairSeedFunction : currentMinimalRepairSeedFunctions)
-                    minimalRepairSeedFunctions.add(UtilF.newHashMap(repairSeedFunction, owlNamedIndividual, repairType));
+                    minimalRepairSeedFunctions.add(Util.newHashMap(repairSeedFunction, owlNamedIndividual, repairType));
         }
         return minimalRepairSeedFunctions;
     }
@@ -83,11 +83,11 @@ public class RepairTypeGeneratorF {
                         final Set<Set<OWLClassExpression>> currentNewCandidates = new HashSet<>(newCandidates);
                         newCandidates.clear();
                         reasonerWithoutTBox.equivalentIncludingOWLThingOrStrictlySubsumingExcludingOWLThing(nonCoveredOWLClassExpression).stream()
-                                .filter(UtilF::isAtom)
-                                .map(UtilF::toAtom)
+                                .filter(Util::isAtom)
+                                .map(Util::toAtom)
                                 .forEach(atom -> {
                                     for (Set<OWLClassExpression> currentNewCandidate : currentNewCandidates)
-                                        newCandidates.add(UtilF.newHashSet(currentNewCandidate, atom));
+                                        newCandidates.add(Util.newHashSet(currentNewCandidate, atom));
                                 });
                     }
                     candidates.addAll(newCandidates);
@@ -98,11 +98,11 @@ public class RepairTypeGeneratorF {
     }
 
     private Set<OWLClassExpression> getSubsumptionMaximalOWLClassExpressions(Set<OWLClassExpression> owlClassExpressions) {
-        return UtilF.getMaximalElements(owlClassExpressions, x -> x, reasonerWithoutTBox::subsumedBy);
+        return Util.getMaximalElements(owlClassExpressions, x -> x, reasonerWithoutTBox::subsumedBy);
     }
 
     private Set<Set<OWLClassExpression>> getCoverMinimalOWLClassExpressionSets(Set<Set<OWLClassExpression>> owlClassExpressionSets) {
-        return UtilF.getMaximalElements(owlClassExpressionSets, x -> x, (x, y) -> reasonerWithoutTBox.isCovered(y, x));
+        return Util.getMaximalElements(owlClassExpressionSets, x -> x, (x, y) -> reasonerWithoutTBox.isCovered(y, x));
     }
 
 }

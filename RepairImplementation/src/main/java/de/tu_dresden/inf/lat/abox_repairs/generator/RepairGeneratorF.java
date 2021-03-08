@@ -6,7 +6,7 @@ import de.tu_dresden.inf.lat.abox_repairs.repair_manager.RepairManagerBuilder;
 import de.tu_dresden.inf.lat.abox_repairs.repair_type.RepairType;
 import de.tu_dresden.inf.lat.abox_repairs.repair_type.RepairTypeGeneratorF;
 import de.tu_dresden.inf.lat.abox_repairs.saturation.AnonymousVariableDetector;
-import de.tu_dresden.inf.lat.abox_repairs.tools.UtilF;
+import de.tu_dresden.inf.lat.abox_repairs.tools.Util;
 import org.apache.commons.lang3.tuple.Pair;
 import org.semanticweb.owlapi.model.*;
 
@@ -135,8 +135,8 @@ public class RepairGeneratorF {
         saturation.individualsInSignature().forEach(objectName -> {
             final Set<OWLClassExpression> instantiatedAtoms =
                     reasonerWithTBox.instanceOfExcludingOWLThing(objectName).stream()
-                            .filter(UtilF::isAtom)
-                            .map(UtilF::toAtom)
+                            .filter(Util::isAtom)
+                            .map(Util::toAtom)
                             .collect(Collectors.toSet());
             Sets.powerSet(instantiatedAtoms).stream()
                     .filter(this::notContainsComparableOWLClassExpressions)

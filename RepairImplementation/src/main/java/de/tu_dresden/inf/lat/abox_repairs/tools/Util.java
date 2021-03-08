@@ -1,6 +1,9 @@
 package de.tu_dresden.inf.lat.abox_repairs.tools;
 
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLClassExpressionVisitorEx;
+import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,30 +11,54 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
-public class UtilF {
+public final class Util {
 
-    private UtilF(){
+    private Util() {
         // utilities class
     }
 
-    public static boolean isAtom(OWLClassExpression owlClassExpression) {
-        return !owlClassExpression.isOWLThing() && owlClassExpression.asConjunctSet().size() == 1;
+    public static final boolean isAtom(OWLClassExpression owlClassExpression) {
+//        return !owlClassExpression.isOWLThing() && owlClassExpression.asConjunctSet().size() == 1;
+        return owlClassExpression.accept(new OWLClassExpressionVisitorEx<Boolean>() {
+
+            @Override
+            public <T> Boolean doDefault(T object) {
+                return false;
+            }
+
+            @Override
+            public Boolean visit(OWLClass ce) {
+                if (ce.isOWLThing() || ce.isOWLNothing())
+                    return false;
+                else
+                    return true;
+            }
+
+            @Override
+            public Boolean visit(OWLObjectSomeValuesFrom ce) {
+                return true;
+            }
+
+        });
     }
 
-    public static OWLClassExpression toAtom(OWLClassExpression owlClassExpression) {
+    @Deprecated
+    public static final OWLClassExpression toAtom(OWLClassExpression owlClassExpression) {
         if (!isAtom(owlClassExpression))
             throw new IllegalArgumentException();
-        return owlClassExpression.asConjunctSet().iterator().next();
+//        return owlClassExpression.asConjunctSet().iterator().next();
+        return owlClassExpression;
     }
 
-    public static <T> Set<T> newHashSet(Set<T> set, T element) {
+    public static final <T> Set<T> newHashSet(Set<T> set, T element) {
         final Set<T> result = new HashSet<>(set);
         result.add(element);
         return result;
     }
 
-    public static <K, V> Map<K, V> newHashMap(Map<K, V> map, K key, V value) {
+    public static final <K, V> Map<K, V> newHashMap(Map<K, V> map, K key, V value) {
         final Map<K, V> result = new HashMap<>(map);
         result.put(key, value);
         return result;
