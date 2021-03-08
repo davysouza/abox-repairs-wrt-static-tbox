@@ -106,6 +106,7 @@ final class CopiedOWLIndividual {
             super();
         }
 
+        @Override
         CopiedOWLIndividual newNamedIndividual(
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
@@ -114,6 +115,7 @@ final class CopiedOWLIndividual {
             return copiedOWLIndividual;
         }
 
+        @Override
         CopiedOWLIndividual newAnonymousIndividual(
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
