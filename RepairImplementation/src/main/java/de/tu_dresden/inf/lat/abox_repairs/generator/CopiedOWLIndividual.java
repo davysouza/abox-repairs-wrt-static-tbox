@@ -52,13 +52,12 @@ final class CopiedOWLIndividual {
         return Objects.hash(individualInTheSaturation, repairType);
     }
 
-    static final class Factory {
+    static class FactoryIQ {
 
-        private final Multimap<OWLIndividual, CopiedOWLIndividual> lookupTableCQ = HashMultimap.create();
         private final Map<Pair<OWLIndividual, RepairType>, CopiedOWLIndividual> lookupTableIQ = new HashMap<>();
 //        private int nextAnonymousIndividual = 0;
 
-        Factory() {
+        FactoryIQ() {
             super();
         }
 
@@ -66,7 +65,6 @@ final class CopiedOWLIndividual {
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
             final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, individualInTheSaturation);
-            lookupTableCQ.put(individualInTheSaturation, copiedOWLIndividual);
             lookupTableIQ.put(Pair.of(individualInTheSaturation, repairType), copiedOWLIndividual);
             return copiedOWLIndividual;
         }
@@ -74,19 +72,14 @@ final class CopiedOWLIndividual {
         CopiedOWLIndividual newAnonymousIndividual(
                 OWLIndividual individualInTheSaturation,
                 RepairType repairType) {
-             final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLAnonymousIndividual());
+            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLAnonymousIndividual());
 //            final CopiedOWLIndividual copiedOWLIndividual = new CopiedOWLIndividual(individualInTheSaturation, repairType, OWLManager.getOWLDataFactory().getOWLNamedIndividual("anonymous_individual_" + nextAnonymousIndividual++));
-            lookupTableCQ.put(individualInTheSaturation, copiedOWLIndividual);
             lookupTableIQ.put(Pair.of(individualInTheSaturation, repairType), copiedOWLIndividual);
             return copiedOWLIndividual;
         }
 
-        Collection<CopiedOWLIndividual> getCopiesOf(OWLIndividual individualInTheSaturation) {
-            return Collections.unmodifiableCollection(lookupTableCQ.get(individualInTheSaturation));
-        }
-
         Optional<CopiedOWLIndividual> getCopy(OWLIndividual individualInTheSaturation,
-                                                        RepairType repairType) {
+                                              RepairType repairType) {
             if (lookupTableIQ.containsKey(Pair.of(individualInTheSaturation, repairType))) {
                 return Optional.of(lookupTableIQ.get(Pair.of(individualInTheSaturation, repairType)));
             } else {
@@ -95,12 +88,42 @@ final class CopiedOWLIndividual {
         }
 
         boolean containsCopy(OWLIndividual individualInTheSaturation,
-                                       RepairType repairType) {
+                             RepairType repairType) {
             return lookupTableIQ.containsKey(Pair.of(individualInTheSaturation, repairType));
         }
 
         int size() {
             return lookupTableIQ.size();
+        }
+
+    }
+
+    static final class FactoryCQ extends FactoryIQ {
+
+        private final Multimap<OWLIndividual, CopiedOWLIndividual> lookupTableCQ = HashMultimap.create();
+
+        FactoryCQ() {
+            super();
+        }
+
+        CopiedOWLIndividual newNamedIndividual(
+                OWLIndividual individualInTheSaturation,
+                RepairType repairType) {
+            final CopiedOWLIndividual copiedOWLIndividual = super.newNamedIndividual(individualInTheSaturation, repairType);
+            lookupTableCQ.put(individualInTheSaturation, copiedOWLIndividual);
+            return copiedOWLIndividual;
+        }
+
+        CopiedOWLIndividual newAnonymousIndividual(
+                OWLIndividual individualInTheSaturation,
+                RepairType repairType) {
+            final CopiedOWLIndividual copiedOWLIndividual = super.newAnonymousIndividual(individualInTheSaturation, repairType);
+            lookupTableCQ.put(individualInTheSaturation, copiedOWLIndividual);
+            return copiedOWLIndividual;
+        }
+
+        Collection<CopiedOWLIndividual> getCopiesOf(OWLIndividual individualInTheSaturation) {
+            return Collections.unmodifiableCollection(lookupTableCQ.get(individualInTheSaturation));
         }
 
     }

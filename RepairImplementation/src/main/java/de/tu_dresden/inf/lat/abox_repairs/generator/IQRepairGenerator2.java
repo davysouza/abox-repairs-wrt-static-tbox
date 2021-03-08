@@ -19,7 +19,7 @@ public class IQRepairGenerator2 extends RepairGenerator {
 
     private static Logger logger = LogManager.getLogger(IQRepairGenerator.class);
 
-    private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
+    private final CopiedOWLIndividual.FactoryIQ copiedOWLIndividualFactory = new CopiedOWLIndividual.FactoryIQ();
     private final Queue<CopiedOWLIndividual> queue = new LinkedList<>();
 
     public IQRepairGenerator2(OWLOntology inputOntology) {

@@ -17,7 +17,7 @@ public class CQRepairGenerator extends RepairGenerator {
 
     private static Logger logger = LogManager.getLogger(CQRepairGenerator.class);
 
-    private final CopiedOWLIndividual.Factory copiedOWLIndividualFactory = new CopiedOWLIndividual.Factory();
+    private final CopiedOWLIndividual.FactoryCQ copiedOWLIndividualFactory = new CopiedOWLIndividual.FactoryCQ();
     private final Queue<CopiedOWLObjectPropertyAssertionAxiom> queue = new LinkedList<>();
     private final OWLOntologyWithFurtherIndexes ontologyWithFurtherIndexes;
 
