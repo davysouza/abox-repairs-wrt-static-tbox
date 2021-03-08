@@ -156,7 +156,7 @@ public class RepairGeneratorF {
     private boolean isPremiseSaturated(Set<OWLClassExpression> atoms, OWLNamedIndividual owlIndividual) {
         return atoms.stream()
                 .allMatch(atom ->
-                        reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(atom).stream()
+                        reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrStrictlySubsumedByExcludingOWLThingAndOWLNothing(atom).stream()
                                 .filter(subsumee -> reasonerWithTBox.instanceOf(owlIndividual, subsumee))
                                 .allMatch(subsumee -> atoms.stream().anyMatch(btom -> reasonerWithoutTBox.subsumedBy(subsumee, btom)))
                 );

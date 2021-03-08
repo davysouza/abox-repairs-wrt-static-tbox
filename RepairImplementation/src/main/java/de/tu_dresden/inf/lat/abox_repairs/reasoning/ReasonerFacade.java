@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.github.jsonldjava.shaded.com.google.common.collect.Streams;
 import de.tu_dresden.inf.lat.abox_repairs.ontology_tools.FreshOWLEntityFactory.FreshOWLClassFactory;
 import de.tu_dresden.inf.lat.abox_repairs.ontology_tools.FreshOWLEntityFactory.FreshOWLNamedIndividualFactory;
 import de.tu_dresden.inf.lat.abox_repairs.tools.DisposableFinalVariable;
@@ -14,6 +15,7 @@ import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.util.OWLAPIStreamUtils;
 
 /**
  * Facade to encapsulate common reasoning tasks.
@@ -267,18 +269,35 @@ public class ReasonerFacade {
         return result;
     }
 
-    public Set<OWLClassExpression> equivalentClasses(OWLClassExpression exp) throws IllegalArgumentException {
+    public final Stream<OWLClassExpression> types(OWLIndividual ind) throws IllegalArgumentException {
+        verifyKnows(ind);
+        return reasoner.types(freshOWLNamedIndividualFactory.getEntity(ind))
+                .map(name -> freshOWLClassFactory.getObject(name));
+    }
+
+    public final Set<OWLClassExpression> getTypes(OWLIndividual ind) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(types(ind));
+    }
+
+    public final Stream<OWLClassExpression> equivalentClasses(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
+        return reasoner.equivalentClasses(freshOWLClassFactory.getEntity(exp))
+                .map(name -> freshOWLClassFactory.getObject(name));
+    }
 
-        //timer.continueTimer();
-
-        Set<OWLClassExpression> result = reasoner.equivalentClasses(freshOWLClassFactory.getEntity(exp))
-            .map(name -> freshOWLClassFactory.getObject(name))
-            .collect(Collectors.toSet());
-
-        //timer.pause();
-
-        return result;
+    public final Set<OWLClassExpression> getEquivalentClasses(OWLClassExpression exp) throws IllegalArgumentException {
+//        verifyKnows(exp);
+//
+//        //timer.continueTimer();
+//
+//        Set<OWLClassExpression> result = reasoner.equivalentClasses(freshOWLClassFactory.getEntity(exp))
+//            .map(name -> freshOWLClassFactory.getObject(name))
+//            .collect(Collectors.toSet());
+//
+//        //timer.pause();
+//
+//        return result;
+        return OWLAPIStreamUtils.asSet(equivalentClasses(exp));
     }
 
     public boolean equivalentToOWLThing(OWLClassExpression exp) {
@@ -298,8 +317,18 @@ public class ReasonerFacade {
             .map(name -> freshOWLClassFactory.getObject(name)).collect(Collectors.toSet());
     }
 
+    public final Stream<OWLClassExpression> directSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        verifyKnows(exp);
+        return reasoner.superClasses(freshOWLClassFactory.getEntity(exp), true)
+                .map(name -> freshOWLClassFactory.getObject(name));
+    }
+
+    public final Set<OWLClassExpression> getDirectSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(directSubsumers(exp));
+    }
+
     @Deprecated
-    public Set<OWLClassExpression> subsumersExcludingOWLThing(OWLClassExpression exp) throws IllegalArgumentException {
+    public Set<OWLClassExpression> strictSubsumersExcludingOWLThing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
         return reasoner.superClasses(freshOWLClassFactory.getEntity(exp), false)
@@ -308,13 +337,31 @@ public class ReasonerFacade {
             .collect(Collectors.toSet());
     }
 
+    public final Stream<OWLClassExpression> strictSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        verifyKnows(exp);
+        return reasoner.superClasses(freshOWLClassFactory.getEntity(exp), false)
+                .map(name -> freshOWLClassFactory.getObject(name));
+    }
+
+    public final Set<OWLClassExpression> getStrictSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(strictSubsumers(exp));
+    }
+
     @Deprecated
-    public Set<OWLClassExpression> equivalentIncludingOWLThingOrSubsumingExcludingOWLThing(OWLClassExpression exp) throws IllegalAccessError {
+    public Set<OWLClassExpression> equivalentIncludingOWLThingOrStrictlySubsumingExcludingOWLThing(OWLClassExpression exp) throws IllegalAccessError {
         verifyKnows(exp);
 
-        Set<OWLClassExpression> result = subsumersExcludingOWLThing(exp);
-        result.addAll(equivalentClasses(exp));
+        Set<OWLClassExpression> result = strictSubsumersExcludingOWLThing(exp);
+        result.addAll(getEquivalentClasses(exp));
         return result;
+    }
+
+    public final Stream<OWLClassExpression> subsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        return Streams.concat(equivalentClasses(exp), strictSubsumers(exp));
+    }
+
+    public final Set<OWLClassExpression> getSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(subsumers(exp));
     }
 
     @Deprecated
@@ -326,8 +373,18 @@ public class ReasonerFacade {
             .map(name -> freshOWLClassFactory.getObject(name)).collect(Collectors.toSet());
     }
 
+    public final Stream<OWLClassExpression> directSubsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        verifyKnows(exp);
+        return reasoner.subClasses(freshOWLClassFactory.getEntity(exp), true)
+                .map(name -> freshOWLClassFactory.getObject(name));
+    }
+
+    public final Set<OWLClassExpression> getDirectSubsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(directSubsumees(exp));
+    }
+
     @Deprecated
-    public Set<OWLClassExpression> subsumeesExcludingOWLThingAndOWLNothing(OWLClassExpression exp) throws IllegalArgumentException {
+    public Set<OWLClassExpression> strictSubsumeesExcludingOWLThingAndOWLNothing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
 //        logger.info("TBox size: "+ontology.tboxAxioms(Imports.INCLUDED).count());
@@ -357,20 +414,36 @@ public class ReasonerFacade {
         return result;
     }
 
+    public final Stream<OWLClassExpression> strictSubsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        verifyKnows(exp);
+        return reasoner.subClasses(freshOWLClassFactory.getEntity(exp), false)
+                .map(name -> freshOWLClassFactory.getObject(name));
+    }
+
+    public final Set<OWLClassExpression> getStrictSubsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(strictSubsumees(exp));
+    }
 
     /**
      * Return or class expressions that are equivalent to exp, or subsumed by it. That is: the set of all subsummes,
      * including the equivalent ones.
      */
     @Deprecated
-    public Set<OWLClassExpression> equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(OWLClassExpression exp) throws IllegalArgumentException {
+    public Set<OWLClassExpression> equivalentIncludingOWLThingAndOWLNothingOrStrictlySubsumedByExcludingOWLThingAndOWLNothing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
-        Set<OWLClassExpression> result = subsumeesExcludingOWLThingAndOWLNothing(exp);
-        result.addAll(equivalentClasses(exp));
+        Set<OWLClassExpression> result = strictSubsumeesExcludingOWLThingAndOWLNothing(exp);
+        result.addAll(getEquivalentClasses(exp));
         return result;
     }
 
+    public final Stream<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        return Streams.concat(equivalentClasses(exp), strictSubsumees(exp));
+    }
+
+    public final Set<OWLClassExpression> getSubsumees(OWLClassExpression exp) throws IllegalArgumentException {
+        return OWLAPIStreamUtils.asSet(subsumees(exp));
+    }
 
     private void verifyKnows(OWLClassExpression exp) throws IllegalArgumentException {
         if(!freshOWLClassFactory.containsObject(exp))

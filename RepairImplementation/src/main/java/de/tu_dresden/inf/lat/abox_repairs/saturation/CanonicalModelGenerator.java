@@ -140,7 +140,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 			//System.out.println("We take fresh individual "+name);
 
 
-			for(OWLClassExpression subsumer:reasoner.equivalentIncludingOWLThingOrSubsumingExcludingOWLThing(exp)){
+			for(OWLClassExpression subsumer:reasoner.equivalentIncludingOWLThingOrStrictlySubsumingExcludingOWLThing(exp)){
 				//System.out.println("Subsumer "+subsumer);
 				if(subsumer instanceof OWLClass){
 					OWLAxiom assertion = 

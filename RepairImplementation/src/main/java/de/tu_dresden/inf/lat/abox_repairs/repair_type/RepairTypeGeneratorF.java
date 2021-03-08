@@ -69,7 +69,7 @@ public class RepairTypeGeneratorF {
                 } else {
                     nonCoveredOWLClassExpressions =
                             candidate.stream().flatMap(atom ->
-                                    reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(atom).stream()
+                                    reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrStrictlySubsumedByExcludingOWLThingAndOWLNothing(atom).stream()
                                             .filter(subsumee -> reasonerWithTBox.instanceOf(owlIndividual, subsumee))
                                             .filter(subsumee -> candidate.stream().noneMatch(btom -> reasonerWithoutTBox.subsumedBy(subsumee, btom)))
                             ).collect(Collectors.toSet());
@@ -82,7 +82,7 @@ public class RepairTypeGeneratorF {
                     for (OWLClassExpression nonCoveredOWLClassExpression : nonCoveredOWLClassExpressions) {
                         final Set<Set<OWLClassExpression>> currentNewCandidates = new HashSet<>(newCandidates);
                         newCandidates.clear();
-                        reasonerWithoutTBox.equivalentIncludingOWLThingOrSubsumingExcludingOWLThing(nonCoveredOWLClassExpression).stream()
+                        reasonerWithoutTBox.equivalentIncludingOWLThingOrStrictlySubsumingExcludingOWLThing(nonCoveredOWLClassExpression).stream()
                                 .filter(UtilF::isAtom)
                                 .map(UtilF::toAtom)
                                 .forEach(atom -> {
