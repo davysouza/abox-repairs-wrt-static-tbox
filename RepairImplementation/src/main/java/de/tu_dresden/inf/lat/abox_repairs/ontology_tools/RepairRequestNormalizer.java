@@ -13,7 +13,7 @@ public class RepairRequestNormalizer {
         final RepairRequest normalizedRepairRequest = new RepairRequest();
         for (OWLNamedIndividual individual : repairRequest.individuals()) {
             normalizedRepairRequest.put(individual,
-                    Util.getMinimalElements(repairRequest.get(individual), normalizer::normalize, normalizer::isSubsumedBy));
+                    Util.getMinimalTransformedElements(repairRequest.get(individual), normalizer::normalize, normalizer::isSubsumedBy));
         }
         return normalizedRepairRequest;
     }

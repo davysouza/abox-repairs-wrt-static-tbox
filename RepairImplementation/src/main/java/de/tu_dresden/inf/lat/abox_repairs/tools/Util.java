@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public final class Util {
 
@@ -64,7 +63,7 @@ public final class Util {
         return result;
     }
 
-    public static final <T> Set<T> getMaximalElements(Set<T> set, Function<T, T> transformer, BiPredicate<T, T> partialOrder) {
+    public static final <T> Set<T> getMaximalTransformedElements(Set<T> set, Function<T, T> transformer, BiPredicate<T, T> partialOrder) {
         final Set<T> maximalElements = new HashSet<>();
         for (T element : set) {
             final T transformedElement = transformer.apply(element);
@@ -76,8 +75,16 @@ public final class Util {
         return maximalElements;
     }
 
-    public static final <T> Set<T> getMinimalElements(Set<T> set, Function<T, T> transformer, BiPredicate<T, T> partialOrder) {
-        return getMaximalElements(set, transformer, (x, y) -> partialOrder.test(y, x));
+    public static final <T> Set<T> getMaximalElements(Set<T> set, BiPredicate<T, T> partialOrder) {
+        return getMaximalTransformedElements(set, x -> x, partialOrder);
+    }
+
+    public static final <T> Set<T> getMinimalTransformedElements(Set<T> set, Function<T, T> transformer, BiPredicate<T, T> partialOrder) {
+        return getMaximalTransformedElements(set, transformer, (x, y) -> partialOrder.test(y, x));
+    }
+
+    public static final <T> Set<T> getMinimalElements(Set<T> set, BiPredicate<T, T> partialOrder) {
+        return getMinimalTransformedElements(set, x -> x, partialOrder);
     }
 
 }

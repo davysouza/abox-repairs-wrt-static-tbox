@@ -98,11 +98,11 @@ public class RepairTypeGeneratorF {
     }
 
     private Set<OWLClassExpression> getSubsumptionMaximalOWLClassExpressions(Set<OWLClassExpression> owlClassExpressions) {
-        return Util.getMaximalElements(owlClassExpressions, x -> x, reasonerWithoutTBox::subsumedBy);
+        return Util.getMaximalElements(owlClassExpressions, reasonerWithoutTBox::subsumedBy);
     }
 
     private Set<Set<OWLClassExpression>> getCoverMinimalOWLClassExpressionSets(Set<Set<OWLClassExpression>> owlClassExpressionSets) {
-        return Util.getMaximalElements(owlClassExpressionSets, x -> x, (x, y) -> reasonerWithoutTBox.isCovered(y, x));
+        return Util.getMinimalElements(owlClassExpressionSets, reasonerWithoutTBox::isCovered);
     }
 
 }
