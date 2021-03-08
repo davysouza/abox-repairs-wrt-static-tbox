@@ -30,8 +30,7 @@ public final class ClassExpressionNormalizer {
     }
 
     final boolean isSubsumedBy(OWLClassExpression ce1, OWLClassExpression ce2) {
-        reasoner.addExpression(ce1);
-        reasoner.addExpression(ce2);
+        reasoner.addExpressions(ce1, ce2);
         reasoner.update();
         return reasoner.subsumedBy(ce1, ce2);
     }

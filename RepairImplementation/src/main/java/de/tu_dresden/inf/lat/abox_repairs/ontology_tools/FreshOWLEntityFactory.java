@@ -86,7 +86,7 @@ public abstract class FreshOWLEntityFactory<O extends OWLObject, E extends OWLEn
         owlObject.accept(additionalKnownOWLEntityVisitor);
     }
 
-    public void addAdditionalKnownEntities(Set<? extends OWLObject> owlObjects) throws IllegalArgumentException {
+    public void addAdditionalKnownEntities(Iterable<? extends OWLObject> owlObjects) throws IllegalArgumentException {
         owlObjects.forEach(owlObject -> owlObject.accept(additionalKnownOWLEntityVisitor));
     }
 

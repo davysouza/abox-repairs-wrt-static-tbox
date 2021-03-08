@@ -1,5 +1,6 @@
 package de.tu_dresden.inf.lat.abox_repairs.reasoning;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -173,11 +174,11 @@ public class ReasonerFacade {
 
 //    private final Set<OWLClassExpression> alreadyAdded = new HashSet<>();
 
-    public void addExpression(OWLClassExpression ce) {
-        addExpressions(Collections.singleton(ce));
+    public void addExpressions(OWLClassExpression... exps) {
+        addExpressions(Arrays.asList(exps));
     }
 
-    public void addExpressions(Set<OWLClassExpression> exps) {
+    public void addExpressions(Iterable<OWLClassExpression> exps) {
 //        for(OWLClassExpression exp:exps) {
 //            OWLClass name;
 ////            if(exp instanceof OWLClass) {
