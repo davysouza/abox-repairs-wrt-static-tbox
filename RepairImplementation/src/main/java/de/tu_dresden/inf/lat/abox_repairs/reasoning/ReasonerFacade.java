@@ -1,9 +1,9 @@
 package de.tu_dresden.inf.lat.abox_repairs.reasoning;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import de.tu_dresden.inf.lat.abox_repairs.ontology_tools.FreshOWLEntityFactory.FreshOWLClassFactory;
 import de.tu_dresden.inf.lat.abox_repairs.ontology_tools.FreshOWLEntityFactory.FreshOWLNamedIndividualFactory;
@@ -24,14 +24,6 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
  *
  * @author Patrick Koopmann
  */
-/* I really like the idea behind the reasoner facade!  However, the provided methods should do what their name
-*  indicates.  Thus, I suggest to remove the filtering of owl:Thing and owl:Nothing from the results.  Otherwise
-*  a user could easily get confused due to expected but missing results.  The filtering should only be done when
-*  there is a real need, e.g., in code calling methods from this class where these concepts are not interesting.
-*
-*  To make instances of OWLAnonymousIndividual accessible, the reasoner facade should add fresh instances of
-*  OWLNamedIndividual plus a corresponding instance of OWLSameIndividualAxiom---just like it was done to make the
-*  complex, anonymous instances of OWLClassExpression accessible.*/
 public class ReasonerFacade {
 
     private static Logger logger = LogManager.getLogger(ReasonerFacade.class);
@@ -176,7 +168,7 @@ public class ReasonerFacade {
         reasoner.flush();
     }
 
-    private final Set<OWLClassExpression> alreadyAdded = new HashSet<>();
+//    private final Set<OWLClassExpression> alreadyAdded = new HashSet<>();
 
     public void addExpression(OWLClassExpression ce) {
         addExpressions(Collections.singleton(ce));
@@ -220,16 +212,15 @@ public class ReasonerFacade {
 
     public void dispose() {
         reasoner.dispose();
-        alreadyAdded.clear();
+//        alreadyAdded.clear();
         ontology.dispose();
         ontologyCopy.dispose();
     }
 
-    public Set<OWLClassExpression> getClassExpressions() {
+    public Set<OWLClassExpression> getSupportedClassExpressions() {
         return freshOWLClassFactory.getObjects();
     }
 
-    /* The method should rather allow for arguments of type OWLIndividual. */
     public boolean instanceOf(OWLIndividual ind, OWLClassExpression exp) {
         verifyKnows(ind);
         verifyKnows(exp);
@@ -260,8 +251,8 @@ public class ReasonerFacade {
         return result;
     }
 
-    /* The method should rather allow for arguments of type OWLIndividual. */
-    public Set<OWLClassExpression> instanceOf(OWLIndividual ind) {
+    @Deprecated
+    public Set<OWLClassExpression> instanceOfExcludingOWLThing(OWLIndividual ind) {
         verifyKnows(ind);
 
         //timer.continueTimer();
@@ -298,7 +289,8 @@ public class ReasonerFacade {
         return reasoner.topClassNode().anyMatch(cl -> freshOWLClassFactory.getEntity(exp).equals(cl));
     }
 
-    public Set<OWLClassExpression> directSubsumers(OWLClassExpression exp) throws IllegalArgumentException {
+    @Deprecated
+    public Set<OWLClassExpression> directSubsumersExcludingOWLThing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
         return reasoner.superClasses(freshOWLClassFactory.getEntity(exp), true)
@@ -306,7 +298,8 @@ public class ReasonerFacade {
             .map(name -> freshOWLClassFactory.getObject(name)).collect(Collectors.toSet());
     }
 
-    public Set<OWLClassExpression> subsumers(OWLClassExpression exp) throws IllegalArgumentException {
+    @Deprecated
+    public Set<OWLClassExpression> subsumersExcludingOWLThing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
         return reasoner.superClasses(freshOWLClassFactory.getEntity(exp), false)
@@ -315,16 +308,17 @@ public class ReasonerFacade {
             .collect(Collectors.toSet());
     }
 
-
-    public Set<OWLClassExpression> equivalentOrSubsuming(OWLClassExpression exp) throws IllegalAccessError {
+    @Deprecated
+    public Set<OWLClassExpression> equivalentIncludingOWLThingOrSubsumingExcludingOWLThing(OWLClassExpression exp) throws IllegalAccessError {
         verifyKnows(exp);
 
-        Set<OWLClassExpression> result = subsumers(exp);
+        Set<OWLClassExpression> result = subsumersExcludingOWLThing(exp);
         result.addAll(equivalentClasses(exp));
         return result;
     }
 
-    public Set<OWLClassExpression> directSubsumees(OWLClassExpression exp) throws IllegalArgumentException {
+    @Deprecated
+    public Set<OWLClassExpression> directSubsumeesExcludingOWLNothing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
         return reasoner.subClasses(freshOWLClassFactory.getEntity(exp), true)
@@ -332,7 +326,8 @@ public class ReasonerFacade {
             .map(name -> freshOWLClassFactory.getObject(name)).collect(Collectors.toSet());
     }
 
-    public Set<OWLClassExpression> subsumees(OWLClassExpression exp) throws IllegalArgumentException {
+    @Deprecated
+    public Set<OWLClassExpression> subsumeesExcludingOWLThingAndOWLNothing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
 //        logger.info("TBox size: "+ontology.tboxAxioms(Imports.INCLUDED).count());
@@ -367,10 +362,11 @@ public class ReasonerFacade {
      * Return or class expressions that are equivalent to exp, or subsumed by it. That is: the set of all subsummes,
      * including the equivalent ones.
      */
-    public Set<OWLClassExpression> equivalentOrSubsumedBy(OWLClassExpression exp) throws IllegalArgumentException {
+    @Deprecated
+    public Set<OWLClassExpression> equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(OWLClassExpression exp) throws IllegalArgumentException {
         verifyKnows(exp);
 
-        Set<OWLClassExpression> result = subsumees(exp);
+        Set<OWLClassExpression> result = subsumeesExcludingOWLThingAndOWLNothing(exp);
         result.addAll(equivalentClasses(exp));
         return result;
     }

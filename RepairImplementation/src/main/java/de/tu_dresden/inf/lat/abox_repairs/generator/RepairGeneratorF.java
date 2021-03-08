@@ -134,7 +134,7 @@ public class RepairGeneratorF {
     private void enumerateObjectNamesInTheCanonicalRepair() {
         saturation.individualsInSignature().forEach(objectName -> {
             final Set<OWLClassExpression> instantiatedAtoms =
-                    reasonerWithTBox.instanceOf(objectName).stream()
+                    reasonerWithTBox.instanceOfExcludingOWLThing(objectName).stream()
                             .filter(UtilF::isAtom)
                             .map(UtilF::toAtom)
                             .collect(Collectors.toSet());
@@ -156,7 +156,7 @@ public class RepairGeneratorF {
     private boolean isPremiseSaturated(Set<OWLClassExpression> atoms, OWLNamedIndividual owlIndividual) {
         return atoms.stream()
                 .allMatch(atom ->
-                        reasonerWithTBox.equivalentOrSubsumedBy(atom).stream()
+                        reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(atom).stream()
                                 .filter(subsumee -> reasonerWithTBox.instanceOf(owlIndividual, subsumee))
                                 .allMatch(subsumee -> atoms.stream().anyMatch(btom -> reasonerWithoutTBox.subsumedBy(subsumee, btom)))
                 );

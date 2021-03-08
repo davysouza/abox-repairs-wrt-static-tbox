@@ -81,7 +81,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 
 	private void process(OWLIndividual ind, OWLOntology ontology) {
 		//System.out.println("Processing "+ind);
-		for(OWLClassExpression exp:reasoner.instanceOf(ind)){
+		for(OWLClassExpression exp:reasoner.instanceOfExcludingOWLThing(ind)){
 			if(exp instanceof OWLClass){
 				OWLAxiom assertion = factory.getOWLClassAssertionAxiom(exp, ind);
 				logger.debug("Newly added 0: "+assertion);
@@ -115,7 +115,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 			//System.out.println(" contains: "+reasoner.instanceOf((OWLNamedIndividual)ass.getObject())
 			//	.contains(filler));
 			return ass.getProperty().equals(property)  && (filler.isOWLThing() ||
-			 reasoner.instanceOf(ass.getObject())
+			 reasoner.instanceOfExcludingOWLThing(ass.getObject())
 					.contains(filler));
 		});
 	}
@@ -140,7 +140,7 @@ public class CanonicalModelGenerator implements ABoxSaturator {
 			//System.out.println("We take fresh individual "+name);
 
 
-			for(OWLClassExpression subsumer:reasoner.equivalentOrSubsuming(exp)){
+			for(OWLClassExpression subsumer:reasoner.equivalentIncludingOWLThingOrSubsumingExcludingOWLThing(exp)){
 				//System.out.println("Subsumer "+subsumer);
 				if(subsumer instanceof OWLClass){
 					OWLAxiom assertion = 

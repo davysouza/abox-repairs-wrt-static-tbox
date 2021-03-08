@@ -45,7 +45,7 @@ public class RepairTypeHandler {
         for(OWLClassExpression exp:type.getClassExpressions()){
         	assert(!exp.isOWLThing());
             if(newClasses.contains(exp)) {
-            	newClasses.removeAll(reasonerWithoutTBox.equivalentOrSubsumedBy(exp));
+            	newClasses.removeAll(reasonerWithoutTBox.equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(exp));
                 newClasses.add(exp);
             }
         }
@@ -75,7 +75,7 @@ public class RepairTypeHandler {
 //        return true;
         return repairPreType.stream().parallel()
                 .allMatch(atom ->
-                        reasonerWithTBox.equivalentOrSubsumedBy(atom).stream().parallel()
+                        reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(atom).stream().parallel()
                                 .allMatch(subsumee ->
                                         !reasonerWithTBox.instanceOf(ind, subsumee)
                                                 || reasonerWithoutTBox.subsumedByAny(subsumee, repairPreType)
@@ -104,7 +104,7 @@ public class RepairTypeHandler {
             Set<OWLClassExpression> buffer = new HashSet<>();
             for (OWLClassExpression exp : setOfNewAtoms) {
 
-                for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(exp)) {
+                for (OWLClassExpression subsumee : reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(exp)) {
 
 
                     if (!reasonerWithoutTBox.subsumedByAny(subsumee, resultingSet)
@@ -182,7 +182,7 @@ public class RepairTypeHandler {
                 *  However, due to the unusual implementation of the reasoner facade, these cases cannot be detected
                 *  here.  As a quick and dirty fix, you must always explicitly test whether 'candidate' contains an atom
                 *  that is equivalent to owl:Thing w.r.t. the TBox. */
-                for (OWLClassExpression subsumee : reasonerWithTBox.equivalentOrSubsumedBy(atom)) {
+                for (OWLClassExpression subsumee : reasonerWithTBox.equivalentIncludingOWLThingAndOWLNothingOrSubsumedByExcludingOWLThingAndOWLNothing(atom)) {
                     if (! reasonerWithoutTBox.subsumedByAny(subsumee, candidate) &&
                     		reasonerWithTBox.instanceOf(ind, subsumee)) {
 
@@ -191,7 +191,7 @@ public class RepairTypeHandler {
                         /* The below variable should rather be named 'topLevelConjuncts' as it can contain several top
                         * level conjuncts. */
                         // TODO this might have made the wrong loop
-                        Set<OWLClassExpression> subsumers = reasonerWithoutTBox.equivalentOrSubsuming(subsumee);
+                        Set<OWLClassExpression> subsumers = reasonerWithoutTBox.equivalentIncludingOWLThingOrSubsumingExcludingOWLThing(subsumee);
 
                         for (OWLClassExpression subsumer : subsumers) {
                         	if(!(subsumer instanceof OWLObjectIntersectionOf)
@@ -259,7 +259,7 @@ public class RepairTypeHandler {
         	Set<Set<OWLClassExpression>> newSet = new HashSet<>();
         	/* Could it happen that you encounter an instance of OWLClassExpression that consists of several nested
         	* instances of OWLObjectIntersectionOf but that is an atom after flattening?*/
-    		Set<OWLClassExpression> setOfAtoms = reasonerWithoutTBox.equivalentOrSubsuming(exp).stream()
+    		Set<OWLClassExpression> setOfAtoms = reasonerWithoutTBox.equivalentIncludingOWLThingOrSubsumingExcludingOWLThing(exp).stream()
     								.filter(atom -> !(atom instanceof OWLObjectIntersectionOf &&
     												!reasonerWithTBox.equivalentToOWLThing(atom)))
     								.collect(Collectors.toSet());

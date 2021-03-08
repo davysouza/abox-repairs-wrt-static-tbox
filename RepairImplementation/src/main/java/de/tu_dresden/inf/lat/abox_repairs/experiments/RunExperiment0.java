@@ -138,7 +138,7 @@ public class RunExperiment0 {
         OWLNamedIndividual individual = individuals.get(random.nextInt(individuals.size()));
 
 
-        List<OWLClassExpression> classes = new ArrayList<>(facade.instanceOf(individual));
+        List<OWLClassExpression> classes = new ArrayList<>(facade.instanceOfExcludingOWLThing(individual));
 
         classes.sort(Comparator.comparing(a -> a.toString()));
 

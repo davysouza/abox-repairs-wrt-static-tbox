@@ -3,7 +3,6 @@ package de.tu_dresden.inf.lat.abox_repairs.generator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.HashMultimap;

@@ -36,7 +36,7 @@ public class CanonicalRepairGenerator extends RepairGenerator {
 
         for (OWLNamedIndividual individual : ontology.getIndividualsInSignature()) {
             Set<OWLClassExpression> setOfAtoms = new HashSet<>();
-            for (OWLClassExpression assertedConcept : reasonerWithTBox.instanceOf(individual)) {
+            for (OWLClassExpression assertedConcept : reasonerWithTBox.instanceOfExcludingOWLThing(individual)) {
                 if (atomForRepairType(assertedConcept)) {
                     setOfAtoms.add(assertedConcept);
                 }

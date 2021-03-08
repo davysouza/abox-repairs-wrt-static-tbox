@@ -9,8 +9,6 @@ import de.tu_dresden.inf.lat.abox_repairs.saturation.ABoxSaturator;
 import de.tu_dresden.inf.lat.abox_repairs.saturation.AnonymousVariableDetector;
 import de.tu_dresden.inf.lat.abox_repairs.saturation.SaturationException;
 import de.tu_dresden.inf.lat.abox_repairs.seed_function.SeedFunction;
-import de.tu_dresden.inf.lat.abox_repairs.ontology_tools.*;
-import de.tu_dresden.inf.lat.abox_repairs.saturation.*;
 import de.tu_dresden.inf.lat.abox_repairs.seed_function.SeedFunctionHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -160,7 +158,7 @@ public class RepairManager {
             System.out.println(" Duration (sat/repair sec.): " + saturator.getDuration() + "/" + timeRepairing);
 
             ReasonerFacade forRepair =
-                    ReasonerFacade.newReasonerFacadeWithTBox(workingCopy, reasonerWithTBox.getClassExpressions());
+                    ReasonerFacade.newReasonerFacadeWithTBox(workingCopy, reasonerWithTBox.getSupportedClassExpressions());
 
 
             if (isCompliant(repairRequest, forRepair)) {

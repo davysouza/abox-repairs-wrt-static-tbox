@@ -42,8 +42,8 @@ public class CycleChecker {
     public boolean cyclic() {
         Multimap<OWLClassExpression, OWLClassExpression> dependencies = HashMultimap.create();
 
-        for(OWLClassExpression expression: reasoner.getClassExpressions()){
-            for(OWLClassExpression subsumer: reasoner.subsumers(expression)){
+        for(OWLClassExpression expression: reasoner.getSupportedClassExpressions()){
+            for(OWLClassExpression subsumer: reasoner.subsumersExcludingOWLThing(expression)){
                 if(subsumer instanceof OWLObjectSomeValuesFrom) {
                     OWLClassExpression filler = ((OWLObjectSomeValuesFrom)subsumer).getFiller();
                     dependencies.put(expression, filler);

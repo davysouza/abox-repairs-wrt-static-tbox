@@ -149,7 +149,7 @@ public class RunExperiment2b {
             individuals.remove(individual);
 
 
-            List<OWLClassExpression> classes = new ArrayList<>(facade.instanceOf(individual));
+            List<OWLClassExpression> classes = new ArrayList<>(facade.instanceOfExcludingOWLThing(individual));
 
             classes.sort(Comparator.comparing(a -> a.toString()));
 
