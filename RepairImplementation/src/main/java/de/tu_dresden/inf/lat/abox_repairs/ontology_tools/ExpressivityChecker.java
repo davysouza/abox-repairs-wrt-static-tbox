@@ -34,15 +34,15 @@ import org.semanticweb.owlapi.model.parameters.Imports;
  *   <li>Inverse roles:             {@link org.semanticweb.owlapi.model.OWLObjectInverseOf}</li>
  *   <li>Role conjunction           (currently not supported by the OWL API)</li>
  *   <li>Concept disjointness:      {@link org.semanticweb.owlapi.model.OWLDisjointClassesAxiom} (with transformation)</li>
- *   <li>Range restrictions:        {@link org.semanticweb.owlapi.model.OWLObjectPropertyRangeAxiom}</li>
+ *   <li>Range restrictions:        {@link org.semanticweb.owlapi.model.OWLObjectPropertyRangeAxiom} (with transformation)</li>
  *   <li>Role inclusions:           {@link org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom}</li>
- *   <li>Role equivalences:         {@link org.semanticweb.owlapi.model.OWLEquivalentObjectPropertiesAxiom}</li>
+ *   <li>Role equivalences:         {@link org.semanticweb.owlapi.model.OWLEquivalentObjectPropertiesAxiom} (with transformation)</li>
  * </ul>
  * Note that we then specifically support, after transformation, Horn-𝒜ℒ𝒞 TBoxes which allow for limited use of the following only in concept inclusions:
  * <ul>
- *   <li>Value restrictions:        {@link org.semanticweb.owlapi.model.OWLObjectAllValuesFrom}</li>
- *   <li>Negation:                  {@link org.semanticweb.owlapi.model.OWLObjectComplementOf}</li>
- *   <li>Disjunction:               {@link org.semanticweb.owlapi.model.OWLObjectUnionOf}</li>
+ *   <li>Value restrictions:        {@link org.semanticweb.owlapi.model.OWLObjectAllValuesFrom} (with transformation)</li>
+ *   <li>Negation:                  {@link org.semanticweb.owlapi.model.OWLObjectComplementOf} (with transformation)</li>
+ *   <li>Disjunction:               {@link org.semanticweb.owlapi.model.OWLObjectUnionOf} (with transformation)</li>
  * </ul>
  * <br>
  * By a suitable copying approach, we will later also be able to support annotations and annotation axioms:
