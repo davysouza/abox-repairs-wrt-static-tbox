@@ -1,5 +1,5 @@
 /target/
 /bin/
-/src/main/resources/log4j2.xml
+/src/repairManager/resources/log4j2.xml
 el-fragment.owl
 **/.DS_Store
