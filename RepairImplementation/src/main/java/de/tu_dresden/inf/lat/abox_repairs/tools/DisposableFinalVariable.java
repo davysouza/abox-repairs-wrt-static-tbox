@@ -1,15 +1,14 @@
 package de.tu_dresden.inf.lat.abox_repairs.tools;
 
-import com.sun.istack.internal.NotNull;
-
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 public final class DisposableFinalVariable<T> {
 
-    @NotNull
+    @Nonnull
     private T value;
 
-    public DisposableFinalVariable(@NotNull T value) throws IllegalArgumentException {
+    public DisposableFinalVariable(@Nonnull T value) throws IllegalArgumentException {
         if (value == null)
             throw new IllegalArgumentException("The value of an instance of DisposableFinalVariable cannot be null.");
         this.value = value;
