@@ -83,7 +83,15 @@ public class RepairManager {
 
         reasonerWithTBox.update();
 
+        System.out.println("Before saturation:");
+        System.out.println(workingCopy.getIndividualsInSignature().size() + " individuals");
+        System.out.println(workingCopy.getAnonymousIndividuals().size() + " variables");
+
         saturator.saturate(workingCopy);
+
+        System.out.println("After saturation:");
+        System.out.println(workingCopy.getIndividualsInSignature().size() + " individuals");
+        System.out.println(workingCopy.getAnonymousIndividuals().size() + " variables");
 
         logger.debug("after initializing reasoners: ");
 
