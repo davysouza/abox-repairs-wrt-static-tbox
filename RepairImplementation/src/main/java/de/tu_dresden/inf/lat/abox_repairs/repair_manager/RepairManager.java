@@ -23,9 +23,7 @@ public class RepairManager {
     private static Logger logger = LogManager.getLogger(RepairManager.class);
 
     /**
-     * Check: usually, static fields (variables) should be avoided where possible.
-     * In this case: check whether they are really needed to be outside the main method,
-     * and otherwise, add them.
+     * TODO: some of the following fields are not needed here, and should be made local to the only method were they are used
      */
     private OWLOntology ontology, workingCopy;
 
@@ -38,8 +36,6 @@ public class RepairManager {
     private ABoxSaturator saturator;
 
     private RepairGenerator repairGenerator;
-
-   // private final Random random; // TODO do we really need it?
 
     /**
      * please leave package visibility - this class should only be initialised by the builder
@@ -69,7 +65,7 @@ public class RepairManager {
         this.random = random;
     }*/
 
-    public void performRepair(//OWLOntology inputOntology,
+    public OWLOntology performRepair(//OWLOntology inputOntology,
                               //RepairRequest repairRequest
                               //RepairVariant repairVariant,
                               //boolean saturationRequired
@@ -175,6 +171,8 @@ public class RepairManager {
                 System.out.println("The ontology is still not compliant");
             }
         }
+
+        return workingCopy;
     }
 
 
