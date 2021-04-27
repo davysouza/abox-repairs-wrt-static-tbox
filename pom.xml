@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.tu-dresden.inf.lat</groupId>
-    <artifactId>abox-repairs</artifactId>
+    <artifactId>abox-repairs-wrt-static-tbox</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <name>Computing Optimal Repairs of Quantified ABoxes w.r.t. Static EL TBoxes</name>
@@ -19,29 +19,29 @@
         </contributor>
     </contributors>
 
-	<developers>
-		<developer>
-			<name>Patrick Koopmann</name>
-			<organization>Technische Universität Dresden</organization>
-			<organizationUrl>https://tu-dresden.de</organizationUrl>
-			<email>patrick.koopmann@tu-dresden.de</email>
-			<url>https://lat.inf.tu-dresden.de/~koopmann/</url>
-		</developer>
-		<developer>
-			<name>Francesco Kriegel</name>
-			<organization>Technische Universität Dresden</organization>
-			<organizationUrl>https://tu-dresden.de</organizationUrl>
-			<email>francesco.kriegel@tu-dresden.de</email>
-			<url>https://tu-dresden.de/ing/informatik/thi/lat/die-professur/beschaeftigte/francesco-kriegel/</url>
-		</developer>
-		<developer>
-			<name>Adrian Nuradiansyah</name>
-			<organization>Technische Universität Dresden</organization>
-			<organizationUrl>https://tu-dresden.de</organizationUrl>
-			<email>adrian.nuradiansyah@tu-dresden.de</email>
-			<url>https://lat.inf.tu-dresden.de/~adrian/</url>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <name>Patrick Koopmann</name>
+            <organization>Technische Universität Dresden</organization>
+            <organizationUrl>https://tu-dresden.de</organizationUrl>
+            <email>patrick.koopmann@tu-dresden.de</email>
+            <url>https://lat.inf.tu-dresden.de/~koopmann/</url>
+        </developer>
+        <developer>
+            <name>Francesco Kriegel</name>
+            <organization>Technische Universität Dresden</organization>
+            <organizationUrl>https://tu-dresden.de</organizationUrl>
+            <email>francesco.kriegel@tu-dresden.de</email>
+            <url>https://tu-dresden.de/ing/informatik/thi/lat/die-professur/beschaeftigte/francesco-kriegel/</url>
+        </developer>
+        <developer>
+            <name>Adrian Nuradiansyah</name>
+            <organization>Technische Universität Dresden</organization>
+            <organizationUrl>https://tu-dresden.de</organizationUrl>
+            <email>adrian.nuradiansyah@tu-dresden.de</email>
+            <url>https://lat.inf.tu-dresden.de/~adrian/</url>
+        </developer>
+    </developers>
 
     <properties>
         <maven.compiler.target>8</maven.compiler.target>
