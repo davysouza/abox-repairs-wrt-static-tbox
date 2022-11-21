@@ -125,7 +125,7 @@ public class RunExperiment3 {
                                         .setVariant(repairVariant)
                                         .setNeedsSaturation(saturationRequired)
                                         .build();
-                        repairManager.performRepair();
+                        repairManager.initAndPerformRepair();
                     } catch (OWLOntologyCreationException e) {
                         e.printStackTrace();
                     } catch (SaturationException e) {

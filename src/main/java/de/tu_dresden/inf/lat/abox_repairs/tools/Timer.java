@@ -46,6 +46,11 @@ public class Timer {
         running = false;
     }
 
+    public void startTimer(){
+        reset();
+        continueTimer();
+    }
+
     private double sinceLastStart(){
         if(running)
             return ((double)System.nanoTime()-start)/1_000_000_000;

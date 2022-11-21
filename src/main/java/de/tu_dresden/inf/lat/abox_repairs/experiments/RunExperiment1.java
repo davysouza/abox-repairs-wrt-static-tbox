@@ -85,7 +85,7 @@ public class RunExperiment1 {
     private final Random random;
     private long seed;
 
-    private RunExperiment1(){
+    public RunExperiment1(){
         random = new Random();
         seed = random.nextLong();
         random.setSeed(seed);
@@ -102,14 +102,22 @@ public class RunExperiment1 {
 
     private AnonymousVariableDetector anonymousVariableDetector=null;
 
-    private void startExperiment(String ontologyFileName, RepairManagerBuilder.RepairVariant repairVariant, double proportionIndividuals, double proportionClassNames, boolean saturationRequired)
+    public void initAnonymousVariableDetector(boolean b, RepairManagerBuilder.RepairVariant rv) {
+        anonymousVariableDetector=AnonymousVariableDetector.newInstance(b,rv);
+    }
+
+    private void startExperiment(String ontologyFileName,
+                                 RepairManagerBuilder.RepairVariant repairVariant,
+                                 double proportionIndividuals,
+                                 double proportionClassNames,
+                                 boolean saturationRequired)
             throws OWLOntologyCreationException, SaturationException {
 
         OWLOntology ontology =
                 OWLManager.createOWLOntologyManager()
                         .loadOntologyFromOntologyDocument(new File(ontologyFileName));
 
-        anonymousVariableDetector=AnonymousVariableDetector.newInstance(!saturationRequired,repairVariant);
+        initAnonymousVariableDetector(!saturationRequired,repairVariant);
 
         RepairRequest repairRequest = generateRepairRequest(ontology, proportionIndividuals, proportionClassNames);
 
@@ -120,10 +128,10 @@ public class RunExperiment1 {
                         .setVariant(repairVariant)
                         .setNeedsSaturation(saturationRequired)
                         .build();
-        repairManager.performRepair();
+        repairManager.initAndPerformRepair();
     }
 
-    private RepairRequest generateRepairRequest(
+    public RepairRequest generateRepairRequest(
             OWLOntology ontology, double proportionIndividuals, double proportionClassNames) {
         RepairRequest request = new RepairRequest();
 

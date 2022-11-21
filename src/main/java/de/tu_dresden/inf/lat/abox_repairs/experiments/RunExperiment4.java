@@ -123,7 +123,7 @@ public class RunExperiment4 {
                         .setVariant(repairVariant)
                         .setNeedsSaturation(saturationRequired)
                         .build();
-        repairManager.performRepair();
+        repairManager.initAndPerformRepair();
     }
 
     private RepairRequest generateRepairRequest(

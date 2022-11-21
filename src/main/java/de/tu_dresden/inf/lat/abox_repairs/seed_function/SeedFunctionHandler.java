@@ -19,7 +19,9 @@ import org.semanticweb.owlapi.model.OWLOntology;
 
 
 public class SeedFunctionHandler {
-	
+	// TODO: make random choices determined by Random object
+
+
 	//private Map<OWLNamedIndividual, RepairType> seedFunction;
 	//private Map<OWLNamedIndividual, Set<OWLClassExpression>> hittingSetFunction;
 	//private RepairRequest repairRequest;

@@ -71,7 +71,7 @@ public final class ComputeRepair {
                     .setNeedsSaturation(saturate)
                     .build();
 
-            m.performRepair();
+            m.initAndPerformRepair();
 
 
             i += 4;

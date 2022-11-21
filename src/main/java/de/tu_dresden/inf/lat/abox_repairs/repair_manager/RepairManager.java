@@ -25,7 +25,9 @@ public class RepairManager {
     /**
      * TODO: some of the following fields are not needed here, and should be made local to the only method were they are used
      */
-    private OWLOntology ontology, workingCopy;
+    private final OWLOntology ontology;
+    private OWLOntology workingCopy;
+
 
     private SeedFunction seedFunction;
 
@@ -64,18 +66,17 @@ public class RepairManager {
     public RepairManager(Random random) {
         this.random = random;
     }*/
+    private long startTime;
 
-    public OWLOntology performRepair(//OWLOntology inputOntology,
-                              //RepairRequest repairRequest
-                              //RepairVariant repairVariant,
-                              //boolean saturationRequired
-    ) throws OWLOntologyCreationException, SaturationException {
+    private int oldIndividuals, oldAssertions;
 
-        long startTime = System.nanoTime();
+    public void initForRepairing() throws SaturationException {
 
-        int oldIndividuals = workingCopy.getIndividualsInSignature().size() + workingCopy.getAnonymousIndividuals().size();
+        startTime = System.nanoTime();
+
+        oldIndividuals = workingCopy.getIndividualsInSignature().size() + workingCopy.getAnonymousIndividuals().size();
 //        long oldAssertions = workingCopy.aboxAxioms(Imports.INCLUDED).count();
-        long oldAssertions = workingCopy.getABoxAxioms(Imports.INCLUDED).size();
+        oldAssertions = workingCopy.getABoxAxioms(Imports.INCLUDED).size();
 
         reasonerWithTBox.update();
 
@@ -96,8 +97,24 @@ public class RepairManager {
 
         generateRandomSeedFunction();
 
+    }
+
+    public OWLOntology initAndPerformRepair(//OWLOntology inputOntology,
+                                            //RepairRequest repairRequest
+                                            //RepairVariant repairVariant,
+                                            //boolean saturationRequired
+    ) throws OWLOntologyCreationException, SaturationException {
+
+        initForRepairing();
+
+        return performRepair();
+    }
+
+    public OWLOntology performRepair() throws OWLOntologyCreationException, SaturationException {
+
         if (isCompliant(repairRequest,reasonerWithTBox)) {
             System.out.println("\nThe ontology is compliant!");
+            return workingCopy;
         } else {
             System.out.println("\nThe ontology is not compliant!");
 
@@ -214,6 +231,30 @@ public class RepairManager {
         }
 
         return compliant;
+    }
+
+
+    public OWLOntology getWorkingCopy() {
+        return workingCopy;
+    }
+    public OWLOntology getOntology() {
+        return ontology;
+    }
+
+    public SeedFunction getSeedFunction() {
+        return seedFunction;
+    }
+
+    public ReasonerFacade getReasonerWithTBox() {
+        return reasonerWithTBox;
+    }
+
+    public ReasonerFacade getReasonerWithoutTBox() {
+        return reasonerWithoutTBox;
+    }
+
+    public RepairGenerator getRepairGenerator() {
+        return repairGenerator;
     }
 
     /*
