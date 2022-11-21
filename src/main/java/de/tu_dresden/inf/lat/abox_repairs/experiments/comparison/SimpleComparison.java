@@ -21,7 +21,9 @@ import java.io.File;
 public class SimpleComparison {
     public static void main(String[] args) throws OWLOntologyCreationException, SaturationException, IQGenerationException {
 
-        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(args[0]));
+        System.out.println("Using file \""+args[0].trim()+"\"");
+
+        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(args[0].trim()));
 
         Timer timer = Timer.newTimer();
 
