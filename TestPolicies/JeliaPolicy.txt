@@ -1,4 +1,0 @@
-a Type: r some (P1 and Q1)
-a Type: r some (P2 and Q2)
-a Type: r some (P3 and Q3)
-a Type: r some (P4 and Q4)
