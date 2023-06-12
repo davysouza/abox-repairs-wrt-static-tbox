@@ -23,6 +23,12 @@ ls
 echo "LS WORKSPACE"
 ls $WORKSPACE
 
+echo "LS WORKSPACE/APP"
+ls $WORKSPACE/app
+
+echo "ls ${WORKSPACE}/app/experiments/${EXPERIMENT_PATH}/target/classes"
+ls ${WORKSPACE}/app/experiments/${EXPERIMENT_PATH}/target/classes
+
 echo "PWD"
 pwd
 
