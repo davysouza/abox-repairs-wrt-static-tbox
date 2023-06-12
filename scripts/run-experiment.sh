@@ -17,22 +17,22 @@ CLASSPATH="${WORKSPACE}/app/experiments/${EXPERIMENT_PATH}/target/classes:/home/
 
 # echo $CLASSPATH
 
-echo "LS"
-ls
+# echo "LS"
+# ls
 
-echo "LS WORKSPACE"
-ls $WORKSPACE
+# echo "LS WORKSPACE"
+# ls $WORKSPACE
 
-echo "LS WORKSPACE/APP"
-ls $WORKSPACE/app
+# echo "LS WORKSPACE/APP"
+# ls $WORKSPACE/app
 
-echo "ls ${WORKSPACE}/app/experiments/${EXPERIMENT_PATH}/target/classes"
-ls ${WORKSPACE}/app/experiments/${EXPERIMENT_PATH}/target/classes
+# echo "ls ${WORKSPACE}/app/experiments/${EXPERIMENT_PATH}/target/classes"
+# ls ${WORKSPACE}/app/experiments/${EXPERIMENT_PATH}/target/classes
 
-echo "PWD"
-pwd
+# echo "PWD"
+# pwd
 
-# java -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath $CLASSPATH de.tudresden.inf.lat.aboxrepair.${EXPERIMENT_CLASS}
+java -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath $CLASSPATH de.tudresden.inf.lat.aboxrepair.${EXPERIMENT_CLASS}
 
 # for file in resources/ore2015/*.owl
 # do
