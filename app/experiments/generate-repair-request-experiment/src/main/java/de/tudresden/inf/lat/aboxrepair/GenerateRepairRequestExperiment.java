@@ -159,6 +159,11 @@ public class GenerateRepairRequestExperiment {
 
         // sort classes and get a random
         List<OWLClassExpression> classes = new ArrayList<>(facade.instanceOfExcludingOWLThing(individual));
+        if(classes.size() == 0) {
+            System.out.println("No OWLClassExpression objects at the list.");
+            return null;
+        }
+
         classes.sort(Comparator.comparing(a -> a.toString()));
         OWLClassExpression clazz = classes.get(randomUnsignedInt(classes.size()));
         classes.remove(clazz);
