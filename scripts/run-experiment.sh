@@ -23,7 +23,7 @@ run_experiment_on_corpus() {
     echo "RUNNING ENTIRE CORPUS: $1 $2"
     for file in resources/ore2015/*.owl
     do
-        java $ENCODING -classpath $CLASSPATH de.tudresden.inf.lat.aboxrepair.${EXPERIMENT_CLASS} $1 $2
+        java $ENCODING -classpath $CLASSPATH de.tudresden.inf.lat.aboxrepair.${EXPERIMENT_CLASS} $file $1 $2
     done
     echo "DONE."
 }
